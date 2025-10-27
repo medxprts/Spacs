@@ -1,0 +1,98 @@
+# Environment variables (contains sensitive API keys and credentials)
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+*.log
+logs/*.log
+*.sqlite
+*.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# PostgreSQL data (if running locally)
+postgres_data/
+pgdata/
+
+# State files
+.telegram_listener_state.json
+orchestrator_state.json
+agent_state.json
+*.state
+
+# Backup files
+*.backup
+*.bak
+backup-*/
+
+# CSV data files (may contain sensitive data)
+*.csv
+data/*.csv
+
+# Test outputs
+test_outputs/
+test_data/
+
+# Deprecated and old versions
+deprecated/
+archived/
+old_versions/
+
+# Node modules (if any JS tooling)
+node_modules/
+package-lock.json
+
+# AWS credentials
+.aws/
+credentials
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# Claude Code cache
+.claude/
+.claude.json
+.claude.json.backup
+
+# N8N workflows (if contains sensitive data)
+.n8n/
+
+# Service PIDs
+*.pid
+
+# Python cache
+*.pyc
+.pytest_cache/
+
+# API keys and secrets (double-check these are excluded!)
+*_api_key*
+*_secret*
+*_token*
+secrets/
