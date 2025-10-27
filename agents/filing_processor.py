@@ -417,7 +417,7 @@ If cannot find vote date, return {{"vote_date": null}}.
         for section_name, section_text in sections.items():
             combined_text += f"\n\n=== {section_name.upper()} ===\n\n{section_text[:8000]}"
 
-        prompt = f"""Extract vote date, deal terms, AND redemption data from this DEFM14A for SPAC {ticker}.
+        prompt = f"""Extract vote date, trust account data, redemption data, and deal terms from this DEFM14A/DEF14A for SPAC {ticker}.
 
 Document sections:
 {combined_text[:25000]}
@@ -428,6 +428,21 @@ Look for:
 - "The special meeting will be held on [DATE]"
 - Meeting date/time (e.g., "November 15, 2025 at 10:00 a.m. EST")
 - Return as "YYYY-MM-DD" format
+
+PRIORITY 0.5: PRE-VOTE TRUST ACCOUNT BALANCE (CRITICAL for redemption calculations!)
+Look for trust account balance disclosure (usually in Summary, first page, or Q&A section):
+- "As of [date], there was approximately $XX million in the trust account"
+- "trust account contained $XX,XXX,XXX"
+- "representing a per share pro rata amount of approximately $X.XX"
+- "$X.XX per share" or "NAV of $X.XX"
+- "per-share redemption price of $X.XX"
+
+Extract:
+- **pre_vote_trust_cash**: Total dollars in trust (e.g., "$72,452,618" or "$72.45M")
+- **pre_vote_nav_per_share**: NAV/redemption price per share (e.g., "$10.50" or "$10.43")
+- **trust_balance_date**: Date of trust balance (e.g., "September 17, 2025")
+
+⚠️ This is CRITICAL - without pre-vote NAV, we cannot calculate post-redemption trust cash!
 
 PRIORITY 1: REDEMPTIONS (most important!)
 Look for ACTUAL redemptions (not estimates):
@@ -453,6 +468,9 @@ Deal Structure (if mentioned):
 Return JSON:
 {{
   "shareholder_vote_date": "YYYY-MM-DD" or null,
+  "pre_vote_trust_cash": "$72,452,618" or "$72.45M" or null,
+  "pre_vote_nav_per_share": "$10.50" or 10.50 or null,
+  "trust_balance_date": "YYYY-MM-DD" or null,
   "redemptions_checked": true/false,
   "redemptions_found": true/false,
   "shares_redeemed": <number or 0>,
@@ -468,7 +486,9 @@ Return JSON:
   "forward_purchase": "$50M" or null
 }}
 
-CRITICAL: Set redemptions_checked=true if you searched for redemption data (even if none found).
+CRITICAL:
+- Set redemptions_checked=true if you searched for redemption data (even if none found)
+- ALWAYS try to extract pre_vote_trust_cash and pre_vote_nav_per_share - these are essential!
 If any field is not found, return null for that field.
 """
 
@@ -564,6 +584,14 @@ If any field is not found, return null for that field.
                 else:
                     print(f"   ⚠️  Could not normalize expected_close: '{deal_terms['expected_close']}'")
 
+            # CRITICAL: Save pre-vote trust data (needed for post-redemption calculation)
+            if deal_terms.get('pre_vote_trust_cash') or deal_terms.get('pre_vote_nav_per_share'):
+                pre_trust_updated = self._save_pre_vote_trust_data(
+                    spac, deal_terms, filing_date, updated_fields
+                )
+                if pre_trust_updated:
+                    print(f"   ✅ Saved pre-vote trust data for redemption calculation")
+
             if updated_fields:
                 db.commit()
                 print(f"   ✅ Updated {ticker}: {', '.join(updated_fields)}")
@@ -587,6 +615,9 @@ If any field is not found, return null for that field.
                         reason='Actual redemptions in merger proxy'
                     )
                     print(f"   ✓ Redemption: {deal_terms['shares_redeemed']:,.0f} shares redeemed")
+
+                    # CRITICAL: Calculate post-redemption trust cash
+                    self._calculate_post_redemption_trust(db, ticker, deal_terms, filing_date)
                 else:
                     # Mark that we checked and found no redemptions (or only estimates)
                     mark_no_redemptions_found(
@@ -602,6 +633,140 @@ If any field is not found, return null for that field.
             db.rollback()
         finally:
             db.close()
+
+    def _save_pre_vote_trust_data(self, spac: SPAC, deal_terms: Dict, filing_date: date, updated_fields: list) -> bool:
+        """
+        Save pre-vote trust account data from DEF14A/DEFM14A
+
+        This data is CRITICAL for calculating post-redemption trust cash using:
+        post_trust = pre_trust - (redeemed_shares × NAV) + deposits
+        """
+        try:
+            saved_any = False
+
+            # Parse and save pre-vote trust cash
+            if deal_terms.get('pre_vote_trust_cash'):
+                trust_cash_str = str(deal_terms['pre_vote_trust_cash'])
+                # Parse: "$72,452,618" or "$72.45M"
+                trust_cash_str = trust_cash_str.replace('$', '').replace(',', '')
+
+                if 'M' in trust_cash_str.upper():
+                    trust_cash = float(trust_cash_str.replace('M', '').replace('m', '')) * 1_000_000
+                elif 'B' in trust_cash_str.upper():
+                    trust_cash = float(trust_cash_str.replace('B', '').replace('b', '')) * 1_000_000_000
+                else:
+                    trust_cash = float(trust_cash_str)
+
+                spac.pre_redemption_trust_cash = trust_cash
+                updated_fields.append(f"pre_trust_cash=${trust_cash:,.0f}")
+                saved_any = True
+
+            # Parse and save pre-vote NAV per share
+            if deal_terms.get('pre_vote_nav_per_share'):
+                nav_str = str(deal_terms['pre_vote_nav_per_share'])
+                # Parse: "$10.50" or 10.50
+                nav_str = nav_str.replace('$', '').replace(',', '')
+                nav = float(nav_str)
+
+                spac.pre_redemption_nav = nav
+                updated_fields.append(f"pre_nav=${nav:.2f}")
+                saved_any = True
+
+            # Save trust balance date
+            if deal_terms.get('trust_balance_date'):
+                try:
+                    from datetime import datetime
+                    balance_date_str = deal_terms['trust_balance_date']
+                    if isinstance(balance_date_str, str):
+                        balance_date = datetime.strptime(balance_date_str, '%Y-%m-%d').date()
+                        spac.trust_balance_date = balance_date
+                        updated_fields.append(f"trust_date={balance_date}")
+                        saved_any = True
+                except Exception as e:
+                    print(f"   ⚠️  Could not parse trust_balance_date: {e}")
+
+            # Save DEF14A filing metadata
+            if filing_date:
+                spac.def14a_filing_date = filing_date
+                saved_any = True
+
+            return saved_any
+
+        except Exception as e:
+            print(f"   ⚠️  Error saving pre-vote trust data: {e}")
+            return False
+
+    def _calculate_post_redemption_trust(self, db, ticker: str, deal_terms: Dict, filing_date: date = None):
+        """
+        Calculate post-redemption trust cash using DTSQ pattern:
+        post_trust = pre_trust - (redeemed_shares × NAV) + deposits
+
+        Only runs if we have:
+        1. Pre-vote trust cash and NAV (from DEF14A)
+        2. Shares redeemed (from post-vote disclosure)
+        """
+        try:
+            spac = db.query(SPAC).filter(SPAC.ticker == ticker).first()
+            if not spac:
+                return False
+
+            # Check we have all required data
+            if not spac.pre_redemption_trust_cash or not spac.pre_redemption_nav:
+                print(f"   ℹ️  Cannot calculate post-redemption trust: missing pre-vote data")
+                return False
+
+            if not deal_terms.get('shares_redeemed') or deal_terms['shares_redeemed'] == 0:
+                print(f"   ℹ️  No redemptions to calculate")
+                return False
+
+            # Get data
+            pre_vote_trust = float(spac.pre_redemption_trust_cash)
+            nav_per_share = float(spac.pre_redemption_nav)
+            shares_redeemed = deal_terms['shares_redeemed']
+            extension_deposit = deal_terms.get('extension_deposit', 0)
+
+            # Calculate
+            cash_paid_out = shares_redeemed * nav_per_share
+            post_redemption_trust = pre_vote_trust - cash_paid_out + extension_deposit
+
+            print(f"\n   📊 Post-Redemption Trust Calculation:")
+            print(f"      Pre-vote trust: ${pre_vote_trust:,.2f}")
+            print(f"      NAV per share: ${nav_per_share:.2f}")
+            print(f"      Shares redeemed: {shares_redeemed:,}")
+            print(f"      Cash paid out: ${cash_paid_out:,.2f}")
+            print(f"      Extension deposit: ${extension_deposit:,.2f}")
+            print(f"      Post-redemption trust: ${post_redemption_trust:,.2f}")
+
+            # Update trust_cash in database
+            # Use trust_balance_date if available (more accurate than filing date)
+            effective_date = spac.trust_balance_date if spac.trust_balance_date else (filing_date if filing_date else date.today())
+
+            update_trust_cash(
+                db_session=db,
+                ticker=ticker,
+                new_value=post_redemption_trust,
+                source='DEFM14A',
+                filing_date=effective_date
+            )
+            print(f"      Using date: {effective_date} (trust balance date)" if spac.trust_balance_date else f"      Using date: {effective_date} (filing date)")
+
+            # Recalculate trust_value and premium
+            if spac.shares_outstanding and spac.shares_outstanding > 0:
+                spac.trust_value = round(post_redemption_trust / spac.shares_outstanding, 2)
+                print(f"      New trust value: ${spac.trust_value:.2f} per share")
+
+            from utils.trust_account_tracker import recalculate_premium
+            recalculate_premium(db, ticker)
+
+            db.commit()
+            print(f"   ✅ Post-redemption trust calculation complete!")
+            return True
+
+        except Exception as e:
+            print(f"   ⚠️  Post-redemption calculation failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
 
     # ========================================================================
     # S-4 REGISTRATION PROCESSOR
