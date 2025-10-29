@@ -45,13 +45,13 @@ class PreIPOSPACFinder:
         self.db = SessionLocal()  # Pre-IPO database
         self.main_db = MainSessionLocal()  # Main SPAC database (for checking already IPO'd)
 
-    def search_recent_s1_filings(self, days_back: int = 90) -> List[Dict]:
+    def search_recent_s1_filings(self, days_back: int = 30) -> List[Dict]:
         """
         Search SEC EDGAR for S-1 filings using daily index files
         Filters for SPAC keywords in company names
 
         Args:
-            days_back: How many days to look back for filings (default: 90)
+            days_back: How many days to look back for filings (default: 30)
 
         Returns:
             List of filing metadata dicts
@@ -539,8 +539,8 @@ Return JSON only (use null for missing fields, ~60% accuracy acceptable for Prio
 if __name__ == "__main__":
     import sys
 
-    # Get days_back from command line (default 90)
-    days_back = int(sys.argv[1]) if len(sys.argv) > 1 else 90
+    # Get days_back from command line (default 30)
+    days_back = int(sys.argv[1]) if len(sys.argv) > 1 else 30
 
     finder = PreIPOSPACFinder()
     try:
