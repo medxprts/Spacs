@@ -27,7 +27,7 @@ Thumbs.db
 
 # Logs and databases
 *.log
-logs/*.log
+logs/
 *.sqlite
 *.db
 
@@ -48,8 +48,10 @@ agent_state.json
 
 # Backup files
 *.backup
+*.backup_*
 *.bak
 backup-*/
+backup_*.sql
 
 # CSV data files (may contain sensitive data)
 *.csv
@@ -96,3 +98,67 @@ credentials
 *_secret*
 *_token*
 secrets/
+
+# State files (runtime state that changes frequently)
+.sec_filing_monitor_state.json
+.sec_monitor_health.json
+.data_quality_approvals.json
+.recurring_pattern_alerts.json
+.validation_issue_queue.json
+
+# Streamlit config
+.streamlit/
+
+# Archive directories
+archive/
+archives/
+
+# Deprecated and broken files
+*.DEPRECATED
+*.broken
+*.backup.*
+
+# SQL files and database dumps
+*.sql
+*.sql.gz
+backups/*.sql.gz
+
+# HTML test/debug files (exclude templates if you have any)
+*.html
+!templates/*.html
+
+# Shell scripts (system-specific, keep important setup scripts)
+*.sh
+!setup*.sh
+!install*.sh
+!deploy*.sh
+
+# Systemd service files (system-specific)
+*.service
+
+# Generated JSON data files
+*_enriched.json
+spac_research_results.json
+
+# Log directory contents (already ignoring *.log but be explicit)
+logs/*.jsonl
+logs/*.json
+logs/*.gz
+logs/rollback_*.sql
+
+# YAML config files (keep templates)
+config.yaml
+!config.yaml.template
+config/agents/*.yaml
+!config/agents/*.yaml.template
+
+# Markdown documentation (uncomment to track all docs)
+# Comment out the lines below if you want to track documentation
+*.md
+!README.md
+!CLAUDE.md
+!TODO.md
+
+# Prompts directory (keep the structure, ignore specific prompts if sensitive)
+# prompts/**/*.yaml
+# !prompts/**/*.yaml.template
