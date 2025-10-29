@@ -175,6 +175,34 @@ def update_deal_structure_field(
     if reason:
         print(f"  Reason: {reason}")
 
+    # Ensure history table exists BEFORE attempting insert
+    try:
+        # Check if table exists (lightweight query)
+        db_session.execute(text("SELECT 1 FROM deal_structure_history LIMIT 1"))
+    except:
+        # Table doesn't exist - create it in a separate transaction
+        print(f"  ℹ️  Creating deal_structure_history table...")
+        try:
+            db_session.rollback()  # Clear any failed transaction
+            db_session.execute(text("""
+                CREATE TABLE IF NOT EXISTS deal_structure_history (
+                    id SERIAL PRIMARY KEY,
+                    ticker VARCHAR(10) NOT NULL,
+                    field_name VARCHAR(50) NOT NULL,
+                    old_value TEXT,
+                    new_value TEXT NOT NULL,
+                    source VARCHAR(50),
+                    filing_date DATE,
+                    reason TEXT,
+                    changed_at TIMESTAMP DEFAULT NOW()
+                )
+            """))
+            db_session.commit()
+            print("  ✓ Table created")
+        except Exception as create_err:
+            print(f"  ⚠️  Could not create table: {create_err}")
+            db_session.rollback()
+
     # Log to history table
     try:
         db_session.execute(text("""
@@ -193,39 +221,9 @@ def update_deal_structure_field(
         })
         print("  ✓ Logged to history")
     except Exception as e:
-        # History table might not exist - create it
-        print(f"  ℹ️  Creating deal_structure_history table...")
-        db_session.execute(text("""
-            CREATE TABLE IF NOT EXISTS deal_structure_history (
-                id SERIAL PRIMARY KEY,
-                ticker VARCHAR(10) NOT NULL,
-                field_name VARCHAR(50) NOT NULL,
-                old_value TEXT,
-                new_value TEXT NOT NULL,
-                source VARCHAR(50),
-                filing_date DATE,
-                reason TEXT,
-                changed_at TIMESTAMP DEFAULT NOW()
-            )
-        """))
-        db_session.commit()
-
-        # Try again
-        db_session.execute(text("""
-            INSERT INTO deal_structure_history
-            (ticker, field_name, old_value, new_value, source, filing_date, reason, changed_at)
-            VALUES
-            (:ticker, :field_name, :old_value, :new_value, :source, :filing_date, :reason, NOW())
-        """), {
-            'ticker': ticker,
-            'field_name': field_name,
-            'old_value': str(current_value) if current_value is not None else None,
-            'new_value': str(new_value),
-            'source': source,
-            'filing_date': filing_date,
-            'reason': reason or f'{field_name} from {source}'
-        })
-        print("  ✓ Logged to history")
+        print(f"  ⚠️  Could not log to history: {e}")
+        # Don't fail the whole update if history logging fails
+        db_session.rollback()
 
     # Add tracking columns if they don't exist
     try:
