@@ -1,0 +1,40 @@
+# Deal Value from S-4
+# Used by: sec_data_scraper.py enrich_from_s4() line 2195
+# Purpose: Extract transaction valuation from S-4 merger registration
+
+metadata:
+  prompt_id: deal_value_from_s4
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a financial document extraction expert. Extract data precisely from SEC filings.
+
+user_prompt: |
+  From this S-4 merger registration statement, extract the transaction valuation:
+
+  Look for sections like:
+  - "Transaction Structure"
+  - "The Business Combination"
+  - "Merger Consideration"
+
+  Return JSON:
+  {{
+    "enterprise_value": "$1.5B",
+    "equity_value": "$1.2B",
+    "transaction_value": "$1.5B"
+  }}
+
+  Common phrases:
+  - "implied enterprise value of $[X]"
+  - "equity value of approximately $[X]"
+  - "transaction values the company at $[X]"
+
+  Note: Use "B" for billions, "M" for millions
+
+  Section text:
+  {section_text}
+
+  JSON only:

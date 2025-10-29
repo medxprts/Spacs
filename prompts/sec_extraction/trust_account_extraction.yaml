@@ -1,0 +1,42 @@
+# Trust Account Data Extraction
+# Used by: sec_data_scraper.py extract_trust_info()
+# Purpose: Extract trust account value and shares from 10-Q balance sheet
+
+metadata:
+  prompt_id: trust_account_extraction
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a financial document extraction expert. Extract data precisely from SEC filings.
+
+user_prompt: |
+  Extract trust account data from this SPAC balance sheet. Return ONLY valid JSON:
+
+  CRITICAL INSTRUCTIONS:
+  1. Find these TWO values:
+     a) Trust account assets: Look for "Cash held in Trust Account" OR "Marketable securities held in Trust Account" OR "Investments held in Trust Account" (under ASSETS section)
+     b) Redemption shares: Look for "Class A ordinary shares subject to possible redemption" OR "Ordinary shares subject to possible redemption"
+
+  2. Calculate trust value per share:
+     trust_value_per_share = trust_account_assets / redemption_shares
+
+  3. Common mistake to avoid:
+     - DO NOT use "working capital" or "cash outside trust" for trust_account_assets
+     - DO NOT use "founder shares" or "Class B shares" for redemption_shares
+     - Only use "Class A" shares that are "subject to possible redemption"
+
+  Return JSON:
+  {{
+    "trust_cash": float (total dollars in trust, e.g. 345300000 for $345.3M),
+    "shares_outstanding": int (Class A redemption shares, e.g. 34530000),
+    "trust_value": float (per-share NAV, e.g. 10.00 or 10.05),
+    "calculation_shown": "trust_cash / shares_outstanding = trust_value"
+  }}
+
+  Balance sheet text:
+  {balance_text}
+
+  JSON only:

@@ -1,0 +1,36 @@
+# IPO Date Extraction from 8-K
+# Used by: sec_data_scraper.py extract_ipo_date_from_8k() line 1073
+# Purpose: Extract IPO closing date and proceeds from 8-K filings
+
+metadata:
+  prompt_id: ipo_date_extraction
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a SEC filing extraction expert. Extract data precisely from the provided text.
+  Never guess or assume values. Only extract explicitly stated information.
+
+user_prompt: |
+  Extract IPO information from this 8-K text:
+
+  {item_text}
+
+  Return ONLY a JSON object with these fields (use null if not found):
+  {{
+    "ipo_date": "YYYY-MM-DD or null",
+    "ipo_proceeds": "e.g. $414M or null",
+    "shares_outstanding": "number of shares sold, e.g. 30000000 or null"
+  }}
+
+  CRITICAL: We need the IPO **closing/completion** date, NOT the pricing date.
+  Look for phrases like:
+  - "IPO closed on [DATE]"
+  - "offering was completed on [DATE]"
+  - "closed the initial public offering on [DATE]"
+
+  For proceeds, look for "gross proceeds" or "aggregate proceeds" from the IPO.
+
+  JSON only:

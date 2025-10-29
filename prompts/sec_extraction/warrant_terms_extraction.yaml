@@ -1,0 +1,38 @@
+# Warrant Terms Extraction
+# Used by: sec_data_scraper.py extract_warrant_terms()
+# Purpose: Extract warrant exercise price, ratio, and expiration from S-1
+
+metadata:
+  prompt_id: warrant_terms_extraction
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a financial document extraction expert. Extract data precisely from SEC filings.
+
+user_prompt: |
+  Extract warrant terms from this SPAC S-1 filing section.
+
+  CRITICAL INSTRUCTIONS:
+  1. Warrant ratio: How many warrants per share? Common values: 0.25 (1/4), 0.333 (1/3), 0.5 (1/2), 1.0 (whole)
+  2. Exercise price: Typically $11.50 (range $10-$15)
+  3. Expiration: Typically 5 years (range 3-7 years)
+
+  Look for phrases like:
+  - "Each unit consists of one share of Class A common stock and one-third of one redeemable warrant" → ratio = 0.333
+  - "Warrants are exercisable at $11.50 per share" → exercise_price = 11.50
+  - "Warrants will expire five years after the completion of our initial business combination" → expiration = 5
+
+  Return ONLY valid JSON:
+  {{
+    "warrant_ratio": float or null (e.g., 0.333 for "one-third"),
+    "exercise_price": float or null (e.g., 11.50),
+    "warrant_expiration_years": int or null (e.g., 5)
+  }}
+
+  Filing text:
+  {warrant_text}
+
+  JSON only:

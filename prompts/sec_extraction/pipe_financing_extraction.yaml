@@ -1,0 +1,39 @@
+# PIPE Financing Extraction
+# Used by: sec_data_scraper.py enrich_from_s4()
+# Purpose: Extract PIPE (Private Investment in Public Equity) details from S-4
+
+metadata:
+  prompt_id: pipe_financing_extraction
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a financial document extraction expert. Extract data precisely from SEC filings.
+
+user_prompt: |
+  From this S-4, extract PIPE (Private Investment in Public Equity) financing details:
+
+  Look for sections like:
+  - "PIPE Financing"
+  - "Private Placement"
+  - "Subscription Agreements"
+  - "Committed Financing"
+
+  Extract:
+  1. PIPE amount (total dollars raised, e.g., "$150M")
+  2. Number of investors
+  3. Price per share (typically $10.00)
+
+  Return ONLY valid JSON:
+  {{
+    "pipe_amount": "$XXM or null",
+    "pipe_investors": int or null,
+    "pipe_price_per_share": float or null
+  }}
+
+  Filing text:
+  {section_text}
+
+  JSON only:

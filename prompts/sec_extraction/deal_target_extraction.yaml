@@ -1,0 +1,93 @@
+# Deal Target Extraction Prompt
+# Used by: sec_data_scraper.py extract_deal_from_8k()
+# Purpose: Extract target company name from 8-K deal announcements
+
+metadata:
+  prompt_id: deal_target_extraction_v2
+  version: 2
+  created: 2025-10-10
+  last_modified: 2025-10-10
+  author: Claude Code
+  ai_model: deepseek-chat
+  temperature: 0
+
+  # Tracking
+  success_rate: null  # Will be calculated from learning logs
+  common_failures:
+    - "Extracts sponsor entities instead of target"
+    - "Extracts trustee entities instead of target"
+    - "Returns filing header text as target"
+
+  # Learning history
+  improvements:
+    - version: 1
+      date: 2025-10-01
+      issue: "Extracted sponsor entities as targets"
+      fix: "Added validation rules to filter sponsor/trustee keywords"
+
+# System prompt (sets AI behavior)
+system_prompt: |
+  You are a SEC filing extraction expert specializing in SPAC deal announcements.
+  Extract data precisely and ONLY from the provided text.
+  Never guess or assume values.
+
+# User prompt template
+# Variables available: {filing_text}
+user_prompt: |
+  Extract deal information from this business combination announcement.
+
+  CRITICAL VALIDATION RULES:
+  1. **Target Company Validation**:
+     - DO NOT extract sponsor entities (containing: "sponsor", "acquisition sponsor", "holdco", "sponsor llc")
+     - DO NOT extract trustee entities (containing: "trustee", "wilmington trust", "trust company", "continental stock")
+     - DO NOT extract SPAC's own name as target
+     - DO NOT extract header/footer text (containing: "Item 1.01", "HSPT.", "A copy of")
+
+  2. **Target Company Should Be**:
+     - An operating business (e.g., "Acme Technologies Inc.", "Voyager Space Holdings")
+     - NOT a shell company or financial entity
+     - A company the SPAC is ACQUIRING (not the SPAC's sponsor/trustee)
+
+  3. **Deal Value Extraction**:
+     - Look for "enterprise value", "equity value", "transaction value"
+     - Format: "$1.5B", "$500M", or null
+     - Do NOT include PIPE financing as deal value
+
+  4. **Expected Close Date**:
+     - Accept flexible formats: "Q2 2025", "June 2025", "H1 2025", "mid-2025"
+     - Return as-is (don't convert to specific date)
+     - Can be null if not mentioned
+
+  Return ONLY valid JSON:
+  - target (target company name after applying validation rules, or null)
+  - deal_value (e.g. "$1.5B" or "$500M" or null)
+  - expected_close (e.g. "Q2 2025" or "June 2025" or null)
+
+  **If target fails validation rules, return target: null**
+
+  Filing text:
+  {filing_text}
+
+  JSON only:
+
+# Examples of good vs bad extractions
+examples:
+  - input_snippet: "...definitive agreement with Voyager Space Holdings..."
+    correct_output:
+      target: "Voyager Space Holdings"
+      deal_value: null
+      expected_close: null
+    incorrect_output:
+      target: "Voyager Acquisition Sponsor Holdco LLC"  # WRONG - sponsor entity
+
+  - input_snippet: "...business combination with Acme Corp for $1.2B..."
+    correct_output:
+      target: "Acme Corp"
+      deal_value: "$1.2B"
+      expected_close: null
+
+  - input_snippet: "...Wilmington Trust, National Association acting as trustee..."
+    correct_output:
+      target: null  # Correctly rejected trustee entity
+      deal_value: null
+      expected_close: null

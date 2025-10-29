@@ -1,0 +1,11 @@
+
+Add these columns to your SPAC class in database.py (after the existing columns):
+
+    # IPO Information
+    ipo_date = Column(Date, nullable=True)
+    ipo_proceeds = Column(String(50), nullable=True)
+    unit_ticker = Column(String(10), nullable=True)
+    warrant_ticker = Column(String(10), nullable=True)
+    unit_structure = Column(String(50), nullable=True)
+    deadline_date = Column(Date, nullable=True)
+    deadline_months = Column(Integer, nullable=True)

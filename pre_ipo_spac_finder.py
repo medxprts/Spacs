@@ -312,7 +312,7 @@ Company: {company}
 
 **CRITICAL FIELDS (Priority 1):**
 - expected_ticker: Proposed ticker symbol (e.g., "PACE", "PACEU" for units)
-- target_proceeds: Gross proceeds (e.g., "$300,000,000", "$500M")
+- target_proceeds_millions: Gross proceeds in millions as NUMERIC (e.g., 300 for $300M, 150 for $150M, 500 for $500M)
 - units_offered: Number of units (integer only, e.g., 30000000)
 - sponsor: Sponsor entity name (usually in first paragraph)
 - lead_banker: Lead underwriter (look for "Representative of Underwriters" or "book-running manager")
@@ -331,7 +331,7 @@ Company: {company}
 - min_target_valuation: Minimum target size (e.g., "$500M enterprise value")
 
 Cover page keywords:
-- "Maximum Aggregate Offering Price" = target_proceeds
+- "Maximum Aggregate Offering Price" = target_proceeds_millions (convert $300,000,000 → 300, convert $150M → 150)
 - "Units, each consisting of" = units_offered AND unit_structure
 - "Ticker Symbol:" = expected_ticker
 - "Price to Public" = ipo_price_range
@@ -340,6 +340,12 @@ Cover page keywords:
 - "intend to focus on businesses with enterprise values of at least" = min_target_valuation
 - "warrants exercisable at $" = warrant_strike
 - "founder shares" or "20% of outstanding shares" = sponsor_promote
+
+IMPORTANT: For target_proceeds_millions, convert any dollar amount to numeric millions:
+- "$300,000,000" → 300
+- "$150,000,000" → 150
+- "$500M" → 500
+- "$60M" → 60
 
 Return JSON only (use null for missing fields, ~60% accuracy acceptable for Priority 1, ~40% for Priority 2):"""
 
@@ -375,7 +381,39 @@ Return JSON only (use null for missing fields, ~60% accuracy acceptable for Prio
                 continue
 
             # Clean specific fields
-            if key == 'trust_per_unit':
+            if key == 'target_proceeds_millions':
+                # Convert to numeric millions (should already be numeric from AI)
+                # Handle edge cases: "$300M" → 300, "$300,000,000" → 300, or just 300
+                if isinstance(value, str):
+                    # Remove $, commas, M
+                    value_str = value.replace('$', '').replace(',', '').upper()
+                    if 'M' in value_str:
+                        # Already in millions: "300M" → 300
+                        value_str = value_str.replace('M', '')
+                        try:
+                            cleaned[key] = float(value_str)
+                        except:
+                            cleaned[key] = None
+                    else:
+                        # Could be full amount: "300000000" → 300
+                        try:
+                            full_amount = float(value_str)
+                            if full_amount > 1000000:
+                                cleaned[key] = full_amount / 1000000
+                            else:
+                                cleaned[key] = full_amount
+                        except:
+                            cleaned[key] = None
+                elif isinstance(value, (int, float)):
+                    # Already numeric - check if it needs conversion
+                    if value > 1000000:
+                        cleaned[key] = value / 1000000
+                    else:
+                        cleaned[key] = float(value)
+                else:
+                    cleaned[key] = None
+
+            elif key == 'trust_per_unit':
                 # Convert "$10.00" → 10.00
                 if isinstance(value, str):
                     value = value.replace('$', '').replace(',', '')
@@ -454,6 +492,10 @@ Return JSON only (use null for missing fields, ~60% accuracy acceptable for Prio
             # Clean AI data
             cleaned_data = self.clean_ai_data(s1_data)
 
+            # Ensure target_proceeds string column matches numeric value (for backwards compatibility)
+            if cleaned_data.get('target_proceeds_millions'):
+                cleaned_data['target_proceeds'] = f"${int(cleaned_data['target_proceeds_millions'])}M"
+
             # Create new entry
             spac = PreIPOSPAC(
                 company=filing_data['company'],
@@ -473,8 +515,8 @@ Return JSON only (use null for missing fields, ~60% accuracy acceptable for Prio
                 print(f"      Ticker: {cleaned_data['expected_ticker']}")
             if cleaned_data.get('target_sector'):
                 print(f"      Target: {cleaned_data['target_sector']}")
-            if cleaned_data.get('target_proceeds'):
-                print(f"      Proceeds: {cleaned_data['target_proceeds']}")
+            if cleaned_data.get('target_proceeds_millions'):
+                print(f"      Proceeds: ${cleaned_data['target_proceeds_millions']}M")
 
             return True
 

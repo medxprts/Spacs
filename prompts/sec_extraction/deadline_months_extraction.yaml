@@ -1,0 +1,34 @@
+# Deadline Months Extraction
+# Used by: sec_data_scraper.py extract_deadline_months_with_ai() line 1841
+# Purpose: Extract business combination deadline period from prospectus
+
+metadata:
+  prompt_id: deadline_months_extraction
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a SEC filing extraction expert specializing in SPAC deadlines.
+
+user_prompt: |
+  Extract the business combination deadline from this SPAC prospectus.
+
+  Look for phrases like:
+  - "We will have [X] months from the closing"
+  - "within [X] months of the completion"
+  - "must complete a business combination within [X] months"
+  - "[X]-month period to complete"
+
+  Return JSON:
+  {{
+    "deadline_months": 24
+  }}
+
+  Common values: 18, 20, 21, 24 months
+
+  Prospectus text:
+  {prospectus_text}
+
+  JSON only:

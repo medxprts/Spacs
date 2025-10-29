@@ -1,0 +1,83 @@
+# Trust Cash from 8-K IPO Closing Announcement
+# Used by: sec_data_scraper.py _extract_trust_from_8k_closing() line ~1378
+# Purpose: Extract actual trust cash deposited, accounting for overallotment exercise
+
+metadata:
+  prompt_id: trust_from_8k_closing
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a financial document extraction expert specializing in SPAC IPO mechanics.
+  Extract precise data about trust account deposits from IPO closing announcements.
+
+user_prompt: |
+  From this 8-K IPO closing announcement, extract trust account information:
+
+  **CRITICAL INSTRUCTIONS**:
+
+  1. **Find Trust Cash Deposited**:
+     - Look for "deposited into trust account" or "placed in trust"
+     - This is the ACTUAL amount (may include base offering + overallotment)
+     - Common phrasing: "$XXX million placed in trust account"
+
+  2. **Detect Overallotment Exercise**:
+     - Look for "underwriters exercised" or "overallotment option exercised"
+     - If mentioned: overallotment WAS exercised
+     - If only base offering mentioned: overallotment NOT exercised
+     - Typical language: "underwriters have exercised their overallotment option in full"
+
+  3. **Extract Shares Outstanding**:
+     - Total shares after IPO (includes overallotment if exercised)
+     - Look for "public shares" or "Class A common stock" count
+     - Example: "20,700,000 shares" (18M base + 2.7M overallotment)
+
+  4. **Calculate Per-Share Trust Value**:
+     - Typically $10.00 per share
+     - May be slightly different ($10.10, $9.95) due to fees
+     - Look in exhibits or prospectus references
+
+  **Examples**:
+
+  Example 1 (Overallotment Exercised):
+  "On March 15, 2024, we consummated our IPO of 20,700,000 units, which included
+  2,700,000 units issued pursuant to the underwriters' exercise of their overallotment
+  option in full. $207 million (or $10.00 per share) of the net proceeds was deposited
+  into the trust account."
+
+  → Returns:
+  {{
+    "trust_cash": 207000000,
+    "shares_outstanding": 20700000,
+    "overallotment_exercised": true,
+    "trust_value_per_share": 10.00
+  }}
+
+  Example 2 (Overallotment NOT Exercised):
+  "On June 1, 2024, we closed our IPO of 18,000,000 units. $180 million was deposited
+  into the trust account maintained by Continental Stock Transfer & Trust Company."
+
+  → Returns:
+  {{
+    "trust_cash": 180000000,
+    "shares_outstanding": 18000000,
+    "overallotment_exercised": false,
+    "trust_value_per_share": 10.00
+  }}
+
+  **Filing Text**:
+  {filing_text}
+
+  **Return JSON only** (no explanation):
+  {{
+    "trust_cash": <float>,  // Total dollars in trust
+    "shares_outstanding": <int>,  // Total public shares (including overallotment if exercised)
+    "overallotment_exercised": <bool>,  // true if overallotment mentioned as exercised
+    "trust_value_per_share": <float>  // Typically 10.00
+  }}
+
+  If data not found, return: {{"trust_cash": null, "shares_outstanding": null, "overallotment_exercised": false, "trust_value_per_share": null}}
+
+  JSON only:

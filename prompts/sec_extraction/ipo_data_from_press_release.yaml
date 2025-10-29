@@ -1,0 +1,35 @@
+# IPO Data from Press Release
+# Used by: sec_data_scraper.py extract_with_ai() line 1792
+# Purpose: Extract comprehensive IPO data from press releases
+
+metadata:
+  prompt_id: ipo_data_from_press_release
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a SEC filing extraction expert. Extract IPO data from press releases.
+  Only extract explicitly stated information.
+
+user_prompt: |
+  Extract SPAC IPO data from this press release. Return ONLY valid JSON:
+  - ipo_date (YYYY-MM-DD or null)
+  - ipo_proceeds (e.g. "$414M" or null)
+  - shares_outstanding (public shares sold in IPO, e.g. 30000000 or null)
+  - unit_ticker (e.g. "CCCXU" or null)
+  - common_ticker (e.g. "CCCX" or null)
+  - warrant_ticker (e.g. "CCCXW" or null)
+  - price_per_unit (e.g. "$10.00" or null)
+  - underwriters (comma-separated, e.g. "Goldman Sachs, J.P. Morgan" or null)
+
+  CRITICAL:
+  - IPO date should be CLOSING date, not pricing/announcement date
+  - Shares outstanding is PUBLIC shares only (not founder shares)
+  - Unit ticker typically ends in "U"
+
+  Text:
+  {text}
+
+  JSON only:

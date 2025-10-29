@@ -1,0 +1,90 @@
+# Trust Value Per Share from 424B4 Prospectus
+# Used by: sec_data_scraper.py extract_424b4_enhanced() line ~2949
+# Purpose: Extract exact trust value per share, especially when overallotment exercised
+
+metadata:
+  prompt_id: trust_value_per_share_424b4
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a financial document extraction expert specializing in SPAC trust account mechanics.
+  Extract precise trust value per share from 424B4 prospectus.
+
+user_prompt: |
+  From this 424B4 prospectus, extract the exact trust value per share.
+
+  **CRITICAL INSTRUCTIONS**:
+
+  1. **Find Trust Value Per Share**:
+     - Look for "$10.00 per public share" or similar language
+     - Common phrasing: "approximately $10.00 per public share will be deposited"
+     - May also say: "$10.10 per share" or "$10.20 per share" (after fees/interest)
+     - Look in: Cover page, "The Offering" section, "Trust Account" section
+
+  2. **When Overallotment is Mentioned**:
+     - Trust value applies REGARDLESS of whether overallotment is exercised
+     - Example: "If overallotment exercised, $414 million ($10.00 per share) deposited"
+     - The per-share value stays the same; only total trust cash changes
+
+  3. **Common Variations**:
+     - "$10.00 per unit" (if units = shares)
+     - "net proceeds of $10.00 per public share"
+     - "$10.00 per share... less underwriting discounts"
+     - "approximately $10.00 per share (after deducting fees)"
+
+  4. **Edge Cases**:
+     - If it says "$9.80 per share after fees" → return 9.80
+     - If it says "$10.00 per share before fees, $9.90 after" → return 9.90 (use 'after fees' value)
+     - If it says "minimum $10.00" → return 10.00
+
+  **Examples**:
+
+  Example 1 (Standard):
+  "Each public share will be entitled to receive approximately $10.00 from the trust account."
+
+  → Returns:
+  {{
+    "trust_value_per_share": 10.00
+  }}
+
+  Example 2 (With Overallotment):
+  "Upon closing of the offering, including full exercise of the underwriters' overallotment option,
+  we will deposit $414,000,000 into the trust account ($10.00 per public share)."
+
+  → Returns:
+  {{
+    "trust_value_per_share": 10.00
+  }}
+
+  Example 3 (After Fees):
+  "Approximately $10.10 per public share (after deducting underwriting discounts and commissions)
+  will be deposited into the trust account."
+
+  → Returns:
+  {{
+    "trust_value_per_share": 10.10
+  }}
+
+  Example 4 (Range):
+  "Between $9.95 and $10.00 per share will be deposited"
+
+  → Returns:
+  {{
+    "trust_value_per_share": 10.00
+  }}
+  (Use the higher value when range given)
+
+  **Filing Text**:
+  {filing_text}
+
+  **Return JSON only** (no explanation):
+  {{
+    "trust_value_per_share": <float>  // Exact per-share trust value (e.g., 10.00, 10.10, 10.20)
+  }}
+
+  If not found, return: {{"trust_value_per_share": null}}
+
+  JSON only:

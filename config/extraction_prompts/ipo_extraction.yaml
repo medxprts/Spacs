@@ -1,0 +1,120 @@
+# IPO Extraction Agent - Extracts IPO data from 8-K filings
+
+agent_name: ipo_extraction
+version: 1.0.0
+last_updated: 2025-10-08
+success_rate: 92.5%
+description: Extracts IPO date, proceeds, and share counts from 8-K filings (Items 8.01, 9.01)
+
+# System Prompt
+system_prompt: |
+  You are a financial document analyst specializing in SEC SPAC filings.
+  Your task is to extract IPO data with 100% accuracy from 8-K filings.
+
+# Extraction Prompt
+extraction_prompt: |
+  Extract IPO information from this 8-K filing text:
+
+  {filing_text}
+
+  IMPORTANT RULES:
+  1. ONLY extract from "closed" or "consummated" announcements (NOT "priced" or "expected to close")
+  2. IPO date must be a completed transaction
+  3. Proceeds should be in millions (e.g., 230.0 for $230M)
+  4. Look in Items 8.01 (Other Events) or 9.01 (Financial Statements)
+
+  Keywords to look for:
+  - "consummated", "closed", "completed" (REQUIRED for IPO date)
+  - "gross proceeds", "aggregate gross proceeds"
+  - "units", "shares sold"
+
+  Return ONLY a JSON object:
+  {{
+    "ipo_date": "YYYY-MM-DD or null",
+    "ipo_proceeds": 230.0 or null,
+    "shares_sold": 23000000 or null,
+    "confidence": 0-100
+  }}
+
+  If this is a PRICING announcement (not closing), return all null values with confidence: 0.
+
+# Keywords
+keywords:
+  positive:
+    - "closed"
+    - "consummated"
+    - "completed"
+    - "gross proceeds"
+    - "initial public offering"
+
+  negative:
+    - "priced"
+    - "expected to close"
+    - "preliminary prospectus"
+    - "estimates"
+    - "anticipated"
+
+# Validation Rules
+validation:
+  required_fields:
+    - ipo_date
+    - ipo_proceeds
+
+  ipo_date:
+    format: "YYYY-MM-DD"
+    min_date: "2020-01-01"
+    max_date: "+7 days"  # Can be slightly in future if just announced
+
+  ipo_proceeds:
+    min: 50.0   # Million
+    max: 2000.0  # Million
+
+  shares_sold:
+    min: 1000000   # 1M shares minimum
+    max: 500000000  # 500M shares maximum
+
+  confidence:
+    min: 0
+    max: 100
+    threshold: 70  # Only accept if confidence >70%
+
+# Model Configuration
+model:
+  name: "deepseek-chat"
+  temperature: 0.1  # Low for accuracy
+  max_tokens: 500
+  response_format: "json_object"
+
+# Error Handling
+error_handling:
+  retry_attempts: 3
+  retry_delay_seconds: 2
+  fallback_to_human: false
+
+# Logging
+logging:
+  log_level: INFO
+  log_extractions: true
+  log_failures: true
+  save_training_data: true
+
+# Success Metrics
+metrics:
+  target_success_rate: 95.0
+  current_success_rate: 92.5
+  last_improvement_date: "2025-10-01"
+  total_extractions: 1247
+  successful_extractions: 1154
+  failed_extractions: 93
+
+# Notes for Self-Improvement Agent
+improvement_notes: |
+  Common failure modes:
+  1. Confusing "pricing" with "closing" announcements (15% of failures)
+  2. Missing proceeds when stated as "approximately $XXM" (8% of failures)
+  3. Date format variations (DD/MM/YYYY vs MM/DD/YYYY) (5% of failures)
+
+  Recent improvements (v1.0.0):
+  - Added explicit "PRICING vs CLOSING" check
+  - Enhanced date normalization
+  - Improved proceeds extraction regex

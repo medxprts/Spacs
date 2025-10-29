@@ -1,0 +1,17 @@
+# Dash Dashboard Requirements
+
+# Core Dash
+dash==2.14.2
+dash-bootstrap-components==1.5.0
+
+# Already have these from main project, but listing for clarity
+pandas>=1.5.0
+plotly>=5.17.0
+gunicorn>=21.2.0
+
+# Database (already installed)
+# sqlalchemy
+# psycopg2-binary
+
+# For AI chat (when implemented)
+# openai  # DeepSeek uses OpenAI-compatible API

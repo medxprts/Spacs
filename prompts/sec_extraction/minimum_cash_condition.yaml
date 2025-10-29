@@ -1,0 +1,36 @@
+# Minimum Cash Condition Extraction
+# Used by: sec_data_scraper.py enrich_from_s4() line 2249
+# Purpose: Extract minimum cash required for deal closing from S-4
+
+metadata:
+  prompt_id: minimum_cash_condition
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a financial document extraction expert. Extract data precisely from SEC filings.
+
+user_prompt: |
+  From this S-4, extract the minimum cash condition required for closing:
+
+  Look for sections like:
+  - "Closing Conditions"
+  - "Conditions to Closing"
+  - "Minimum Cash Condition"
+
+  Return JSON:
+  {{
+    "minimum_cash": "$200M"
+  }}
+
+  Common phrases:
+  - "minimum cash condition of $[X]"
+  - "at least $[X] of cash proceeds"
+  - "aggregate cash proceeds of not less than $[X]"
+
+  Section text:
+  {section_text}
+
+  JSON only:

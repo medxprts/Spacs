@@ -1,0 +1,170 @@
+# Code Fix Pattern Mappings
+# Maps data quality issue types to likely code locations that need fixing
+
+patterns:
+  # ============================================================================
+  # TARGET VALIDATION ERRORS
+  # ============================================================================
+  invalid_target:
+    description: "Target company name contains sponsor/trustee entities or parsing errors"
+    occurrences_threshold: 2
+    severity: HIGH
+    code_locations:
+      - file: deal_detector_agent.py
+        function: extract_deal_from_filing
+        line_range: [180, 280]
+        likely_fix: "Add target_validator before saving extracted target"
+
+      - file: sec_data_scraper.py
+        function: extract_with_ai
+        line_range: [400, 500]
+        likely_fix: "Improve AI prompt to filter sponsor/trustee entities"
+
+  # ============================================================================
+  # DATE/TIME VALIDATION ERRORS
+  # ============================================================================
+  datetime_validation_error:
+    description: "Date fields flagged as wrong type (string vs datetime)"
+    occurrences_threshold: 3
+    severity: MEDIUM
+    code_locations:
+      - file: data_validator_agent.py
+        function: validate_data_types_and_formats
+        line_range: [130, 165]
+        likely_fix: "Accept both datetime and string types for date fields"
+
+  # ============================================================================
+  # CALCULATION ERRORS
+  # ============================================================================
+  trust_calculation_error:
+    description: "Premium or NAV calculation mismatch"
+    occurrences_threshold: 2
+    severity: HIGH
+    code_locations:
+      - file: price_updater.py
+        function: calculate_premium
+        line_range: [150, 200]
+        likely_fix: "Fix premium calculation formula or precision"
+
+      - file: data_validator_agent.py
+        function: validate_premium_calculation
+        line_range: [388, 410]
+        likely_fix: "Adjust tolerance threshold for premium comparison"
+
+  premium_calculation_error:
+    description: "Premium not recalculated after price update"
+    occurrences_threshold: 2
+    severity: MEDIUM
+    code_locations:
+      - file: price_updater.py
+        function: update_price
+        line_range: [100, 150]
+        likely_fix: "Add recalculate_premium() call after price update"
+
+  # ============================================================================
+  # MISSING DATA ERRORS
+  # ============================================================================
+  missing_ipo_date:
+    description: "IPO date not extracted from SEC filings"
+    occurrences_threshold: 3
+    severity: HIGH
+    code_locations:
+      - file: sec_data_scraper.py
+        function: extract_ipo_date
+        line_range: [600, 700]
+        likely_fix: "Improve AI prompt to detect IPO closing announcements"
+
+      - file: sec_data_scraper.py
+        function: _validate_ipo_press_release
+        line_range: [700, 800]
+        likely_fix: "Relax validation to accept more press release formats"
+
+  missing_deadline_date:
+    description: "Deadline date not calculated or extracted"
+    occurrences_threshold: 2
+    severity: HIGH
+    code_locations:
+      - file: sec_data_scraper.py
+        function: calculate_deadline
+        line_range: [500, 600]
+        likely_fix: "Check charter for custom deadline period (18-24 months)"
+
+  missing_trust_value:
+    description: "Trust value (NAV) not extracted from S-1/424B4"
+    occurrences_threshold: 2
+    severity: CRITICAL
+    code_locations:
+      - file: sec_data_scraper.py
+        function: extract_trust_info
+        line_range: [800, 900]
+        likely_fix: "Search for 'trust account per share' in filing"
+
+  # ============================================================================
+  # CIK/TICKER ERRORS
+  # ============================================================================
+  wrong_cik:
+    description: "CIK number doesn't match ticker (recycled ticker issue)"
+    occurrences_threshold: 1  # Even 1 occurrence is critical
+    severity: CRITICAL
+    code_locations:
+      - file: sec_data_scraper.py
+        function: get_cik
+        line_range: [100, 200]
+        likely_fix: "Verify CIK by checking company name and IPO date match"
+
+  # ============================================================================
+  # DATA CORRUPTION
+  # ============================================================================
+  data_corruption:
+    description: "Data integrity issue (inconsistent state across fields)"
+    occurrences_threshold: 1
+    severity: CRITICAL
+    code_locations:
+      - file: database.py
+        function: SPAC
+        line_range: [1, 100]
+        likely_fix: "Add database constraints or validation triggers"
+
+  # ============================================================================
+  # EXTRACTION FAILURES
+  # ============================================================================
+  ai_extraction_failure:
+    description: "AI failed to extract data from SEC filing"
+    occurrences_threshold: 5
+    severity: MEDIUM
+    code_locations:
+      - file: sec_data_scraper.py
+        function: extract_with_ai
+        line_range: [400, 500]
+        likely_fix: "Improve AI prompt with more examples and clearer instructions"
+
+  parsing_error:
+    description: "HTML/text parsing returned malformed data"
+    occurrences_threshold: 3
+    severity: MEDIUM
+    code_locations:
+      - file: sec_data_scraper.py
+        function: parse_filing_html
+        line_range: [300, 400]
+        likely_fix: "Add error handling for malformed HTML"
+
+# ============================================================================
+# PATTERN DETECTION SETTINGS
+# ============================================================================
+detection:
+  # How often to run pattern analysis
+  analysis_frequency_days: 7  # Weekly
+
+  # Minimum occurrences for each severity level
+  min_occurrences:
+    critical: 1   # Fix immediately
+    high: 2       # Fix after 2 occurrences
+    medium: 3     # Fix after 3 occurrences
+    low: 5        # Fix after 5 occurrences
+
+  # Time window for pattern analysis
+  lookback_days: 30
+
+  # Confidence thresholds for code fixes
+  min_confidence_to_propose: 70   # Show fix to user if confidence >= 70%
+  min_confidence_to_auto_apply: 95  # Auto-apply if confidence >= 95%

@@ -1,0 +1,37 @@
+# Founder Shares Extraction
+# Used by: sec_data_scraper.py extract_founder_shares() line 1473
+# Purpose: Extract founder/Class B share count from S-1
+
+metadata:
+  prompt_id: founder_shares_extraction
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a SEC filing extraction expert specializing in SPAC founder shares.
+
+user_prompt: |
+  Extract the founder share count from this SPAC S-1 filing section.
+
+  CRITICAL INSTRUCTIONS:
+  1. Look for "founder shares", "Class B shares", "sponsor shares", or "non-redeemable shares"
+  2. These are typically 20-25% of total shares (e.g., 2-10 million shares)
+  3. Do NOT confuse with public shares (which are redeemable)
+
+  Return JSON:
+  {{
+    "founder_shares": 8625000
+  }}
+
+  Common phrases:
+  - "issued [X] founder shares"
+  - "[X] Class B ordinary shares"
+  - "sponsor purchased [X] shares"
+  - "representing approximately 20% of outstanding shares"
+
+  Filing text:
+  {filing_text}
+
+  JSON only:

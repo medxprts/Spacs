@@ -1,0 +1,34 @@
+# Deadline Extension Details Extraction
+# Used by: sec_data_scraper.py extract_deadline_extension()
+# Purpose: Extract extension date and deposit from 8-K Item 5.03
+
+metadata:
+  prompt_id: deadline_extension_details
+  version: 1
+  created: 2025-10-10
+  ai_model: deepseek-chat
+  temperature: 0
+
+system_prompt: |
+  You are a SEC filing extraction expert. Extract deadline extension data from 8-K filings.
+
+user_prompt: |
+  Extract deadline extension details from this 8-K Item 5.03 filing:
+
+  Look for:
+  1. New deadline/termination date (phrases: "extended the date", "new termination date", "until [DATE]")
+  2. Number of months extended (3, 6, 9, or 12 months)
+  3. Deposit paid by sponsor (e.g., "$0.03 per share" or "aggregate of $X")
+
+  Return ONLY valid JSON:
+  {{
+    "new_deadline": "YYYY-MM-DD or null",
+    "extension_months": int or null (e.g., 3, 6, 12),
+    "deposit_per_share": "$0.XX or null",
+    "deposit_total": "$X.XM or null"
+  }}
+
+  Filing text:
+  {section_text}
+
+  JSON only:
