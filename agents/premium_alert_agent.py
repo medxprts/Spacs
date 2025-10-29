@@ -197,23 +197,26 @@ class PremiumAlertAgent(OrchestratorAgentBase):
 
 Provide a concise 1-2 sentence explanation. Focus on:
 - **RUMORED DEALS**: If status shows "RUMORED DEAL", this is the PRIMARY driver - mention the rumored target first
-- Deal quality/target attractiveness (if announced)
-- Sponsor reputation and track record
-- Banker prestige (Goldman Sachs, Morgan Stanley, etc.)
-- Sector momentum or market conditions
-- Political/Trump connections
+- Deal quality/target attractiveness (if announced deal)
+- Target company fundamentals, valuation, and market opportunity
+- Deal terms: PIPE size, valuation multiples, sponsor dilution
+- Sector momentum or market conditions (AI, crypto, defense, healthcare)
+- Sponsor track record (prior SPAC performance, reputation)
+- Political/Trump connections (if relevant)
 - Deadline urgency/redemption dynamics
 
 Examples (EXACTLY this format):
 - "Market speculation on rumored $2B deal with Securitize (90% confidence) driving significant premium."
-- "Sponsor Chamath Palihapitiya's reputation and track record generating speculative retail interest for a potential Trump-affiliated target."
-- "Goldman Sachs backing with strong reputation in fintech SPACs and favorable sector momentum."
+- "Strong target fundamentals: Hadron Energy's $500M revenue and 2x EV/sales valuation in hot nuclear energy sector."
 - "High-confidence rumored business combination with AI infrastructure company attracting institutional interest."
+- "Attractive PIPE terms at $10/share with $225M commitment providing downside protection in crypto sector."
+- "Deal announced with Terrestrial Energy, a nuclear SMR company with $1B+ addressable market in net-zero energy transition."
 
 IMPORTANT:
 - Keep response under 200 characters total
 - Do NOT start with "Premium driven by" - just state the reason
-- Be specific and concise"""
+- Focus on TARGET QUALITY and DEAL TERMS, not banker/sponsor prestige
+- Be specific and data-driven"""
 
             response = AI_CLIENT.chat.completions.create(
                 model="deepseek-chat",

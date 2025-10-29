@@ -134,8 +134,16 @@ def log_filing(filing: Dict) -> bool:
         # Determine priority
         priority = filing.get('classification', {}).get('priority', 'MEDIUM')
 
-        # Generate summary (AI-powered)
-        summary = _generate_summary(filing)
+        # Get summary - prefer orchestrator's AI analysis over re-generation
+        classification = filing.get('classification', {})
+        orchestrator_summary = classification.get('reason', '')
+
+        # Use orchestrator summary if it's detailed (not just the filing type)
+        if orchestrator_summary and len(orchestrator_summary) > 20 and orchestrator_summary != filing['type']:
+            summary = orchestrator_summary
+        else:
+            # Generate summary (AI-powered)
+            summary = _generate_summary(filing)
 
         # Convert filing_date to date object if it's datetime
         filing_date = filing['date']
@@ -262,6 +270,54 @@ def _extract_8k_item_section(full_text: str, item_number: str = None) -> str:
     return full_text[:3000]
 
 
+def _generate_fallback_summary(filing: Dict) -> str:
+    """
+    Generate structured fallback summary when AI content fetch fails
+    Uses classification context and filing metadata to create informative summary
+    """
+    filing_type = filing['type']
+    ticker = filing['ticker']
+    classification = filing.get('classification', {})
+    reason = classification.get('reason', '')
+    item_number = filing.get('item_number', '')
+
+    # Use classification context if available
+    if reason and reason != filing_type:
+        # Classification provides useful context
+        if filing_type == '425':
+            return f"{ticker} filed Form 425 regarding business combination: {reason}"
+        elif filing_type == '8-K':
+            if item_number:
+                return f"{ticker} filed 8-K (Item {item_number}): {reason}"
+            else:
+                return f"{ticker} filed 8-K: {reason}"
+        elif filing_type == 'S-4':
+            return f"{ticker} filed S-4 registration: {reason}"
+        elif filing_type in ['DEFM14A', 'DEF 14A']:
+            return f"{ticker} filed proxy statement: {reason}"
+        else:
+            return f"{ticker} filed {filing_type}: {reason}"
+
+    # No useful classification context - use structured template
+    if filing_type == '425':
+        return f"{ticker} filed Form 425 communication regarding business combination (content pending analysis)"
+    elif filing_type == '8-K':
+        if item_number:
+            item_desc = EIGHT_K_TAGS.get(item_number.replace('Item ', '').strip(), 'event')
+            return f"{ticker} filed 8-K reporting {item_desc}"
+        return f"{ticker} filed 8-K current report"
+    elif filing_type == 'S-4':
+        return f"{ticker} filed S-4 registration statement for business combination"
+    elif filing_type in ['DEFM14A', 'DEF 14A']:
+        return f"{ticker} filed definitive proxy statement for shareholder meeting"
+    elif filing_type in ['PREM14A']:
+        return f"{ticker} filed preliminary proxy statement"
+    elif filing_type in ['10-Q', '10-K']:
+        return f"{ticker} filed {filing_type} financial report"
+    else:
+        return f"{ticker} filed {filing_type}"
+
+
 def _generate_summary(filing: Dict) -> Optional[str]:
     """Generate AI-powered summary of filing with intelligent classification"""
 
@@ -276,13 +332,16 @@ def _generate_summary(filing: Dict) -> Optional[str]:
     classification = filing.get('classification', {})
     reason = classification.get('reason', '')
 
-    # Get filing content - fetch if not provided
-    content = filing.get('content', filing.get('summary', ''))
+    # Get filing content - NEVER use generic SEC summary
+    content = filing.get('content', '')
 
-    # If no content provided, try to fetch from URL
-    if not content and filing.get('url'):
+    # For important filings, ALWAYS try to fetch content if not provided
+    important_filings = ['425', 'S-4', 'DEFM14A', '8-K', '8-K/A', 'PREM14A', 'DEF 14A']
+
+    if not content and filing_type in important_filings and filing.get('url'):
         try:
             from sec_text_extractor import extract_filing_text
+            print(f"      📄 Fetching content for {filing_type} summary generation...")
             full_text = extract_filing_text(filing['url'])
 
             # For 8-Ks, extract specific Item section
@@ -290,8 +349,13 @@ def _generate_summary(filing: Dict) -> Optional[str]:
                 content = _extract_8k_item_section(full_text, item_number)
             else:
                 content = full_text[:5000]
-        except:
+        except Exception as e:
+            print(f"      ⚠️  Could not fetch filing content for summary: {e}")
             content = ''
+
+    # If still no content, skip AI and use structured fallback
+    if not content:
+        return _generate_fallback_summary(filing)
 
     # Build comprehensive prompt for AI classification
     if filing_type == '8-K':
