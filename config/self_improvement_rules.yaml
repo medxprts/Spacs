@@ -1,0 +1,309 @@
+# Self-Improvement Rules Configuration
+# Version: 1.0.0
+# Last Updated: 2025-10-29
+
+# This configuration defines when and how the system should automatically
+# improve its own codebase to prevent repeated errors.
+
+# Core Principle: After the same data extraction error occurs 3+ times,
+# the system should analyze the pattern and propose code fixes.
+
+self_improvement:
+  enabled: true
+  error_threshold: 3  # Number of occurrences before triggering code fix
+  lookback_days: 30    # Only count errors from last 30 days
+
+  # ⚠️ CRITICAL: ALL CODE FIXES REQUIRE MANUAL APPROVAL ⚠️
+  require_approval_for_all_code_changes: true
+  never_auto_apply_code_fixes: true
+  confidence_threshold: 0.80  # Only PROPOSE fixes with 80%+ confidence
+
+  # Errors that should trigger code improvements
+  trigger_patterns:
+
+    extraction_failures:
+      enabled: true
+      description: "AI extraction fails repeatedly for same field from same filing type"
+
+      examples:
+        - pattern: "shares_outstanding extraction failed from 424B4"
+          threshold: 3
+          action: "enhance_ai_prompt"
+
+        - pattern: "redemptions extraction failed from 8-K"
+          threshold: 3
+          action: "add_exhibit_checking"
+
+        - pattern: "deal_value extraction failed from press release"
+          threshold: 3
+          action: "improve_regex_pattern"
+
+      fix_strategies:
+        - type: "enhance_ai_prompt"
+          description: "Add more examples to AI extraction prompt"
+          files_to_modify:
+            - "sec_data_scraper.py"
+            - "utils/ai_extraction_prompts.py"
+
+        - type: "add_exhibit_checking"
+          description: "Add logic to check specific exhibits"
+          files_to_modify:
+            - "sec_data_scraper.py"
+            - "agents/deal_hunter_agent.py"
+
+        - type: "improve_regex_pattern"
+          description: "Enhance regex to capture more variations"
+          files_to_modify:
+            - "utils/text_extraction.py"
+
+    validation_failures:
+      enabled: true
+      description: "Same validation rule fails repeatedly"
+
+      examples:
+        - pattern: "trust_cash > ipo_proceeds validation fails"
+          threshold: 5  # Higher threshold for validation
+          action: "add_sanity_check"
+
+        - pattern: "premium calculation mismatch"
+          threshold: 3
+          action: "fix_calculation_logic"
+
+      fix_strategies:
+        - type: "add_sanity_check"
+          description: "Add validation before saving data"
+          files_to_modify:
+            - "sec_data_scraper.py"
+            - "utils/trust_account_tracker.py"
+
+        - type: "fix_calculation_logic"
+          description: "Correct calculation formula"
+          files_to_modify:
+            - "price_updater.py"
+            - "recalculate_premiums.py"
+
+    api_failures:
+      enabled: true
+      description: "API calls fail repeatedly for same reason"
+
+      examples:
+        - pattern: "Yahoo Finance ticker not found"
+          threshold: 3
+          action: "add_ticker_format_fallback"
+
+        - pattern: "SEC EDGAR CIK lookup fails"
+          threshold: 3
+          action: "enhance_cik_search"
+
+      fix_strategies:
+        - type: "add_ticker_format_fallback"
+          description: "Try alternative ticker formats (.WS, -WT, etc.)"
+          files_to_modify:
+            - "price_updater.py"
+            - "warrant_price_fetcher.py"
+
+    target_validation_failures:
+      enabled: true
+      description: "Target validation fails repeatedly (sponsor entities)"
+
+      examples:
+        - pattern: "Sponsor entity detected as target"
+          threshold: 2  # Low threshold - critical issue
+          action: "enhance_target_validator"
+
+      fix_strategies:
+        - type: "enhance_target_validator"
+          description: "Add new sponsor keywords to blocklist"
+          files_to_modify:
+            - "utils/target_validator.py"
+
+  # Workflow for code improvements
+  workflow:
+    1_detect:
+      description: "Monitor data_quality_conversations for repeated patterns"
+      query: |
+        SELECT issue_type, ticker, COUNT(*) as occurrences
+        FROM data_quality_conversations
+        WHERE created_at > NOW() - INTERVAL '30 days'
+        GROUP BY issue_type, ticker
+        HAVING COUNT(*) >= 3
+
+    2_analyze:
+      description: "Use AI to analyze error pattern and propose fix"
+      ai_prompt_template: |
+        You are a code improvement agent. Analyze this repeated error:
+
+        Error Pattern: {error_pattern}
+        Occurrences: {occurrence_count} times in {days} days
+        Affected Tickers: {ticker_list}
+
+        Recent Examples:
+        {example_errors}
+
+        Task: Propose a code fix that would prevent this error in the future.
+
+        Consider:
+        1. Root cause (extraction bug, validation bug, API issue)
+        2. Specific code location (file, function)
+        3. Proposed fix (add validation, improve prompt, fix regex)
+        4. Confidence level (0-100)
+        5. Test cases to verify fix
+
+        Output JSON format:
+        {
+          "root_cause": "...",
+          "fix_type": "...",
+          "files_to_modify": [...],
+          "proposed_changes": "...",
+          "confidence": 0-100,
+          "test_cases": [...]
+        }
+
+    3_propose:
+      description: "Send proposed fix to user via Telegram"
+      approval_required: true  # ⚠️ ALWAYS REQUIRED ⚠️
+      message_template: |
+        🔧 CODE IMPROVEMENT PROPOSAL
+
+        Error Pattern: {error_pattern}
+        Occurrences: {count} times (last 30 days)
+
+        Root Cause: {root_cause}
+
+        Proposed Fix:
+        {fix_description}
+
+        Files to Modify:
+        {file_list}
+
+        Confidence: {confidence}%
+
+        ⚠️ THIS IS A PROPOSAL ONLY ⚠️
+        No code will be changed without your explicit approval.
+
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        ACTIONS:
+
+        REVIEW - Show me the exact code changes (git diff format)
+        APPROVE - Apply this fix after review
+        REJECT - Do not apply this fix
+        DELAY - Remind me in 24 hours
+        DISCUSS - Ask questions about this fix
+
+    4_apply:
+      description: "Apply approved fix and track effectiveness"
+      requires_explicit_approval: true  # ⚠️ MANDATORY ⚠️
+      approval_command: "APPROVE CODE FIX {fix_id}"  # User must type this exactly
+
+      pre_apply_steps:
+        - "Verify user approval received"
+        - "Show final diff one more time"
+        - "Wait for confirmation"
+
+      apply_steps:
+        - "Create backup of original file(s)"
+        - "Apply code changes"
+        - "Run tests if available"
+        - "Verify no syntax errors"
+        - "Log to code_improvements table"
+        - "Send confirmation message"
+        - "Monitor error occurrences post-fix"
+
+      post_apply_safety:
+        - "Keep backup for 90 days"
+        - "Provide rollback command immediately"
+        - "Monitor error rate for 7 days"
+
+    5_verify:
+      description: "Track effectiveness of fix"
+      monitoring_period_days: 7
+      success_criteria: "Error occurrences drop to <20% of pre-fix rate"
+
+      actions:
+        if_effective:
+          - "Mark fix_effective = TRUE"
+          - "Send success notification"
+          - "Add to knowledge base"
+
+        if_not_effective:
+          - "Mark fix_effective = FALSE"
+          - "Request manual review"
+          - "Rollback if necessary"
+
+  # Safety mechanisms
+  safety:
+    # ⚠️ CRITICAL SAFETY RULE ⚠️
+    # ALL code changes require approval - no exceptions
+    require_approval_for_all: true
+
+    # Additional approval requirements
+    require_approval_if:
+      - "ANY code change proposed"  # Redundant but explicit
+      - "confidence < 0.80"
+      - "files_to_modify > 3"
+      - "fix_type == 'database_schema_change'"
+      - "fix_type == 'api_integration_change'"
+
+    never_auto_apply:
+      - "ANY CODE CHANGES"  # ⚠️ NEVER AUTO-APPLY ⚠️
+      - "Changes to authentication"
+      - "Changes to database credentials"
+      - "Changes to API keys"
+      - "Deletion of data"
+      - "Changes to financial calculations without tests"
+      - "ANY modification to Python files"
+      - "ANY modification to configuration files"
+
+    always_backup:
+      enabled: true
+      backup_location: "/home/ubuntu/spac-research/backups/code_improvements/"
+      retention_days: 90
+
+    rollback:
+      enabled: true
+      auto_rollback_if: "error_rate_increases_by > 50%"
+      manual_rollback_command: "python3 feedback/rollback_code_fix.py --fix-id {fix_id}"
+
+# Example Error Patterns to Track
+example_patterns:
+  - pattern: "shares_outstanding_not_found_in_424B4"
+    occurrences: 8
+    last_seen: "2025-10-28"
+    proposed_fix: "Add exhibit search for unit offering details"
+    status: "pending_approval"
+
+  - pattern: "trust_cash_exceeds_ipo_proceeds"
+    occurrences: 12
+    last_seen: "2025-10-27"
+    proposed_fix: "Add pre-save validation in sec_data_scraper.py"
+    status: "applied"
+    effectiveness: true
+
+  - pattern: "warrant_ticker_not_found"
+    occurrences: 6
+    last_seen: "2025-10-26"
+    proposed_fix: "Add ticker suffix variations ['.W', '.WS', '-WT', '+']"
+    status: "applied"
+    effectiveness: true
+
+# Integration with existing systems
+integration:
+  data_quality_conversations:
+    enabled: true
+    track_field: "issue_type"
+
+  investigation_agent:
+    enabled: true
+    trigger_investigation_after: 3
+
+  telegram_agent:
+    enabled: true
+    send_proposals: true
+    require_approval: true
+
+metadata:
+  version: "1.0.0"
+  purpose: "Enable system to learn from repeated errors and improve itself"
+  philosophy: |
+    If the same error happens 3+ times, it's not a data problem - it's a code problem.
+    The system should recognize patterns and evolve to prevent future occurrences.

@@ -1,0 +1,408 @@
+# SPAC Data Fix Templates Configuration
+# Version: 1.0.0
+# Last Updated: 2025-10-29
+
+# Fix templates define standard fixes that can be applied to common issues.
+# Each template specifies:
+# - id: Unique identifier
+# - name: Human-readable name
+# - applies_to: Which validation rules trigger this fix
+# - conditions: When this fix should be applied
+# - changes: What fields to update
+# - validation_check: Post-fix validation
+# - confidence: Confidence level (0.0-1.0)
+
+fix_templates:
+  # ============================================================================
+  # TRUST ACCOUNT FIXES
+  # ============================================================================
+
+  reset_trust_value_new_ipo:
+    id: "FIX-001"
+    name: "Reset Trust Value for New IPO"
+    description: |
+      New IPOs (<90 days old) typically have $10.00 trust value per share.
+      This fix resets trust_value to $10.00 and recalculates trust_cash.
+
+    applies_to:
+      - RULE-002  # Trust value outside range
+
+    conditions:
+      - field: ipo_date
+        operator: age_days_less_than
+        value: 90
+      - field: trust_value
+        operator: not_equals
+        value: 10.00
+
+    changes:
+      - field: trust_value
+        action: set_value
+        value: 10.00
+        source: "calculated"
+
+      - field: trust_cash
+        action: calculate
+        formula: "shares_outstanding * 10.00"
+        source: "calculated"
+
+    post_fix_validation:
+      - check: "trust_cash < ipo_proceeds"
+        error_message: "Calculated trust_cash exceeds IPO proceeds"
+      - check: "trust_value == 10.00"
+        error_message: "Trust value not set correctly"
+
+    confidence: 0.95
+    requires_approval: false  # Can auto-apply for new IPOs
+
+    learning_note: |
+      New IPOs (<90 days) almost always start at $10.00 NAV.
+      Safe to reset without manual review.
+
+  calculate_trust_cash:
+    id: "FIX-002"
+    name: "Calculate Trust Cash from Shares and Trust Value"
+    description: |
+      Calculate trust_cash = shares_outstanding × trust_value
+      Only applies when trust_cash is missing but components exist.
+
+    applies_to:
+      - RULE-003  # Trust cash missing but calculable
+
+    conditions:
+      - field: trust_cash
+        operator: is_null
+        value: true
+      - field: shares_outstanding
+        operator: greater_than
+        value: 0
+      - field: trust_value
+        operator: greater_than
+        value: 0
+
+    changes:
+      - field: trust_cash
+        action: calculate
+        formula: "shares_outstanding * trust_value"
+        source: "calculated"
+
+    post_fix_validation:
+      - check: "trust_cash > 0"
+        error_message: "Trust cash calculation resulted in zero or negative"
+      - check: "trust_cash < (ipo_proceeds * 1.1)"
+        error_message: "Calculated trust_cash exceeds IPO proceeds by >10%"
+
+    confidence: 0.90
+    requires_approval: false
+
+    learning_note: |
+      Standard calculation. Only applied when trust_cash truly missing.
+
+  # ============================================================================
+  # DEAL DATA FIXES
+  # ============================================================================
+
+  clear_invalid_target:
+    id: "FIX-010"
+    name: "Clear Invalid Target (Sponsor Entity)"
+    description: |
+      Sponsor/trustee entities were incorrectly identified as targets.
+      Clear target and reset deal_status to SEARCHING.
+
+    applies_to:
+      - RULE-011  # Invalid target - sponsor entity
+
+    conditions:
+      - field: target
+        operator: contains_keywords
+        keywords: ["sponsor", "holdco", "trustee", "continental stock transfer", "warrant agent"]
+
+    changes:
+      - field: target
+        action: set_null
+        previous_value_note: "Stored in audit log"
+
+      - field: deal_status
+        action: set_value
+        value: "SEARCHING"
+
+      - field: announced_date
+        action: set_null
+
+      - field: deal_status_detail
+        action: set_null
+
+    post_fix_validation:
+      - check: "target is null"
+        error_message: "Target not cleared"
+      - check: "deal_status == 'SEARCHING'"
+        error_message: "Deal status not reset"
+
+    confidence: 1.0
+    requires_approval: false  # High confidence, safe to auto-apply
+
+    learning_note: |
+      Sponsor/trustee entities should never be targets.
+      Validated by target_validator.py logic.
+
+  clear_rumored_deal_expired:
+    id: "FIX-011"
+    name: "Clear Expired Rumored Deal"
+    description: |
+      Rumored deal that was never confirmed. Clear rumor fields if >30 days old
+      and accelerated_polling_until has expired.
+
+    applies_to:
+      - RULE-013  # Rumored deal not confirmed
+
+    conditions:
+      - field: deal_status_detail
+        operator: equals
+        value: "RUMORED_DEAL"
+      - field: rumor_detected_date
+        operator: age_days_greater_than
+        value: 30
+      - field: accelerated_polling_until
+        operator: less_than
+        value: "now()"
+
+    changes:
+      - field: rumored_target
+        action: set_null
+
+      - field: rumor_confidence
+        action: set_null
+
+      - field: deal_status_detail
+        action: set_null
+
+      - field: accelerated_polling_until
+        action: set_null
+
+    post_fix_validation:
+      - check: "deal_status_detail is null"
+        error_message: "Rumor status not cleared"
+
+    confidence: 0.85
+    requires_approval: true  # User should review before clearing
+
+    learning_note: |
+      Rumor never materialized. Cleared after 30 days + polling expired.
+
+  # ============================================================================
+  # PRICING FIXES
+  # ============================================================================
+
+  recalculate_premium:
+    id: "FIX-018"
+    name: "Recalculate Premium from Price and Trust Value"
+    description: |
+      Standard premium calculation: ((price - trust_value) / trust_value) × 100
+
+    applies_to:
+      - RULE-018  # Premium calculation error
+
+    conditions:
+      - field: price
+        operator: greater_than
+        value: 0
+      - field: trust_value
+        operator: greater_than
+        value: 0
+
+    changes:
+      - field: premium
+        action: calculate
+        formula: "((price - trust_value) / trust_value) * 100"
+        source: "calculated"
+        precision: 2  # Round to 2 decimal places
+
+    post_fix_validation:
+      - check: "premium is not null"
+        error_message: "Premium calculation failed"
+      - check: "abs(premium - expected) < 0.5"
+        error_message: "Premium calculation mismatch"
+
+    confidence: 1.0
+    requires_approval: false
+
+    learning_note: |
+      Standard formula. Always correct if price and trust_value are valid.
+
+  # ============================================================================
+  # TYPE CONVERSION FIXES
+  # ============================================================================
+
+  clear_invalid_numeric:
+    id: "FIX-030"
+    name: "Clear Invalid String Value from Numeric Field"
+    description: |
+      Remove string values like "N/A", "TBD" from numeric fields.
+      Better to have NULL than invalid string.
+
+    applies_to:
+      - RULE-030  # Type error - string in numeric
+
+    conditions:
+      - field: any_numeric_field
+        operator: is_string
+        value: true
+
+    changes:
+      - field: "{{field_name}}"  # Dynamic field
+        action: set_null
+        previous_value_note: "Stored in audit log"
+
+    post_fix_validation:
+      - check: "field is null or is_numeric(field)"
+        error_message: "Field still contains non-numeric value"
+
+    confidence: 1.0
+    requires_approval: false
+
+    learning_note: |
+      Invalid type conversion. NULL is better than string in numeric field.
+
+  parse_and_fix_date:
+    id: "FIX-031"
+    name: "Parse and Fix Date Format"
+    description: |
+      Attempt to parse various date formats and convert to YYYY-MM-DD.
+
+    applies_to:
+      - RULE-031  # Date format error
+
+    conditions:
+      - field: any_date_field
+        operator: invalid_date_format
+        value: true
+
+    changes:
+      - field: "{{field_name}}"  # Dynamic field
+        action: parse_date
+        formats:
+          - "%Y-%m-%d"          # 2025-01-15
+          - "%m/%d/%Y"          # 01/15/2025
+          - "%B %d, %Y"         # January 15, 2025
+          - "%d-%b-%Y"          # 15-Jan-2025
+          - "%Y%m%d"            # 20250115
+        fallback: null
+        source: "calculated"
+
+    post_fix_validation:
+      - check: "field is null or is_valid_date(field)"
+        error_message: "Date parsing failed"
+
+    confidence: 0.85
+    requires_approval: false  # Safe to auto-parse
+
+    learning_note: |
+      Common date format variations. Parser handles most cases.
+
+  # ============================================================================
+  # COMPOSITE FIXES (Multiple Fields)
+  # ============================================================================
+
+  recalculate_trust_metrics:
+    id: "FIX-040"
+    name: "Recalculate All Trust Account Metrics"
+    description: |
+      Comprehensive trust account recalculation:
+      - trust_cash = shares_outstanding × trust_value
+      - premium = ((price - trust_value) / trust_value) × 100
+      - market_cap = shares_outstanding × price (in millions)
+
+    applies_to:
+      - RULE-003  # Trust cash missing
+      - RULE-018  # Premium calculation
+
+    conditions:
+      - field: shares_outstanding
+        operator: greater_than
+        value: 0
+      - field: trust_value
+        operator: greater_than
+        value: 0
+      - field: price
+        operator: greater_than
+        value: 0
+
+    changes:
+      - field: trust_cash
+        action: calculate
+        formula: "shares_outstanding * trust_value"
+        source: "calculated"
+
+      - field: premium
+        action: calculate
+        formula: "((price - trust_value) / trust_value) * 100"
+        source: "calculated"
+        precision: 2
+
+      - field: market_cap
+        action: calculate
+        formula: "(shares_outstanding * price) / 1_000_000"  # Convert to millions
+        source: "calculated"
+        precision: 2
+
+    post_fix_validation:
+      - check: "trust_cash > 0"
+        error_message: "Trust cash calculation failed"
+      - check: "trust_cash < (ipo_proceeds * 1.1)"
+        error_message: "Trust cash exceeds IPO proceeds"
+      - check: "premium is not null"
+        error_message: "Premium calculation failed"
+
+    confidence: 0.95
+    requires_approval: false
+
+    learning_note: |
+      Full trust account recalculation. Only triggered when source values valid.
+
+  # ============================================================================
+  # METADATA
+  # ============================================================================
+
+metadata:
+  version: "1.0.0"
+  total_templates: 9
+
+  confidence_levels:
+    1.0: "Certain - mathematical calculation or simple logic"
+    0.95: "Very high - standard procedure with validation"
+    0.90: "High - calculated value with some assumptions"
+    0.85: "Good - parsing or inference with validation"
+    0.70: "Medium - requires user confirmation"
+    0.50: "Low - uncertain, always requires approval"
+
+  operators:
+    - age_days_less_than
+    - age_days_greater_than
+    - greater_than
+    - less_than
+    - equals
+    - not_equals
+    - is_null
+    - is_not_null
+    - contains_keywords
+    - is_string
+    - is_numeric
+    - invalid_date_format
+
+  actions:
+    - set_value: "Set field to specific value"
+    - set_null: "Clear field (set to NULL)"
+    - calculate: "Calculate using formula"
+    - parse_date: "Parse and format date"
+
+  usage_notes: |
+    Fix templates are applied in order of confidence:
+    1. Confidence 1.0: Auto-applied immediately
+    2. Confidence 0.9-0.99: Auto-applied with logging
+    3. Confidence 0.7-0.89: Queued for user review
+    4. Confidence <0.7: Always requires manual approval
+
+    All fixes are logged in data_quality_conversations table with:
+    - Original values (before fix)
+    - Applied changes (after fix)
+    - Timestamp and user approval status

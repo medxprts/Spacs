@@ -1,0 +1,456 @@
+# SPAC Data Validation Rules Configuration
+# Version: 1.0.0
+# Last Updated: 2025-10-29
+
+# Each rule defines:
+# - id: Unique identifier
+# - name: Human-readable name
+# - severity: CRITICAL, HIGH, MEDIUM, LOW
+# - category: trust_account, deal_data, pricing, dates, etc.
+# - validation: Conditions to check
+# - message_template: User-facing message with variables
+# - auto_fix: Whether automatic fix is allowed
+# - research_strategy: How to investigate the issue
+# - batch_approval: Whether batch approval is allowed
+
+rules:
+  # ============================================================================
+  # TRUST ACCOUNT RULES
+  # ============================================================================
+
+  trust_cash_exceeds_ipo:
+    id: "RULE-001"
+    name: "Trust Cash Exceeds IPO Proceeds"
+    severity: CRITICAL
+    category: trust_account
+    description: |
+      Trust cash cannot exceed IPO proceeds. This usually indicates a circular
+      calculation error where incorrect trust_value was used to calculate trust_cash.
+
+    validation:
+      fields_required: [trust_cash, ipo_proceeds]
+      condition: "trust_cash > (ipo_proceeds * 1.05)"  # Allow 5% buffer for interest
+      enabled: true
+
+    message_template: |
+      Trust cash ${trust_cash_millions}M is {percent_over}% above IPO ${ipo_proceeds}M
+      This suggests a circular calculation error.
+
+    auto_fix:
+      enabled: false
+      reason: "Must verify correct value from 424B4 filing"
+
+    research_strategy:
+      priority: 1  # Highest priority
+      steps:
+        - "Check 424B4 final prospectus for 'deposited into trust account'"
+        - "Look for trust account per share value"
+        - "Validate: trust_cash = shares_outstanding * trust_value"
+        - "Verify trust_cash < ipo_proceeds"
+
+    batch_approval:
+      allowed: false
+      reason: "Each case needs individual SEC filing verification"
+
+  trust_value_outside_range:
+    id: "RULE-002"
+    name: "Trust Value Outside Normal Range"
+    severity: HIGH
+    category: trust_account
+    description: |
+      Most SPACs have trust value between $7-$12 per share. Values outside
+      this range likely indicate data errors, unless justified by interest
+      accrual or special structure.
+
+    validation:
+      fields_required: [trust_value]
+      condition: "(trust_value < 7.00) or (trust_value > 12.00)"
+      enabled: true
+
+    message_template: |
+      Trust value ${trust_value} is outside normal range ($7.00-$12.00)
+      Expected: $10.00 for most SPACs
+
+    auto_fix:
+      enabled: true
+      conditions:
+        - field: ipo_date
+          operator: "age_days_less_than"
+          value: 90
+      fix_template: "reset_trust_value_new_ipo"
+
+    research_strategy:
+      priority: 2
+      steps:
+        - "Check SPAC age - new IPOs typically $10.00"
+        - "Check for interest accrual (older SPACs may have $10.20+)"
+        - "Verify against 424B4 prospectus"
+
+    batch_approval:
+      allowed: true
+      pattern: "Trust Value"
+      conditions:
+        - "All SPACs are new IPOs (<90 days old)"
+        - "All proposed values are $10.00"
+
+  trust_cash_missing_but_calculable:
+    id: "RULE-003"
+    name: "Trust Cash Missing But Calculable"
+    severity: MEDIUM
+    category: trust_account
+    description: |
+      Trust cash is missing but can be calculated from shares_outstanding
+      and trust_value.
+
+    validation:
+      fields_required: [shares_outstanding, trust_value]
+      missing_field: trust_cash
+      condition: "(shares_outstanding > 0) and (trust_value > 0)"
+      enabled: true
+
+    message_template: |
+      Trust cash is missing but can be calculated:
+      {shares_outstanding} shares × ${trust_value} = ${calculated_trust_cash}M
+
+    auto_fix:
+      enabled: true
+      fix_template: "calculate_trust_cash"
+      confidence: 0.90
+
+    batch_approval:
+      allowed: true
+      pattern: "Trust Cash"
+
+  # ============================================================================
+  # DEAL DATA RULES
+  # ============================================================================
+
+  deal_status_missing_target:
+    id: "RULE-010"
+    name: "Deal Status ANNOUNCED But No Target"
+    severity: CRITICAL
+    category: deal_data
+    description: |
+      If deal_status is ANNOUNCED, target company must be specified.
+      This is a data integrity issue.
+
+    validation:
+      fields_required: [deal_status]
+      condition: "(deal_status == 'ANNOUNCED') and (target is null or target == '')"
+      enabled: true
+
+    message_template: |
+      Deal status is ANNOUNCED but target is missing.
+      This requires immediate research to identify target company.
+
+    auto_fix:
+      enabled: false
+      reason: "Must research deal announcement to find target name"
+
+    research_strategy:
+      priority: 1
+      steps:
+        - "Search most recent 8-K (Item 1.01) for business combination"
+        - "Check DEFM14A proxy statement if available"
+        - "Check S-4 registration statement"
+        - "Fallback: Search recent press releases and news"
+
+    batch_approval:
+      allowed: false
+
+  invalid_target_sponsor_entity:
+    id: "RULE-011"
+    name: "Invalid Target - Sponsor Entity"
+    severity: CRITICAL
+    category: deal_data
+    description: |
+      Target field contains sponsor/trustee entity names, not actual
+      target companies. These must be cleared.
+
+    validation:
+      fields_required: [target]
+      condition: "contains_sponsor_keywords(target)"
+      keywords:
+        - "sponsor"
+        - "holdco"
+        - "trustee"
+        - "continental stock transfer"
+        - "warrant agent"
+      enabled: true
+
+    message_template: |
+      Target "{target}" appears to be a sponsor/trustee entity, not target company.
+      These entities should not be marked as targets.
+
+    auto_fix:
+      enabled: true
+      fix_template: "clear_invalid_target"
+      confidence: 1.0
+
+    batch_approval:
+      allowed: true
+      pattern: "Invalid Target"
+
+  deal_announced_but_no_date:
+    id: "RULE-012"
+    name: "Deal Announced But No Date"
+    severity: HIGH
+    category: deal_data
+
+    validation:
+      fields_required: [deal_status, announced_date]
+      condition: "(deal_status == 'ANNOUNCED') and (announced_date is null)"
+      enabled: true
+
+    message_template: |
+      Deal is announced but announced_date is missing.
+      Need to find announcement date from 8-K filing.
+
+    auto_fix:
+      enabled: false
+      reason: "Must research 8-K filing date"
+
+    research_strategy:
+      priority: 2
+      steps:
+        - "Find earliest 8-K with business combination announcement"
+        - "Use filing date as announced_date"
+
+    batch_approval:
+      allowed: false
+
+  # ============================================================================
+  # PRICING & PREMIUM RULES
+  # ============================================================================
+
+  premium_calculation_error:
+    id: "RULE-018"
+    name: "Premium Calculation Error"
+    severity: MEDIUM
+    category: pricing
+    description: |
+      Premium should equal ((price - trust_value) / trust_value) * 100.
+      Recalculate if values don't match.
+
+    validation:
+      fields_required: [price, trust_value, premium]
+      condition: "abs(premium - calculated_premium) > 0.5"  # 0.5% tolerance
+      enabled: true
+
+    message_template: |
+      Premium {premium}% doesn't match calculation.
+      Expected: {calculated_premium}% = ((${price} - ${trust_value}) / ${trust_value}) × 100
+
+    auto_fix:
+      enabled: true
+      fix_template: "recalculate_premium"
+      confidence: 1.0
+
+    batch_approval:
+      allowed: true
+      pattern: "Premium"
+
+  price_zero_but_ticker_active:
+    id: "RULE-019"
+    name: "Price is Zero But Ticker Active"
+    severity: HIGH
+    category: pricing
+
+    validation:
+      fields_required: [price, deal_status]
+      condition: "(price == 0 or price is null) and (deal_status != 'COMPLETED')"
+      enabled: true
+
+    message_template: |
+      Price is ${price} but SPAC status is {deal_status} (not completed/liquidated).
+      Price should be fetched from market.
+
+    auto_fix:
+      enabled: false
+      reason: "Trigger price_updater.py to fetch current price"
+
+    batch_approval:
+      allowed: true
+      pattern: "Zero Price"
+
+  # ============================================================================
+  # DATE & TIMELINE RULES
+  # ============================================================================
+
+  ipo_to_deadline_too_short:
+    id: "RULE-020"
+    name: "IPO to Deadline Too Short"
+    severity: CRITICAL
+    category: dates
+    description: |
+      Most SPACs have 18-24 months from IPO to deadline. Less than 12 months
+      likely indicates incorrect deadline_date or ipo_date.
+
+    validation:
+      fields_required: [ipo_date, deadline_date]
+      condition: "months_between(ipo_date, deadline_date) < 12"
+      enabled: true
+
+    message_template: |
+      Only {months_between} months between IPO ({ipo_date}) and deadline ({deadline_date}).
+      Expected: 18-24 months. Check charter for correct deadline.
+
+    auto_fix:
+      enabled: false
+      reason: "Must verify charter deadline extension terms"
+
+    research_strategy:
+      priority: 1
+      steps:
+        - "Check S-1 or 424B4 for initial deadline (usually IPO + 18-24 months)"
+        - "Check for extension 8-Ks (Item 5.03)"
+        - "Verify shareholder vote results for extensions"
+
+    batch_approval:
+      allowed: false
+
+  announced_date_before_ipo:
+    id: "RULE-021"
+    name: "Deal Announced Before IPO"
+    severity: CRITICAL
+    category: dates
+    description: |
+      Deal cannot be announced before SPAC IPO. This indicates data error
+      or ticker reuse from old company.
+
+    validation:
+      fields_required: [ipo_date, announced_date]
+      condition: "announced_date < ipo_date"
+      enabled: true
+
+    message_template: |
+      Deal announced ({announced_date}) BEFORE IPO ({ipo_date})!
+      This is impossible. Likely causes:
+      1. Wrong CIK (ticker was recycled)
+      2. Incorrect announced_date
+      3. Incorrect ipo_date
+
+    auto_fix:
+      enabled: false
+      reason: "Requires investigation of CIK and SEC filings"
+
+    research_strategy:
+      priority: 1
+      steps:
+        - "Verify CIK matches current SPAC, not old company"
+        - "Check SEC EDGAR for company name vs ticker"
+        - "Verify IPO date from 424B4 pricing supplement"
+        - "Verify announced_date from 8-K filing"
+
+    batch_approval:
+      allowed: false
+
+  deadline_passed_but_still_searching:
+    id: "RULE-022"
+    name: "Deadline Passed But Still SEARCHING"
+    severity: HIGH
+    category: dates
+
+    validation:
+      fields_required: [deadline_date, deal_status]
+      condition: "(deadline_date < today) and (deal_status == 'SEARCHING')"
+      enabled: true
+
+    message_template: |
+      Deadline ({deadline_date}) has passed but status is still SEARCHING.
+      Possible: Extension granted, liquidated, or incorrect deadline.
+
+    auto_fix:
+      enabled: false
+      reason: "Must investigate for extension or liquidation"
+
+    research_strategy:
+      priority: 2
+      steps:
+        - "Check for extension 8-K filed after deadline"
+        - "Check for liquidation 8-K"
+        - "Check current trading status (delisted = liquidated)"
+
+    batch_approval:
+      allowed: false
+
+  # ============================================================================
+  # TYPE & FORMAT RULES
+  # ============================================================================
+
+  type_error_string_in_numeric:
+    id: "RULE-030"
+    name: "Type Error - String in Numeric Field"
+    severity: HIGH
+    category: type_validation
+    description: |
+      Numeric fields contain string values like "N/A", "TBD", etc.
+      These should be NULL or numeric values.
+
+    validation:
+      numeric_fields: [price, trust_cash, trust_value, shares_outstanding, market_cap]
+      condition: "field_is_string(numeric_field)"
+      enabled: true
+
+    message_template: |
+      Field {field} has string value "{value}" but should be numeric or NULL.
+
+    auto_fix:
+      enabled: true
+      fix_template: "clear_invalid_numeric"
+      confidence: 1.0
+
+    batch_approval:
+      allowed: true
+      pattern: "Type Error"
+
+  date_format_error:
+    id: "RULE-031"
+    name: "Date Format Error"
+    severity: HIGH
+    category: type_validation
+
+    validation:
+      date_fields: [ipo_date, deadline_date, announced_date, expected_close]
+      condition: "not_valid_date_format(date_field)"
+      enabled: true
+
+    message_template: |
+      Date field {field} has invalid format "{value}".
+      Expected: YYYY-MM-DD or valid date string.
+
+    auto_fix:
+      enabled: true
+      fix_template: "parse_and_fix_date"
+      confidence: 0.85
+
+    batch_approval:
+      allowed: true
+      pattern: "Date Format"
+
+  # ============================================================================
+  # METADATA
+  # ============================================================================
+
+metadata:
+  version: "1.0.0"
+  total_rules: 13
+  categories:
+    - trust_account
+    - deal_data
+    - pricing
+    - dates
+    - type_validation
+
+  severity_levels:
+    CRITICAL: "Requires immediate attention, blocks data integrity"
+    HIGH: "Important issue, should be fixed soon"
+    MEDIUM: "Notable issue, fix when convenient"
+    LOW: "Minor issue, informational"
+
+  batch_approval_guidelines: |
+    Batch approval should only be allowed for:
+    1. Identical issues across multiple SPACs
+    2. Standard fix that applies to all cases
+    3. Low risk of unintended consequences
+    4. Issues in same category with same root cause
