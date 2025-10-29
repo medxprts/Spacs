@@ -209,37 +209,43 @@ def update_target(
         })
         print("  ✓ Logged to history")
     except Exception as e:
-        # History table might not exist - create it
+        # Table doesn't exist - create it in a separate transaction
         print(f"  ℹ️  Creating target_history table...")
-        db_session.execute(text("""
-            CREATE TABLE IF NOT EXISTS target_history (
-                id SERIAL PRIMARY KEY,
-                ticker VARCHAR(10) NOT NULL,
-                old_value TEXT,
-                new_value TEXT NOT NULL,
-                source VARCHAR(50),
-                filing_date DATE,
-                reason TEXT,
-                changed_at TIMESTAMP DEFAULT NOW()
-            )
-        """))
-        db_session.commit()
+        try:
+            db_session.rollback()  # Clear any failed transaction
+            db_session.execute(text("""
+                CREATE TABLE IF NOT EXISTS target_history (
+                    id SERIAL PRIMARY KEY,
+                    ticker VARCHAR(10) NOT NULL,
+                    old_value TEXT,
+                    new_value TEXT NOT NULL,
+                    source VARCHAR(50),
+                    filing_date DATE,
+                    reason TEXT,
+                    changed_at TIMESTAMP DEFAULT NOW()
+                )
+            """))
+            db_session.commit()
+            print("  ✓ Table created")
 
-        # Try again
-        db_session.execute(text("""
-            INSERT INTO target_history
-            (ticker, old_value, new_value, source, filing_date, reason, changed_at)
-            VALUES
-            (:ticker, :old_value, :new_value, :source, :filing_date, :reason, NOW())
-        """), {
-            'ticker': ticker,
-            'old_value': current_target,
-            'new_value': new_value,
-            'source': source,
-            'filing_date': filing_date,
-            'reason': reason or f'Target updated from {source}'
-        })
-        print("  ✓ Logged to history")
+            # Try INSERT again
+            db_session.execute(text("""
+                INSERT INTO target_history
+                (ticker, old_value, new_value, source, filing_date, reason, changed_at)
+                VALUES
+                (:ticker, :old_value, :new_value, :source, :filing_date, :reason, NOW())
+            """), {
+                'ticker': ticker,
+                'old_value': current_target,
+                'new_value': new_value,
+                'source': source,
+                'filing_date': filing_date,
+                'reason': reason or f'Target updated from {source}'
+            })
+            print("  ✓ Logged to history")
+        except Exception as create_err:
+            print(f"  ⚠️  Could not create table or log history: {create_err}")
+            db_session.rollback()
 
     # Add tracking columns if they don't exist
     try:

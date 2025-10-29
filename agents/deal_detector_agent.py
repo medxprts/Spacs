@@ -308,6 +308,23 @@ Text:
         except Exception as e:
             db.rollback()
             print(f"      ❌ Database update failed: {e}")
+
+            # Log failure and send alert
+            try:
+                from utils.database_monitor import log_write_failure
+                log_write_failure(
+                    operation='deal_update',
+                    ticker=spac.ticker,
+                    error=e,
+                    context={
+                        'target': deal_data.get('target'),
+                        'deal_value': deal_data.get('deal_value'),
+                        'announced_date': deal_data.get('announced_date')
+                    }
+                )
+            except:
+                pass  # Don't let monitoring failure block execution
+
             return False
 
         finally:

@@ -256,9 +256,27 @@ def update_deal_structure_field(
         # Columns might not exist - that's okay
         pass
 
-    db_session.commit()
-
-    return True
+    # Commit with error monitoring
+    try:
+        db_session.commit()
+        return True
+    except Exception as e:
+        # Log failure and alert
+        from utils.database_monitor import log_write_failure
+        log_write_failure(
+            operation='deal_structure_update',
+            ticker=ticker,
+            error=e,
+            context={
+                'field_name': field_name,
+                'new_value': new_value,
+                'source': source,
+                'filing_date': filing_date
+            }
+        )
+        print(f"      ❌ Database commit failed: {e}")
+        db_session.rollback()
+        return False
 
 
 def update_deal_structure(

@@ -104,35 +104,41 @@ def update_announced_date(
         })
         print("  ✓ Logged to history")
     except Exception as e:
-        # Create history table if needed
+        # Table doesn't exist - create it in a separate transaction
         print(f"  ℹ️  Creating announced_date_history table...")
-        db_session.execute(text("""
-            CREATE TABLE IF NOT EXISTS announced_date_history (
-                id SERIAL PRIMARY KEY,
-                ticker VARCHAR(10) NOT NULL,
-                old_date DATE,
-                new_date DATE NOT NULL,
-                source VARCHAR(50),
-                reason TEXT,
-                changed_at TIMESTAMP DEFAULT NOW()
-            )
-        """))
-        db_session.commit()
+        try:
+            db_session.rollback()  # Clear any failed transaction
+            db_session.execute(text("""
+                CREATE TABLE IF NOT EXISTS announced_date_history (
+                    id SERIAL PRIMARY KEY,
+                    ticker VARCHAR(10) NOT NULL,
+                    old_date DATE,
+                    new_date DATE NOT NULL,
+                    source VARCHAR(50),
+                    reason TEXT,
+                    changed_at TIMESTAMP DEFAULT NOW()
+                )
+            """))
+            db_session.commit()
+            print("  ✓ Table created")
 
-        # Try again
-        db_session.execute(text("""
-            INSERT INTO announced_date_history
-            (ticker, old_date, new_date, source, reason, changed_at)
-            VALUES
-            (:ticker, :old_date, :new_date, :source, :reason, NOW())
-        """), {
-            'ticker': ticker,
-            'old_date': current_date,
-            'new_date': new_date,
-            'source': source,
-            'reason': reason or f'Announced date from {source}'
-        })
-        print("  ✓ Logged to history")
+            # Try INSERT again
+            db_session.execute(text("""
+                INSERT INTO announced_date_history
+                (ticker, old_date, new_date, source, reason, changed_at)
+                VALUES
+                (:ticker, :old_date, :new_date, :source, :reason, NOW())
+            """), {
+                'ticker': ticker,
+                'old_date': current_date,
+                'new_date': new_date,
+                'source': source,
+                'reason': reason or f'Announced date from {source}'
+            })
+            print("  ✓ Logged to history")
+        except Exception as create_err:
+            print(f"  ⚠️  Could not create table or log history: {create_err}")
+            db_session.rollback()
 
     # Update SPAC record
     spac.announced_date = new_date
@@ -241,37 +247,43 @@ def update_deadline_date(
         })
         print("  ✓ Logged to history")
     except Exception as e:
-        # Create history table if needed
+        # Table doesn't exist - create it in a separate transaction
         print(f"  ℹ️  Creating deadline_history table...")
-        db_session.execute(text("""
-            CREATE TABLE IF NOT EXISTS deadline_history (
-                id SERIAL PRIMARY KEY,
-                ticker VARCHAR(10) NOT NULL,
-                old_date DATE,
-                new_date DATE NOT NULL,
-                source VARCHAR(50),
-                is_extension BOOLEAN DEFAULT FALSE,
-                reason TEXT,
-                changed_at TIMESTAMP DEFAULT NOW()
-            )
-        """))
-        db_session.commit()
+        try:
+            db_session.rollback()  # Clear any failed transaction
+            db_session.execute(text("""
+                CREATE TABLE IF NOT EXISTS deadline_history (
+                    id SERIAL PRIMARY KEY,
+                    ticker VARCHAR(10) NOT NULL,
+                    old_date DATE,
+                    new_date DATE NOT NULL,
+                    source VARCHAR(50),
+                    is_extension BOOLEAN DEFAULT FALSE,
+                    reason TEXT,
+                    changed_at TIMESTAMP DEFAULT NOW()
+                )
+            """))
+            db_session.commit()
+            print("  ✓ Table created")
 
-        # Try again
-        db_session.execute(text("""
-            INSERT INTO deadline_history
-            (ticker, old_date, new_date, source, is_extension, reason, changed_at)
-            VALUES
-            (:ticker, :old_date, :new_date, :source, :is_extension, :reason, NOW())
-        """), {
-            'ticker': ticker,
-            'old_date': current_date,
-            'new_date': new_date,
-            'source': source,
+            # Try INSERT again
+            db_session.execute(text("""
+                INSERT INTO deadline_history
+                (ticker, old_date, new_date, source, is_extension, reason, changed_at)
+                VALUES
+                (:ticker, :old_date, :new_date, :source, :is_extension, :reason, NOW())
+            """), {
+                'ticker': ticker,
+                'old_date': current_date,
+                'new_date': new_date,
+                'source': source,
             'is_extension': is_extension,
             'reason': reason or f'Deadline {"extension" if is_extension else "set"} from {source}'
         })
-        print("  ✓ Logged to history")
+            print("  ✓ Logged to history")
+        except Exception as create_err:
+            print(f"  ⚠️  Could not create table or log history: {create_err}")
+            db_session.rollback()
 
     # Update SPAC record
     spac.deadline_date = new_date
