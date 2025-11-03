@@ -454,36 +454,36 @@ Look for ACTUAL redemptions (not estimates):
 ⚠️  IGNORE estimates like "assumes X% redemptions" or "up to X shares may be redeemed"
 
 PRIORITY 2: Deal Terms
-1. **deal_value** - Enterprise or equity value ("$500M", "$1.2B")
+1. **deal_value** - Enterprise or equity value as numeric dollars (e.g., 500000000 for "$500M", 1200000000 for "$1.2B")
 2. **expected_close** - Expected closing date ("YYYY-MM-DD" or "Q1 2026")
 
 Deal Structure (if mentioned):
-3. **min_cash** - Minimum cash condition ("$200M")
+3. **min_cash** - Minimum cash condition as numeric dollars (e.g., 200000000 for "$200M")
 4. **min_cash_percentage** - Minimum cash as % (e.g., 25.0 for "25%")
-5. **pipe_size** - PIPE investment amount ("$100M")
-6. **pipe_price** - PIPE share price ("$10.00")
-7. **earnout_shares** - Earnout/contingent shares ("5M shares" or "10M")
-8. **forward_purchase** - Forward purchase agreement ("$50M")
+5. **pipe_size** - PIPE investment amount as numeric dollars (e.g., 100000000 for "$100M")
+6. **pipe_price** - PIPE share price as numeric dollars (e.g., 10.0 for "$10.00")
+7. **earnout_shares** - Earnout/contingent shares as numeric count (e.g., 5000000 for "5M shares")
+8. **forward_purchase** - Forward purchase agreement as numeric dollars (e.g., 50000000 for "$50M")
 
-Return JSON:
+Return JSON (ALL DOLLAR AMOUNTS AS NUMERIC VALUES):
 {{
   "shareholder_vote_date": "YYYY-MM-DD" or null,
-  "pre_vote_trust_cash": "$72,452,618" or "$72.45M" or null,
-  "pre_vote_nav_per_share": "$10.50" or 10.50 or null,
+  "pre_vote_trust_cash": 72452618 or null,
+  "pre_vote_nav_per_share": 10.50 or null,
   "trust_balance_date": "YYYY-MM-DD" or null,
   "redemptions_checked": true/false,
   "redemptions_found": true/false,
   "shares_redeemed": <number or 0>,
   "redemption_amount": <dollars or 0>,
   "redemption_price": <price per share or null>,
-  "deal_value": "$500M" or null,
+  "deal_value": 500000000 or null,
   "expected_close": "2026-03-31" or null,
-  "min_cash": "$200M" or null,
+  "min_cash": 200000000 or null,
   "min_cash_percentage": 25.0 or null,
-  "pipe_size": "$100M" or null,
-  "pipe_price": "$10.00" or null,
-  "earnout_shares": "5M" or null,
-  "forward_purchase": "$50M" or null
+  "pipe_size": 100000000 or null,
+  "pipe_price": 10.0 or null,
+  "earnout_shares": 5000000 or null,
+  "forward_purchase": 50000000 or null
 }}
 
 CRITICAL:
@@ -862,28 +862,28 @@ Document sections:
 
 Extract:
 1. **expected_close** - Expected closing date or quarter (e.g., "Q4 2025", "2026-06-30", "first half of 2026")
-2. **deal_value** - Enterprise or equity value (e.g., "$500M", "$1.2B")
+2. **deal_value** - Enterprise or equity value as numeric dollars (e.g., 500000000 for "$500M", 1200000000 for "$1.2B")
 3. **target** - Target company name (if not already known)
 
 Deal Structure (if mentioned):
-4. **min_cash** - Minimum cash condition (e.g., "$200M")
+4. **min_cash** - Minimum cash condition as numeric dollars (e.g., 200000000 for "$200M")
 5. **min_cash_percentage** - Minimum cash as percentage (e.g., 25.0 for "25%")
-6. **pipe_size** - PIPE investment amount (e.g., "$100M")
-7. **pipe_price** - PIPE share price (e.g., "$10.00")
-8. **earnout_shares** - Earnout/contingent shares (e.g., "5M shares" or "10M")
-9. **forward_purchase** - Forward purchase agreement (e.g., "$50M")
+6. **pipe_size** - PIPE investment amount as numeric dollars (e.g., 100000000 for "$100M")
+7. **pipe_price** - PIPE share price as numeric dollars (e.g., 10.0 for "$10.00")
+8. **earnout_shares** - Earnout/contingent shares as numeric count (e.g., 5000000 for "5M shares")
+9. **forward_purchase** - Forward purchase agreement as numeric dollars (e.g., 50000000 for "$50M")
 
-Return JSON:
+Return JSON (ALL DOLLAR AMOUNTS AS NUMERIC VALUES):
 {{
   "expected_close": "Q1 2026" or "2026-03-31" or null,
-  "deal_value": "$500M" or null,
+  "deal_value": 500000000 or null,
   "target": "Target Company Inc." or null,
-  "min_cash": "$200M" or null,
+  "min_cash": 200000000 or null,
   "min_cash_percentage": 25.0 or null,
-  "pipe_size": "$100M" or null,
-  "pipe_price": "$10.00" or null,
-  "earnout_shares": "5M" or null,
-  "forward_purchase": "$50M" or null
+  "pipe_size": 100000000 or null,
+  "pipe_price": 10.0 or null,
+  "earnout_shares": 5000000 or null,
+  "forward_purchase": 50000000 or null
 }}
 
 If any field is not found, return null for that field.
@@ -1037,18 +1037,18 @@ Document sections:
 {combined_text[:20000]}
 
 Extract:
-1. **offer_price** - Price per share ("$XX.XX")
+1. **offer_price** - Price per share as numeric dollars (e.g., 10.50 for "$10.50")
 2. **offer_expiration** - When offer expires ("YYYY-MM-DD")
 3. **minimum_condition** - Minimum shares needed ("50% of shares")
-4. **deal_value** - Total transaction value ("$XXX million")
+4. **deal_value** - Total transaction value as numeric dollars (e.g., 500000000 for "$500M")
 5. **target** - Target company name
 
-Return JSON:
+Return JSON (ALL DOLLAR AMOUNTS AS NUMERIC VALUES):
 {{
-  "offer_price": "$10.50" or null,
+  "offer_price": 10.50 or null,
   "offer_expiration": "2026-01-15" or null,
   "minimum_condition": "50%" or null,
-  "deal_value": "$500M" or null,
+  "deal_value": 500000000 or null,
   "target": "Company Name" or null
 }}
 """
