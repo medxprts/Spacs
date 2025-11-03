@@ -155,30 +155,36 @@ Filing Date: {filing['date'].strftime('%Y-%m-%d')}
 
 Extract:
 1. **target** - Target company name
-2. **deal_value** - Enterprise or equity value (e.g., "$500M", "$1.2B")
+2. **deal_value** - Enterprise or equity value as numeric dollars (e.g., 500000000 for "$500M")
 3. **expected_close** - Expected closing date or quarter (e.g., "Q4 2025", "2026-06-30")
 4. **target_sector** - Industry/sector of target
 
 Deal Structure (if mentioned):
-5. **min_cash** - Minimum cash condition (e.g., "$200M")
+5. **min_cash** - Minimum cash condition as numeric dollars (e.g., 200000000 for "$200M")
 6. **min_cash_percentage** - Minimum cash as percentage (e.g., 25.0 for "25%")
-7. **pipe_size** - PIPE investment amount (e.g., "$100M")
-8. **pipe_price** - PIPE share price (e.g., "$10.00")
-9. **earnout_shares** - Earnout/contingent shares (e.g., "5M shares" or "10M")
-10. **forward_purchase** - Forward purchase agreement amount (e.g., "$50M")
+7. **pipe_size** - PIPE investment amount as numeric dollars (e.g., 100000000 for "$100M")
+8. **pipe_price** - PIPE share price as numeric dollars (e.g., 10.0 for "$10.00")
+9. **earnout_shares** - Earnout/contingent shares as numeric count (e.g., 5000000 for "5M shares")
+10. **forward_purchase** - Forward purchase agreement amount as numeric dollars (e.g., 50000000 for "$50M")
+
+IMPORTANT: Return all dollar amounts and share counts as NUMERIC VALUES (not formatted strings).
+- Convert "$275M" to 275000000
+- Convert "$1.2B" to 1200000000
+- Convert "5M shares" to 5000000
+- Convert "$10.00" to 10.0
 
 Return JSON:
 {{
     "target": "Target Company Inc.",
-    "deal_value": "$500M",
+    "deal_value": 500000000,
     "expected_close": "Q4 2025",
     "target_sector": "Technology",
-    "min_cash": "$200M",
+    "min_cash": 200000000,
     "min_cash_percentage": 25.0,
-    "pipe_size": "$100M",
-    "pipe_price": "$10.00",
-    "earnout_shares": "5M",
-    "forward_purchase": "$50M"
+    "pipe_size": 100000000,
+    "pipe_price": 10.0,
+    "earnout_shares": 5000000,
+    "forward_purchase": 50000000
 }}
 
 If any field is not found, return null for that field.
