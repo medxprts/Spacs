@@ -130,3 +130,203 @@ class BaseAgent(ABC):
     def get_timeliness_guidance(self) -> str:
         """Get comprehensive timeliness guidance for this agent"""
         return get_timeliness_guidance()
+
+    # ===== PROACTIVE EXTRACTION LEARNING METHODS =====
+
+    def get_lessons_for_field(self, field: str) -> Dict:
+        """
+        Get past learnings for a field (wrapper for easy access)
+
+        Queries centralized learning database for:
+        - Past format errors to avoid
+        - Filing hints from successful extractions
+        - Common mistakes and validation errors
+        - Success patterns to follow
+
+        Args:
+            field: Database field name ('earnout_shares', 'trust_value', etc.)
+
+        Returns:
+            Dict with format_warnings, filing_hints, common_mistakes, success_patterns
+
+        Example:
+            # Before extracting earnout_shares
+            lessons = self.get_lessons_for_field('earnout_shares')
+
+            if lessons['format_warnings']:
+                print(f"   📚 Found {len(lessons['format_warnings'])} past format errors")
+                # Include in AI prompt
+
+        Usage:
+            lessons = self.get_lessons_for_field('earnout_shares')
+            prompt += format_lessons_for_prompt(lessons)
+        """
+        from utils.extraction_learner import get_extraction_lessons
+
+        return get_extraction_lessons(
+            field=field,
+            issue_types=['format_error', 'extraction_success', 'validation_error'],
+            limit=10
+        )
+
+    def search_for_missing_data(
+        self,
+        ticker: str,
+        field: str,
+        db_session
+    ) -> Optional[any]:
+        """
+        Proactive search for missing data in SEC filings
+
+        When a field is missing, this method:
+        1. Checks if SPAC is still active (not completed)
+        2. Gets filing search strategy from past successes
+        3. Searches filings in priority order
+        4. Extracts using AI with past learnings
+        5. Logs success for future learning
+
+        Args:
+            ticker: SPAC ticker symbol
+            field: Database field name
+            db_session: Active database session
+
+        Returns:
+            Extracted value or None if not found
+
+        Example:
+            # If target is missing from current filing
+            db = SessionLocal()
+            try:
+                target = self.search_for_missing_data(
+                    ticker='BLUW',
+                    field='target',
+                    db_session=db
+                )
+                if target:
+                    print(f"   ✅ Found missing target: {target}")
+            finally:
+                db.close()
+
+        User Insight (Nov 4, 2025):
+            "I think the right solution is first confirm it's still a SPAC
+             that isn't completed, and then to try to find it in filings"
+        """
+        from database import SPAC
+        from utils.extraction_learner import get_filing_search_strategy
+
+        # 1. Check if SPAC is active
+        spac = db_session.query(SPAC).filter(SPAC.ticker == ticker).first()
+        if not spac:
+            print(f"   ⚠️  {ticker} not found in database")
+            return None
+
+        if spac.deal_status == 'COMPLETED':
+            print(f"   ⚠️  {ticker} is completed, skipping search for {field}")
+            return None
+
+        # 2. Get search strategy from past successes
+        strategy = get_filing_search_strategy(field, ticker)
+        print(f"   🔍 Searching for {field} using strategy: {strategy['primary_source']} (confidence: {strategy['confidence']})")
+
+        # 3. Search filings in priority order
+        from utils.sec_filing_fetcher import SECFilingFetcher
+        fetcher = SECFilingFetcher()
+
+        filing_types = [strategy['primary_source']] + strategy['fallback_sources']
+
+        for filing_type in filing_types:
+            print(f"   📄 Checking {filing_type} filings...")
+
+            try:
+                filings = fetcher.get_filings(
+                    cik=spac.cik if hasattr(spac, 'cik') else None,
+                    ticker=ticker,
+                    filing_type=filing_type,
+                    lookback_days=strategy['lookback_days'],
+                    limit=3
+                )
+
+                for filing in filings[:3]:  # Check up to 3 most recent
+                    # 4. Extract with AI + past learnings
+                    lessons = self.get_lessons_for_field(field)
+
+                    value = self._extract_field_with_lessons(
+                        filing_content=filing.get('content', ''),
+                        field=field,
+                        lessons=lessons,
+                        section_hints=strategy['section_hints']
+                    )
+
+                    if value is not None:
+                        # 5. Log success for future learning
+                        from utils.extraction_learner import log_extraction_success
+                        log_extraction_success(
+                            agent_name=self.name,
+                            field=field,
+                            value=value,
+                            ticker=ticker,
+                            filing_type=filing_type,
+                            filing_section=strategy['section_hints'][0] if strategy['section_hints'] else None
+                        )
+                        return value
+
+            except Exception as e:
+                print(f"   ⚠️  Error searching {filing_type}: {e}")
+                continue
+
+        print(f"   ⚠️  Could not find {field} in recent filings")
+        return None
+
+    def _extract_field_with_lessons(
+        self,
+        filing_content: str,
+        field: str,
+        lessons: Dict,
+        section_hints: list = None
+    ) -> Optional[any]:
+        """
+        Extract field using AI enhanced with past learnings
+
+        Includes past format warnings and success patterns in prompt.
+
+        Args:
+            filing_content: Filing text content
+            field: Database field to extract
+            lessons: Output from get_lessons_for_field()
+            section_hints: Where to look (optional)
+
+        Returns:
+            Extracted value or None
+
+        Note:
+            Subclasses can override this for custom extraction logic,
+            but should still incorporate lessons into prompts.
+        """
+        from utils.extraction_learner import format_lessons_for_prompt
+        from utils.number_parser import sanitize_ai_response
+
+        # Build enhanced prompt with learnings
+        lessons_text = format_lessons_for_prompt(lessons)
+
+        section_guidance = ""
+        if section_hints:
+            section_guidance = f"\n**Where to look**: {', '.join(section_hints)}\n"
+
+        prompt = f"""Extract {field} from this SEC filing.
+
+{lessons_text}{section_guidance}
+**Instructions**:
+- Return NUMERIC values (not formatted strings like '1.1M')
+- If not found, return null (not "N/A" or "TBD")
+- Validate before returning
+
+Filing excerpt (first 5000 chars):
+{filing_content[:5000]}
+
+Return ONLY the value in JSON format: {{"value": ...}}
+"""
+
+        # Subclasses should implement AI extraction
+        # For now, return None (base implementation)
+        print(f"   ℹ️  _extract_field_with_lessons: Base implementation (no AI)")
+        return None

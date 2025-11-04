@@ -77,8 +77,35 @@ class DealDetectorAgent(BaseAgent):
         deal_data = self._extract_deal_with_ai(content, filing)
 
         if not deal_data or not deal_data.get('target'):
-            print(f"      ⚠️  Could not extract deal details")
-            return None
+            print(f"      ⚠️  Could not extract deal details from current filing")
+
+            # ===== FEW-SHOT LEARNING: Try searching other filings for missing target =====
+            if deal_data and not deal_data.get('target'):
+                print(f"      🔍 Attempting to find target in other filings...")
+                from database import SessionLocal
+
+                db = SessionLocal()
+                try:
+                    # Get ticker from CIK
+                    from database import SPAC
+                    spac = db.query(SPAC).filter(SPAC.cik == filing['cik']).first()
+
+                    if spac:
+                        target = self.search_for_missing_data(
+                            ticker=spac.ticker,
+                            field='target',
+                            db_session=db
+                        )
+
+                        if target:
+                            print(f"      ✅ Found target in other filings: {target}")
+                            deal_data['target'] = target
+                finally:
+                    db.close()
+
+            # If still no deal data or target, give up
+            if not deal_data or not deal_data.get('target'):
+                return None
 
         # Update database
         updated = self._update_database(filing['cik'], deal_data, filing)
@@ -138,7 +165,7 @@ class DealDetectorAgent(BaseAgent):
         return any(keyword in content_lower for keyword in deal_keywords)
 
     def _extract_deal_with_ai(self, content: str, filing: Dict) -> Optional[Dict]:
-        """Use AI to extract deal details"""
+        """Use AI to extract deal details with Few-Shot learning"""
 
         if not AI_AVAILABLE:
             return None
@@ -147,11 +174,29 @@ class DealDetectorAgent(BaseAgent):
             # Limit content to relevant section (first 50k chars)
             excerpt = content[:50000]
 
+            # ===== FEW-SHOT LEARNING: Query past lessons =====
+            from utils.extraction_learner import format_lessons_for_prompt
+
+            # Get lessons for numeric fields (most prone to format errors)
+            key_fields = ['earnout_shares', 'pipe_size', 'deal_value', 'target']
+            lessons_text = ""
+
+            for field in key_fields:
+                field_lessons = self.get_lessons_for_field(field)
+                if field_lessons.get('format_warnings') or field_lessons.get('common_mistakes'):
+                    lessons_text += format_lessons_for_prompt(field_lessons)
+
+            if lessons_text:
+                print(f"      📚 Applying {len(lessons_text.split(chr(10)))} past learnings to extraction")
+
+            # Build enhanced prompt with learnings
             prompt = f"""
 Extract business combination deal details from this SEC filing:
 
 Filing Type: {filing['type']}
 Filing Date: {filing['date'].strftime('%Y-%m-%d')}
+
+{lessons_text}
 
 Extract:
 1. **target** - Target company name
@@ -314,6 +359,34 @@ Text:
                 spac.sector = deal_data['target_sector']
 
             db.commit()
+
+            # ===== FEW-SHOT LEARNING: Log successful extractions =====
+            from utils.extraction_learner import log_extraction_success
+
+            # Log each successfully extracted field for future learning
+            extracted_fields = {
+                'target': target_name,
+                'deal_value': deal_data.get('deal_value'),
+                'pipe_size': deal_data.get('pipe_size'),
+                'earnout_shares': deal_data.get('earnout_shares'),
+                'min_cash': deal_data.get('min_cash'),
+                'forward_purchase': deal_data.get('forward_purchase')
+            }
+
+            for field_name, field_value in extracted_fields.items():
+                if field_value is not None:
+                    try:
+                        log_extraction_success(
+                            agent_name='deal_detector',
+                            field=field_name,
+                            value=field_value,
+                            ticker=spac.ticker,
+                            filing_type=filing['type'],
+                            filing_section='Main document'
+                        )
+                    except Exception as log_err:
+                        # Don't let logging failure block execution
+                        print(f"      ⚠️  Could not log learning for {field_name}: {log_err}")
 
             print(f"      ✓ Updated {spac.ticker}: deal_status=ANNOUNCED")
             return True
