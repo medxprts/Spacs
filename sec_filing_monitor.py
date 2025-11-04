@@ -20,6 +20,7 @@ from bs4 import BeautifulSoup
 from dateutil import parser as date_parser
 
 from database import SessionLocal, SPAC
+from pre_ipo_database import SessionLocal as PreIPOSessionLocal, PreIPOSPAC
 from dotenv import load_dotenv
 from sec_text_extractor import extract_filing_text
 from orchestrator_trigger import get_accelerated_polling_tickers
@@ -521,6 +522,63 @@ NOTE: If Item 5.07 (shareholder vote results), include RedemptionExtractor to ex
                 'reason': '8-K filing - AI classification failed'
             }
 
+    def _handle_cert_filing(self, filing: Dict):
+        """
+        Handle CERT (Certification of Effectiveness) filing
+
+        Updates pre-IPO SPAC filing_status to 'EFFECTIVE' so IPO detector can process 424B4
+
+        This is a critical step in the IPO detection flow:
+        S-1 → S-1/A → CERT → 424B4 (IPO close)
+                       ↑ THIS METHOD
+        """
+        cik = filing.get('cik')
+        filing_date = filing.get('date')
+
+        if not cik:
+            return
+
+        pre_ipo_db = PreIPOSessionLocal()
+        try:
+            # Find pre-IPO SPAC with this CIK
+            pre_ipo_spac = pre_ipo_db.query(PreIPOSPAC).filter(
+                PreIPOSPAC.cik == cik
+            ).first()
+
+            if pre_ipo_spac:
+                # Update status to EFFECTIVE
+                old_status = pre_ipo_spac.filing_status
+                pre_ipo_spac.filing_status = 'EFFECTIVE'
+                pre_ipo_spac.effectiveness_date = filing_date
+                pre_ipo_db.commit()
+
+                print(f"      🎯 CERT DETECTED → Updated {pre_ipo_spac.company}")
+                print(f"         Status: {old_status} → EFFECTIVE")
+                print(f"         Ready for IPO close (watch for 424B4)")
+
+                # Send Telegram alert if configured
+                try:
+                    from utils.telegram_notifier import send_telegram_alert
+                    send_telegram_alert(f"""
+🎯 <b>IPO EFFECTIVENESS DETECTED</b>
+
+<b>Company:</b> {pre_ipo_spac.company}
+<b>Ticker:</b> {pre_ipo_spac.expected_ticker or 'TBD'}
+<b>Status:</b> S-1 now EFFECTIVE
+<b>Date:</b> {filing_date.strftime('%Y-%m-%d') if filing_date else 'N/A'}
+
+<b>Next Step:</b> Watch for 424B4 (IPO closing)
+                    """)
+                except:
+                    pass  # Telegram not configured, skip
+            else:
+                print(f"      ⚠️  CERT filed but no matching pre-IPO SPAC (CIK: {cik})")
+
+        except Exception as e:
+            print(f"      ❌ Error handling CERT filing: {e}")
+        finally:
+            pre_ipo_db.close()
+
     def monitor_continuous(self):
         """
         Continuous monitoring loop
@@ -558,6 +616,10 @@ NOTE: If Item 5.07 (shareholder vote results), include RedemptionExtractor to ex
                         print(f"      Priority: {classification['priority']}")
                         print(f"      Agents: {', '.join(classification['agents_needed'])}")
                         print(f"      Reason: {classification['reason']}")
+
+                        # SPECIAL HANDLING: CERT filings (S-1 effectiveness)
+                        if filing['type'] == 'CERT':
+                            self._handle_cert_filing(filing)
 
                         # NOTE: filing_logger is called by orchestrator.process_filing()
                         # No need to log here (would be duplicate if standalone monitor was used)

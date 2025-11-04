@@ -69,10 +69,10 @@ class IPODetectorAgent(BaseAgent):
         if not cik:
             return False
 
-        # Look for pre-IPO SPAC with this CIK and status='EFFECTIVE'
+        # Look for pre-IPO SPAC with this CIK (any status)
+        # Note: 424B4 can only be filed if S-1 is effective, so we don't need to check status
         pre_ipo_spac = self.pre_ipo_db.query(PreIPOSPAC).filter(
-            PreIPOSPAC.cik == cik,
-            PreIPOSPAC.filing_status == 'EFFECTIVE'
+            PreIPOSPAC.cik == cik
         ).first()
 
         if pre_ipo_spac:
@@ -95,15 +95,31 @@ class IPODetectorAgent(BaseAgent):
         print(f"   CIK: {cik}")
         print(f"   Filing date: {filing_date}")
 
-        # Get pre-IPO SPAC record
+        # Get pre-IPO SPAC record (any status)
         pre_ipo_spac = self.pre_ipo_db.query(PreIPOSPAC).filter(
-            PreIPOSPAC.cik == cik,
-            PreIPOSPAC.filing_status == 'EFFECTIVE'
+            PreIPOSPAC.cik == cik
         ).first()
 
         if not pre_ipo_spac:
             print("   ❌ Pre-IPO SPAC not found or already graduated")
             return None
+
+        # Auto-update status to EFFECTIVE if not already
+        # Logic: 424B4 can only be filed if S-1 is effective, so this is safe
+        if pre_ipo_spac.filing_status != 'EFFECTIVE':
+            old_status = pre_ipo_spac.filing_status
+            print(f"   🔄 Auto-updating status: {old_status} → EFFECTIVE")
+            print(f"      (424B4 filing proves S-1 is effective)")
+
+            pre_ipo_spac.filing_status = 'EFFECTIVE'
+            pre_ipo_spac.effectiveness_date = filing_date
+
+            try:
+                self.pre_ipo_db.commit()
+                print(f"   ✓ Status updated")
+            except Exception as e:
+                print(f"   ⚠️  Failed to update status: {e}")
+                self.pre_ipo_db.rollback()
 
         # Extract IPO data from 424B4
         print(f"   📄 Extracting IPO data from 424B4...")
