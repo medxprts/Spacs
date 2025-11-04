@@ -224,27 +224,31 @@ class FilingProcessorWrapper(BaseAgent):
 
 
 class SignalMonitorAgentWrapper(BaseAgent):
-    """Monitors Reddit and News for SPAC deal signals"""
+    """Monitors Reddit and News for SPAC deal signals (DISABLED - deprecated)"""
 
     def execute(self, task: AgentTask) -> AgentTask:
         self._start_task(task)
 
-        try:
-            from signal_monitor_agent import SignalMonitorAgent
+        # DISABLED: signal_monitor_agent deprecated, will be replaced by opportunity identification agent
+        self._fail_task(task, "SignalMonitorAgent deprecated - use opportunity identification agent")
+        return task
 
-            agent = SignalMonitorAgent()
-
-            # Get parameters
-            reddit_days = task.parameters.get('reddit_days', 7) if task.parameters else 7
-            news_days = task.parameters.get('news_days', 3) if task.parameters else 3
-
-            # Monitor all SPACs
-            triggers = agent.monitor_all_spacs(
-                reddit_days=reddit_days,
-                news_days=news_days
-            )
-
-            agent.close()
+        # try:
+        #     from signal_monitor_agent import SignalMonitorAgent
+        #
+        #     agent = SignalMonitorAgent()
+        #
+        #     # Get parameters
+        #     reddit_days = task.parameters.get('reddit_days', 7) if task.parameters else 7
+        #     news_days = task.parameters.get('news_days', 3) if task.parameters else 3
+        #
+        #     # Monitor all SPACs
+        #     triggers = agent.monitor_all_spacs(
+        #         reddit_days=reddit_days,
+        #         news_days=news_days
+        #     )
+        #
+        #     agent.close()
 
             result = {
                 'triggers_found': len(triggers),
@@ -1185,28 +1189,34 @@ Be conservative - if unsure, mark as true (let agent process). Only mark false i
                         source_filing = filing['url']
 
                         # Try to extract target company name using AI
-                        # Import the AI verification from signal monitor
+                        # DISABLED: signal_monitor_agent deprecated
+                        # TODO: Replace with direct AI extraction
                         try:
-                            from signal_monitor_agent import SignalMonitorAgent
-                            signal_agent = SignalMonitorAgent()
+                            # from signal_monitor_agent import SignalMonitorAgent
+                            # signal_agent = SignalMonitorAgent()
+                            #
+                            # # Create article-like dict for AI verification
+                            # article = {
+                            #     'title': f"8-K Filing for {research_request['ticker']}",
+                            #     'description': doc_content[:2000],  # First 2000 chars
+                            #     'content': doc_content[:4000]  # First 4000 chars
+                            # }
+                            #
+                            # verification = signal_agent.verify_deal_news_with_ai(
+                            #     research_request['ticker'],
+                            #     article
+                            # )
+                            #
+                            # if verification.get('target_name'):
 
-                            # Create article-like dict for AI verification
-                            article = {
-                                'title': f"8-K Filing for {research_request['ticker']}",
-                                'description': doc_content[:2000],  # First 2000 chars
-                                'content': doc_content[:4000]  # First 4000 chars
-                            }
-
-                            verification = signal_agent.verify_deal_news_with_ai(
-                                research_request['ticker'],
-                                article
-                            )
-
-                            if verification.get('target_name'):
+                            # Simplified extraction without SignalMonitorAgent
+                            verification = {'target_name': None, 'confidence': 0}
+                            target = None
+                            if False:  # Disabled AI extraction
                                 target = verification['target_name']
                                 print(f"   🤖 AI extracted target: {target}")
 
-                            signal_agent.close()
+                            # signal_agent.close()
                         except Exception as e:
                             print(f"   ⚠️  AI extraction failed: {e}")
                             target = None
@@ -1803,47 +1813,50 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
         # ========================================================================
         # Reddit Monitoring (Every 30 minutes)
         # ========================================================================
-        reddit_interval_minutes = 30
-        last_reddit_run = self.state_manager.state['last_run'].get('reddit_monitor')
-
-        should_run_reddit = False
-        if last_reddit_run is None:
-            should_run_reddit = True
-        else:
-            last_run_dt = datetime.fromisoformat(last_reddit_run)
-            minutes_since_last = (current_time - last_run_dt).total_seconds() / 60
-
-            if minutes_since_last >= reddit_interval_minutes:
-                should_run_reddit = True
-
-        if should_run_reddit:
-            print(f"[ORCHESTRATOR] 🔍 Running scheduled Reddit monitoring...")
-            try:
-                from signal_monitor_agent import SignalMonitorAgent
-
-                agent = SignalMonitorAgent()
-                result = agent.monitor_reddit(interval_name="30min")
-                agent.close()
-
-                # Update last run time
-                self.state_manager.state['last_run']['reddit_monitor'] = current_time.isoformat()
-                self.state_manager.save_state()
-
-                if result['success']:
-                    print(f"[ORCHESTRATOR] ✓ Reddit monitoring complete: "
-                          f"{result['spacs_scanned']} scanned, {result['leaks_detected']} leaks")
-                else:
-                    print(f"[ORCHESTRATOR] ✗ Reddit monitoring failed: {result.get('error')}")
-
-            except Exception as e:
-                print(f"[ORCHESTRATOR] ✗ Reddit monitoring error: {e}")
-        else:
-            last_run_dt = datetime.fromisoformat(last_reddit_run)
-            minutes_since_last = (current_time - last_run_dt).total_seconds() / 60
-            minutes_until_next = reddit_interval_minutes - minutes_since_last
-
-            print(f"[ORCHESTRATOR] ⏭️  Reddit monitoring: Last run {minutes_since_last:.0f} min ago, "
-                  f"next in {minutes_until_next:.0f} min")
+        # Reddit Monitoring (DISABLED - deprecated signal_monitor_agent)
+        # TODO: Re-enable as part of opportunity identification agent
+        # ========================================================================
+        # reddit_interval_minutes = 30
+        # last_reddit_run = self.state_manager.state['last_run'].get('reddit_monitor')
+        #
+        # should_run_reddit = False
+        # if last_reddit_run is None:
+        #     should_run_reddit = True
+        # else:
+        #     last_run_dt = datetime.fromisoformat(last_reddit_run)
+        #     minutes_since_last = (current_time - last_run_dt).total_seconds() / 60
+        #
+        #     if minutes_since_last >= reddit_interval_minutes:
+        #         should_run_reddit = True
+        #
+        # if should_run_reddit:
+        #     print(f"[ORCHESTRATOR] 🔍 Running scheduled Reddit monitoring...")
+        #     try:
+        #         from signal_monitor_agent import SignalMonitorAgent
+        #
+        #         agent = SignalMonitorAgent()
+        #         result = agent.monitor_reddit(interval_name="30min")
+        #         agent.close()
+        #
+        #         # Update last run time
+        #         self.state_manager.state['last_run']['reddit_monitor'] = current_time.isoformat()
+        #         self.state_manager.save_state()
+        #
+        #         if result['success']:
+        #             print(f"[ORCHESTRATOR] ✓ Reddit monitoring complete: "
+        #                   f"{result['spacs_scanned']} scanned, {result['leaks_detected']} leaks")
+        #         else:
+        #             print(f"[ORCHESTRATOR] ✗ Reddit monitoring failed: {result.get('error')}")
+        #
+        #     except Exception as e:
+        #         print(f"[ORCHESTRATOR] ✗ Reddit monitoring error: {e}")
+        # else:
+        #     last_run_dt = datetime.fromisoformat(last_reddit_run)
+        #     minutes_since_last = (current_time - last_run_dt).total_seconds() / 60
+        #     minutes_until_next = reddit_interval_minutes - minutes_since_last
+        #
+        #     print(f"[ORCHESTRATOR] ⏭️  Reddit monitoring: Last run {minutes_since_last:.0f} min ago, "
+        #           f"next in {minutes_until_next:.0f} min")
 
         # ========================================================================
         # News Monitoring (Every 3 hours)
