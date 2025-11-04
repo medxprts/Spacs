@@ -158,6 +158,7 @@ config/agents/*.yaml
 !README.md
 !CLAUDE.md
 !TODO.md
+!CODEBASE_CLEANUP_RECOMMENDATIONS.md
 
 # Prompts directory (keep the structure, ignore specific prompts if sensitive)
 # prompts/**/*.yaml

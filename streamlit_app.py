@@ -609,10 +609,8 @@ elif page == "📈 Live Deals":
         display_df['Price'] = display_df['price']
         display_df['% Daily Change'] = display_df['price_change_24h']
 
-        # Format volume with commas (1,234,567 or 1.2M for large values)
-        display_df['Volume'] = display_df['volume'].apply(
-            lambda x: format_number_display(x, 'volume') if pd.notna(x) else '-'
-        )
+        # Keep volume as numeric for sorting (formatting handled by column_config)
+        display_df['Volume'] = display_df['volume']
         display_df['Vol % Float'] = display_df['volume_pct_float']
 
         # Format money fields for readable display ($275.0M instead of 275000000 - consistent 1 decimal)
@@ -715,7 +713,7 @@ elif page == "📈 Live Deals":
                 'Price': st.column_config.NumberColumn(width="small", format="$%.2f"),
                 'Trust Value (NAV)': st.column_config.NumberColumn(width="small", format="$%.2f", help="Net Asset Value per share from IPO trust account"),
                 '% Daily Change': st.column_config.NumberColumn(width="small", format="%.1f%%"),
-                'Volume': st.column_config.NumberColumn(width="small", format="%d"),
+                'Volume': st.column_config.NumberColumn(width="small", format="%,d"),
                 'Vol % Float': st.column_config.NumberColumn(width="small", format="%.1f%%", help="Daily volume as % of public float (shares - founder shares - redemptions)"),
                 'Warrant Price': st.column_config.NumberColumn(width="small", format="$%.2f"),
                 'Unit Price': st.column_config.NumberColumn(width="small", format="$%.2f"),
@@ -1229,7 +1227,7 @@ elif page == "🔍 Pre-Deal SPACs":
                 'Ticker': st.column_config.TextColumn(width="small"),
                 'Company': st.column_config.TextColumn(width="medium"),
                 'Price': st.column_config.NumberColumn(width="small", format="$%.2f"),
-                'Volume': st.column_config.NumberColumn(width="small", format="%d"),
+                'Volume': st.column_config.NumberColumn(width="small", format="%,d"),
                 'Vol % Float': st.column_config.NumberColumn(width="small", format="%.1f%%", help="Daily volume as % of public float (shares - founder shares - redemptions)"),
                 '% Daily Change': st.column_config.NumberColumn(width="small", format="%.1f%%"),
                 'Warrant Price': st.column_config.NumberColumn(width="small", format="$%.2f"),
@@ -1686,10 +1684,8 @@ elif page == "⭐ Watchlist":
         display_df['Price'] = display_df['price']
         display_df['% Daily Change'] = display_df['price_change_24h']
 
-        # Format volume with commas (1,234,567 or 1.2M for large values)
-        display_df['Volume'] = display_df['volume'].apply(
-            lambda x: format_number_display(x, 'volume') if pd.notna(x) else '-'
-        )
+        # Keep volume as numeric for sorting (formatting handled by column_config)
+        display_df['Volume'] = display_df['volume']
         display_df['Vol % Float'] = display_df['volume_pct_float']
 
         # Format money fields for readable display ($275.0M instead of 275000000 - consistent 1 decimal)
@@ -1768,7 +1764,7 @@ elif page == "⭐ Watchlist":
                 'Price': st.column_config.NumberColumn(width="small", format="$%.2f"),
                 'Trust Value (NAV)': st.column_config.NumberColumn(width="small", format="$%.2f", help="Net Asset Value per share from IPO trust account"),
                 '% Daily Change': st.column_config.NumberColumn(width="small", format="%.1f%%"),
-                'Volume': st.column_config.NumberColumn(width="small", format="%d"),
+                'Volume': st.column_config.NumberColumn(width="small", format="%,d"),
                 'Vol % Float': st.column_config.NumberColumn(width="small", format="%.1f%%", help="Daily volume as % of public float"),
                 'Warrant Price': st.column_config.NumberColumn(width="small", format="$%.2f"),
                 'Unit Price': st.column_config.NumberColumn(width="small", format="$%.2f"),
@@ -1881,7 +1877,7 @@ elif page == "⭐ Watchlist":
                 'Ticker': st.column_config.TextColumn(width="small"),
                 'Company': st.column_config.TextColumn(width="medium"),
                 'Price': st.column_config.NumberColumn(width="small", format="$%.2f"),
-                'Volume': st.column_config.NumberColumn(width="small", format="%d"),
+                'Volume': st.column_config.NumberColumn(width="small", format="%,d"),
                 'Vol % Float': st.column_config.NumberColumn(width="small", format="%.1f%%", help="Daily volume as % of public float"),
                 '% Daily Change': st.column_config.NumberColumn(width="small", format="%.1f%%"),
                 'Warrant Price': st.column_config.NumberColumn(width="small", format="$%.2f"),
