@@ -1024,18 +1024,31 @@ Be conservative - if unsure, mark as true (let agent process). Only mark false i
 
     def _dispatch_completion_monitor(self, filing: Dict, classification: Dict) -> Dict:
         """Dispatch to CompletionMonitor (deal closing detector)"""
+        import asyncio
+        from agents.completion_monitor_agent import CompletionMonitorAgent
+
         try:
-            from deal_closing_detector import DealClosingDetector
-            ticker = filing.get('ticker')
-            if not ticker:
-                return {'success': False, 'error': 'No ticker in filing'}
+            agent = CompletionMonitorAgent()
 
-            detector = DealClosingDetector()
-            result = detector.detect_closing(ticker, filing)
+            # Run async agent in sync context
+            result = asyncio.run(agent.process(filing))
 
-            return result if result else {'success': False, 'findings': 'No deal closing detected'}
-        except ImportError:
-            return {'success': False, 'error': 'CompletionMonitor not available'}
+            if result:
+                return {
+                    'success': True,
+                    'closing_date': result.get('closing_date'),
+                    'new_ticker': result.get('new_ticker'),
+                    'shares_redeemed': result.get('shares_redeemed'),
+                    'findings': f"Deal completion detected - {result.get('target', 'Unknown target')}"
+                }
+            else:
+                return {
+                    'success': False,
+                    'findings': 'No deal closing detected in this filing'
+                }
+
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
 
     def _dispatch_ipo_detector(self, filing: Dict, classification: Dict) -> Dict:
         """Dispatch to IPODetector agent for 424B4 filings (IPO close)"""
