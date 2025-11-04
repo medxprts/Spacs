@@ -54,7 +54,7 @@ class DataValidatorAgent(OrchestratorAgentBase):
         self._start_task(task)
 
         try:
-            from data_validator_agent import DataValidatorAgent as Validator
+            from data_validator_core import DataValidatorAgent as Validator
 
             # Determine if we should auto-fix
             auto_fix = task.parameters.get('auto_fix', False)

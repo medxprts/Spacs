@@ -56,7 +56,7 @@ class ValidationLoggingWrapper:
             enable_logging: If False, acts as pure pass-through (no logging)
         """
         # Import production validator
-        from data_validator_agent import DataValidatorAgent
+        from data_validator_core import DataValidatorAgent
 
         self.production_validator = DataValidatorAgent()
         self.enable_logging = enable_logging

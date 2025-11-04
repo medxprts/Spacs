@@ -862,7 +862,7 @@ python3 fix_invalid_targets.py
 
                     try:
                         from validation_issue_queue import ValidationIssueQueue
-                        from data_validator_agent import DataValidatorAgent
+                        from data_validator_core import DataValidatorAgent
 
                         # Check if there's already a queue in progress
                         queue = ValidationIssueQueue()
@@ -1002,7 +1002,7 @@ The orchestrator investigated each trust_cash issue with AI analysis and applied
 
                     try:
                         from validation_issue_queue import ValidationIssueQueue
-                        from data_validator_agent import DataValidatorAgent
+                        from data_validator_core import DataValidatorAgent
 
                         # Run validation to get all issues
                         validator = DataValidatorAgent()
