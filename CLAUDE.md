@@ -908,3 +908,227 @@ is_primary = is_primary_source('trust_cash', '10-Q')
 - ✅ Centralized updates (change precedence rules in one place)
 - ✅ Testable (easy to validate source logic)
 
+
+### 10. CompletionMonitor Agent (Added 2025-11-04)
+**Detects when SPAC deals close and updates status to COMPLETED.**
+
+**File**: `agents/completion_monitor_agent.py` (320 lines)
+
+**Triggered by**: 8-K Item 2.01 (Completion of Acquisition)
+
+**What it does**:
+1. Detects completion filings with keywords like "completion of business combination", "consummation of merger"
+2. Uses DeepSeek AI to extract:
+   - `closing_date`: When the merger closed
+   - `new_ticker`: Post-merger ticker symbol
+   - `shares_redeemed`: Final redemption count
+   - `redemption_amount`: Total cash paid for redemptions
+   - `shares_outstanding`: Final share count
+3. Includes number parsing (learned from CHAC) to avoid format errors
+4. Updates database: `deal_status='COMPLETED'` with all completion data
+
+**Integration**: Called by orchestrator's `_dispatch_completion_monitor()` method
+
+**Pattern**: Follows modular agent architecture (inherits from `BaseAgent`)
+
+**Critical Lesson (HOND Case Study)**:
+- ❌ **What Failed**: Archived implementation (`archive/detectors/deal_closing_detector.py`) had import/method mismatch
+- ❌ **Silent Failure**: ImportError caught, returned error dict, task marked COMPLETED (misleading!)
+- ✅ **Fix**: New modular agent with proper error handling
+- ✅ **Prevention**: Monitor agents completing in <1 second, send Telegram alerts on import errors
+
+**Documentation**: See `docs/HOND_COMPLETION_DETECTION_FAILURE.md` for complete root cause analysis
+
+**Usage**:
+```python
+# Orchestrator automatically routes 8-K Item 2.01 filings
+from agents.completion_monitor_agent import CompletionMonitorAgent
+
+agent = CompletionMonitorAgent()
+result = await agent.process(filing)
+# Returns: {'closing_date': '2025-10-20', 'new_ticker': 'IMSR', ...}
+```
+
+## Recent Fixes & Lessons Learned (November 2025)
+
+### Fix 1: AI Number Format Parsing (Nov 4, 2025)
+**Issue**: CHAC deal detected but database write failed with `invalid input syntax for type double precision: "1.1M"`
+
+**Root Cause**: AI returned formatted string `"1.1M"` despite prompt instructions to return numeric values
+
+**Solution**: Created `utils/number_parser.py` with three-layer defense:
+1. Clear AI prompts with examples
+2. Number parsing utility (`parse_numeric_value()`, `sanitize_ai_response()`)
+3. Integration into all AI extraction agents
+
+**Files Modified**:
+- ✅ `utils/number_parser.py` - NEW (200 lines)
+- ✅ `agents/deal_detector_agent.py` - Added `sanitize_ai_response()` at line 207
+- ✅ `agents/redemption_extractor.py` - Added number parsing at line 195
+- ✅ `streamlit_app.py` - Added `format_number_display()` for consistent UI formatting
+
+**Learning System**: Use Few-Shot SQL (NOT ChromaDB)
+- ChromaDB/RAG: 0% improvement in tests
+- Few-Shot SQL: +30% accuracy, 100% format correctness
+- Log errors to `data_quality_conversations` table for AI learning
+
+**Documentation**: `docs/AI_NUMBER_FORMAT_FIX.md`
+
+**Pattern to Apply**:
+```python
+# After AI extraction in ANY agent
+data = json.loads(response.choices[0].message.content)
+
+# Add number parsing
+from utils.number_parser import sanitize_ai_response, MONEY_FIELDS, SHARE_FIELDS
+numeric_fields = ['deal_value', 'pipe_size', 'earnout_shares', ...]
+data = sanitize_ai_response(data, numeric_fields)
+
+# Now safe to write to database
+```
+
+### Fix 2: CompletionMonitor Agent Broken Import (Nov 4, 2025)
+**Issue**: HOND completion filing detected but status not updated to COMPLETED (agent completed in 0.0s)
+
+**Root Cause**:
+- Orchestrator tried to import `deal_closing_detector.py` from root
+- Actual file was archived: `archive/detectors/deal_closing_detector.py`
+- ImportError caught silently, returned error dict, task marked COMPLETED
+
+**Solution**: Created new modular `CompletionMonitor` agent
+- File: `agents/completion_monitor_agent.py` (320 lines)
+- Uses provided filing data (no refetching)
+- AI extraction with number parsing
+- Proper error handling
+
+**Files Modified**:
+- ✅ `agents/completion_monitor_agent.py` - NEW
+- ✅ `agent_orchestrator.py` - Updated `_dispatch_completion_monitor()` method
+
+**Documentation**: `docs/HOND_COMPLETION_DETECTION_FAILURE.md`
+
+**Key Learnings**:
+1. Silent failures are dangerous - should send Telegram alerts
+2. Execution time <1s is a red flag for filing agents
+3. Archived code creates hidden dependencies
+4. Need integration tests for all filing agents
+
+### Fix 3: Streamlit Number Display Consistency (Nov 4, 2025)
+**Issue**: Different number formats across pages ($275M vs $275.0M vs 275000000)
+
+**Solution**:
+- Updated `format_number_display()` to always use 1 decimal place
+- Applied consistently to all money fields and volume
+- Volume shows commas for readability (1,234,567 or 1.2M)
+
+**Files Modified**:
+- ✅ `streamlit_app.py` - Multiple formatting fixes (lines 611-629, 1045-1047)
+
+## Error Logging & AI Learning System
+
+**IMPORTANT**: When fixing errors, ALWAYS log to `data_quality_conversations` table for Few-Shot learning.
+
+### How to Log Errors for AI Learning
+
+**Table**: `data_quality_conversations`
+
+**Pattern**:
+```sql
+INSERT INTO data_quality_conversations (
+    issue_id, issue_type, issue_source, ticker, field,
+    original_data, proposed_fix, final_fix, learning_notes, created_at
+)
+VALUES (
+    'format_error_chac_20251104',
+    'data_corruption',
+    'ai_detected',
+    'CHAC',
+    'earnout_shares',
+    '{"ai_returned": "1.1M", "database_expected": 1100000}',
+    '{"earnout_shares": {"value": 1100000, "metadata": {"note": "Parsed from formatted string", "fix_type": "number_parser"}}}',
+    '{"earnout_shares": {"value": 1100000, "metadata": {"note": "Parsed from formatted string", "fix_type": "number_parser"}}}',
+    'AI returned "1.1M" despite prompt instructions. Added parse_numeric_value() to sanitize all numeric fields before database write.',
+    NOW()
+);
+```
+
+### Future: Automated Error Logging
+
+**TODO**: Create error logging utility that automatically logs all code fixes:
+
+```python
+# utils/error_logger.py (TO BE CREATED)
+def log_code_fix(
+    issue_id: str,
+    issue_type: str,  # 'import_error', 'format_error', 'validation_error'
+    ticker: Optional[str],
+    field: Optional[str],
+    original_error: str,
+    fix_description: str,
+    code_changes: Dict,  # {'file': 'path', 'before': 'code', 'after': 'code'}
+    learning_notes: str
+):
+    """
+    Log code fixes to data_quality_conversations for AI learning.
+
+    Future agents can query this table and learn from past fixes:
+    - Update prompts automatically
+    - Suggest fixes for similar errors
+    - Prevent recurring issues
+    """
+    pass
+```
+
+**Use Cases for Automated Learning**:
+1. **Prompt Auto-Update**: If same error occurs 3+ times, update AI prompt automatically
+2. **Pattern Recognition**: Detect similar errors and suggest fixes proactively
+3. **Code Generation**: Generate number parsing code for new agents automatically
+4. **Prevention**: Add validation checks based on past errors
+
+**Integration Points**:
+- `agent_orchestrator.py` - Log agent execution failures
+- All AI extraction agents - Log parsing errors
+- `validation_issue_queue.py` - Log data quality issues
+- `investigation_agent.py` - Log investigation findings
+
+### Error Logging Best Practices
+
+**When to Log**:
+1. ✅ AI extraction returns wrong format (e.g., "1.1M" instead of 1100000)
+2. ✅ Database write failures due to type mismatches
+3. ✅ Agent import errors or execution failures
+4. ✅ Data validation failures requiring manual fixes
+5. ✅ Investigation findings with root cause analysis
+
+**What to Include**:
+- `issue_id`: Unique identifier (e.g., `format_error_chac_20251104`)
+- `issue_type`: Category (`data_corruption`, `import_error`, `validation_error`)
+- `original_data`: What the system produced/detected (JSON)
+- `final_fix`: What was applied to fix it (JSON)
+- `learning_notes`: Human-readable explanation with prevention strategy
+
+**Example Workflow**:
+```python
+# In any agent that encounters an error
+try:
+    data = sanitize_ai_response(ai_response, numeric_fields)
+except Exception as e:
+    # Log the error for learning
+    log_code_fix(
+        issue_id=f"ai_format_error_{ticker}_{datetime.now().strftime('%Y%m%d')}",
+        issue_type='format_error',
+        ticker=ticker,
+        field='pipe_size',
+        original_error=str(e),
+        fix_description='Applied number parser to convert "275M" to 275000000',
+        code_changes={'file': __file__, 'fix': 'Added sanitize_ai_response()'},
+        learning_notes='AI returned formatted string despite numeric prompt. Number parser catches this.'
+    )
+```
+
+**Benefits**:
+- 🎯 AI learns from past mistakes
+- 🎯 Prompts improve automatically over time
+- 🎯 Similar errors prevented in future
+- 🎯 Knowledge base for new developers
+- 🎯 Reduces manual intervention
