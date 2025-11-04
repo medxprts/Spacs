@@ -480,13 +480,21 @@ Return JSON only (use null for missing fields, ~60% accuracy acceptable for Prio
 
             if existing:
                 print(f"   ℹ️  {filing_data['company']} already in pre-IPO database")
+
                 # Update amendment count if this is S-1/A
                 if filing_data['filing_type'] == 'S-1/A':
+                    # Check if this specific filing was already processed
+                    # (avoids reprocessing same filing found in multiple daily scans)
+                    if existing.latest_s1a_date == filing_data['filing_date']:
+                        print(f"      ⏭️  Already processed this S-1/A (filed {filing_data['filing_date']})")
+                        return True
+
+                    # New amendment - update counter
                     existing.amendment_count += 1
                     existing.latest_s1a_date = filing_data['filing_date']
                     existing.filing_status = 'S-1/A'
                     self.db.commit()
-                    print(f"      Updated: Amendment #{existing.amendment_count}")
+                    print(f"      ✓ New amendment detected (#{existing.amendment_count})")
                 return True
 
             # Clean AI data
