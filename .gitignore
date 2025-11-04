@@ -159,6 +159,8 @@ config/agents/*.yaml
 !CLAUDE.md
 !TODO.md
 !CODEBASE_CLEANUP_RECOMMENDATIONS.md
+!DATA_VALIDATOR_COMPARISON.md
+!IPO_DETECTION_FAILURE_ROOT_CAUSE.md
 
 # Prompts directory (keep the structure, ignore specific prompts if sensitive)
 # prompts/**/*.yaml
