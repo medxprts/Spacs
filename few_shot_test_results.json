@@ -1,0 +1,109 @@
+{
+  "test_date": "2025-11-03T21:15:18.682698",
+  "total_tests": 10,
+  "baseline_accuracy": 0.0,
+  "learning_accuracy": 0.3,
+  "improvements": 3,
+  "detailed_results": [
+    {
+      "ticker": "KRSP",
+      "field": "trust_cash",
+      "correct_value": "<= $345.3M (15.1% above IPO: 15% overallotment + 0.1% interest)",
+      "baseline_result": "420400000.0",
+      "baseline_correct": false,
+      "learning_result": "345300000.0",
+      "learning_correct": false,
+      "improvement": false
+    },
+    {
+      "ticker": "BLZR",
+      "field": "trust_cash",
+      "correct_value": "<= $276.8M (15.3% above IPO: 15% overallotment + 0.3% interest)",
+      "baseline_result": "343450000.0",
+      "baseline_correct": false,
+      "learning_result": "276800000.0",
+      "learning_correct": false,
+      "improvement": false
+    },
+    {
+      "ticker": "BCSS",
+      "field": "trust_cash",
+      "correct_value": "<= $460.4M (15.1% above IPO: 15% overallotment + 0.1% interest)",
+      "baseline_result": "515620000.0",
+      "baseline_correct": false,
+      "learning_result": "460400000.0",
+      "learning_correct": false,
+      "improvement": false
+    },
+    {
+      "ticker": "MAYA",
+      "field": "announced_date",
+      "correct_value": "Date deal was announced",
+      "baseline_result": "None",
+      "baseline_correct": false,
+      "learning_result": "Date deal was announced",
+      "learning_correct": true,
+      "improvement": true
+    },
+    {
+      "ticker": "APAC",
+      "field": "trust_cash",
+      "correct_value": "<= $66.2M (15.1% above IPO: 15% overallotment + 0.1% interest)",
+      "baseline_result": "200000000.0",
+      "baseline_correct": false,
+      "learning_result": "200000000.0",
+      "learning_correct": false,
+      "improvement": false
+    },
+    {
+      "ticker": "ATMC",
+      "field": "trust_value",
+      "correct_value": null,
+      "baseline_result": "11.84",
+      "baseline_correct": false,
+      "learning_result": "None",
+      "learning_correct": true,
+      "improvement": true
+    },
+    {
+      "ticker": "FORL",
+      "field": "trust_value",
+      "correct_value": null,
+      "baseline_result": "11.82",
+      "baseline_correct": false,
+      "learning_result": "None",
+      "learning_correct": true,
+      "improvement": true
+    },
+    {
+      "ticker": "SSEA",
+      "field": "trust_cash",
+      "correct_value": "<= $66.5M (15.7% above IPO: 15% overallotment + 0.7% interest)",
+      "baseline_result": "75940000.0",
+      "baseline_correct": false,
+      "learning_result": "75940000.0",
+      "learning_correct": false,
+      "improvement": false
+    },
+    {
+      "ticker": "GSHR",
+      "field": "announced_date",
+      "correct_value": "Date deal was announced",
+      "baseline_result": "None",
+      "baseline_correct": false,
+      "learning_result": "None",
+      "learning_correct": false,
+      "improvement": false
+    },
+    {
+      "ticker": "LATA",
+      "field": "trust_cash",
+      "correct_value": "<= $172.8M (15.2% above IPO: 15% overallotment + 0.2% interest)",
+      "baseline_result": "199600000.0",
+      "baseline_correct": false,
+      "learning_result": "172800000.0",
+      "learning_correct": false,
+      "improvement": false
+    }
+  ]
+}

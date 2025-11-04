@@ -327,6 +327,29 @@ Progress: {current}/{total} issues"""
         try:
             issue_id = f"queue_issue_{issue_number}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             ticker = issue.get('ticker')
+            issue_type = issue.get('type', 'validation_error')
+
+            # DEDUPLICATION: Check if same issue exists in last 24 hours
+            if ticker:
+                check_query = text("""
+                    SELECT id, created_at
+                    FROM data_quality_conversations
+                    WHERE ticker = :ticker
+                      AND issue_type = :issue_type
+                      AND final_fix IS NOT NULL
+                      AND created_at >= NOW() - INTERVAL '24 hours'
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                """)
+
+                recent = db.execute(check_query, {
+                    'ticker': ticker,
+                    'issue_type': issue_type
+                }).fetchone()
+
+                if recent:
+                    print(f"   ℹ️  Skipping duplicate: {ticker} / {issue_type} (logged {recent[1].strftime('%Y-%m-%d %H:%M')})")
+                    return  # Skip creating duplicate
 
             # Fetch current SPAC data for original_data
             original_data = {}
@@ -349,7 +372,7 @@ Progress: {current}/{total} issues"""
                 """),
                 {
                     "issue_id": issue_id,
-                    "issue_type": issue.get('type', 'validation_error'),
+                    "issue_type": issue_type,
                     "ticker": ticker,
                     "messages": json.dumps([]),
                     "proposed_fix": json.dumps({

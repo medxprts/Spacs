@@ -192,6 +192,12 @@ Filing content (first 15000 chars):
 
             data = json.loads(response.choices[0].message.content)
 
+            # Sanitize numeric fields
+            from utils.number_parser import sanitize_ai_response
+            numeric_fields = ['shares_redeemed', 'redemption_amount', 'redemption_percentage',
+                            'remaining_cash', 'shares_outstanding']
+            data = sanitize_ai_response(data, numeric_fields)
+
             print(f"   🤖 AI extraction:")
             print(f"      Checked: {data.get('redemptions_checked')}")
             print(f"      Found: {data.get('redemptions_found')}")

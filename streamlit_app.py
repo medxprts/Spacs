@@ -10,6 +10,9 @@ from utils.timezone_helper import (
     format_news_timestamp, now_eastern, to_eastern
 )
 
+# Import number formatting
+from utils.number_parser import format_number_display
+
 # Import the AI agent
 try:
     from spac_agent import SPACAIAgent
@@ -605,14 +608,29 @@ elif page == "📈 Live Deals":
         display_df['Premium'] = display_df['premium']
         display_df['Price'] = display_df['price']
         display_df['% Daily Change'] = display_df['price_change_24h']
-        display_df['Volume'] = display_df['volume']
+
+        # Format volume with commas (1,234,567 or 1.2M for large values)
+        display_df['Volume'] = display_df['volume'].apply(
+            lambda x: format_number_display(x, 'volume') if pd.notna(x) else '-'
+        )
         display_df['Vol % Float'] = display_df['volume_pct_float']
-        display_df['Market Cap'] = display_df['market_cap']
+
+        # Format money fields for readable display ($275.0M instead of 275000000 - consistent 1 decimal)
+        display_df['Market Cap'] = display_df['market_cap'].apply(
+            lambda x: format_number_display(x, 'money') if pd.notna(x) else '-'
+        )
         display_df['Days Left'] = display_df['days_to_deadline']
         display_df['Return'] = display_df['return_since_announcement']
-        display_df['PIPE Size'] = display_df['pipe_size']
-        display_df['PIPE Price'] = display_df['pipe_price']
-        display_df['Min Cash'] = display_df['min_cash']
+
+        display_df['PIPE Size'] = display_df['pipe_size'].apply(
+            lambda x: format_number_display(x, 'money') if pd.notna(x) else '-'
+        )
+        display_df['PIPE Price'] = display_df['pipe_price'].apply(
+            lambda x: f"${x:.2f}" if pd.notna(x) else '-'
+        )
+        display_df['Min Cash'] = display_df['min_cash'].apply(
+            lambda x: format_number_display(x, 'money') if pd.notna(x) else '-'
+        )
         display_df['Redemptions'] = display_df['redemption_percentage']
         display_df['Warrant Price'] = display_df['warrant_price']
         display_df['Unit Price'] = display_df['unit_price']
@@ -1027,9 +1045,9 @@ elif page == "✅ Completed Deals":
             lambda x: x.strftime('%Y-%m-%d') if pd.notna(x) else 'N/A'
         )
 
-        # Format deal value
+        # Format deal value for readable display
         display_df['Deal Value'] = display_df['deal_value'].apply(
-            lambda x: f"${x}" if pd.notna(x) and x != 'TBD' else "N/A"
+            lambda x: format_number_display(x, 'money') if pd.notna(x) and x != 'TBD' else "N/A"
         )
 
         # Rename columns for display
@@ -1667,14 +1685,29 @@ elif page == "⭐ Watchlist":
         display_df['Premium'] = display_df['premium']
         display_df['Price'] = display_df['price']
         display_df['% Daily Change'] = display_df['price_change_24h']
-        display_df['Volume'] = display_df['volume']
+
+        # Format volume with commas (1,234,567 or 1.2M for large values)
+        display_df['Volume'] = display_df['volume'].apply(
+            lambda x: format_number_display(x, 'volume') if pd.notna(x) else '-'
+        )
         display_df['Vol % Float'] = display_df['volume_pct_float']
-        display_df['Market Cap'] = display_df['market_cap']
+
+        # Format money fields for readable display ($275.0M instead of 275000000 - consistent 1 decimal)
+        display_df['Market Cap'] = display_df['market_cap'].apply(
+            lambda x: format_number_display(x, 'money') if pd.notna(x) else '-'
+        )
         display_df['Days Left'] = display_df['days_to_deadline']
         display_df['Return'] = display_df['return_since_announcement']
-        display_df['PIPE Size'] = display_df['pipe_size']
-        display_df['PIPE Price'] = display_df['pipe_price']
-        display_df['Min Cash'] = display_df['min_cash']
+
+        display_df['PIPE Size'] = display_df['pipe_size'].apply(
+            lambda x: format_number_display(x, 'money') if pd.notna(x) else '-'
+        )
+        display_df['PIPE Price'] = display_df['pipe_price'].apply(
+            lambda x: f"${x:.2f}" if pd.notna(x) else '-'
+        )
+        display_df['Min Cash'] = display_df['min_cash'].apply(
+            lambda x: format_number_display(x, 'money') if pd.notna(x) else '-'
+        )
         display_df['Redemptions'] = display_df['redemption_percentage']
         display_df['Warrant Price'] = display_df['warrant_price']
         display_df['Unit Price'] = display_df['unit_price']
@@ -1946,22 +1979,44 @@ elif page == "🐛 Report Issues":
                 if not title or not description:
                     st.error("⚠️ Please provide both a title and description")
                 else:
-                    # Save to database
+                    # Save to database (data_quality_conversations)
                     db = SessionLocal()
                     try:
-                        new_issue = UserIssue(
-                            issue_type=issue_type,
-                            title=title,
-                            description=description,
-                            ticker_related=ticker_related if ticker_related else None,
-                            page_location=page_location if page_location else None,
-                            status='open',
-                            priority='medium'
-                        )
-                        db.add(new_issue)
+                        import json
+                        from datetime import datetime
+
+                        issue_id = f"user_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+                        original_data = json.dumps({
+                            'description': description,
+                            'page_location': page_location,
+                            'priority': 'medium',
+                            'submitted_via': 'streamlit_ui'
+                        })
+
+                        learning_notes = f"{title}\n\n{description}"
+
+                        # Insert into data_quality_conversations
+                        from sqlalchemy import text
+                        db.execute(text("""
+                            INSERT INTO data_quality_conversations (
+                                issue_id, issue_type, ticker, created_at, status,
+                                original_data, learning_notes, issue_source
+                            )
+                            VALUES (
+                                :issue_id, :issue_type, :ticker, NOW(), 'pending',
+                                :original_data, :learning_notes, 'user_reported'
+                            )
+                        """), {
+                            'issue_id': issue_id,
+                            'issue_type': issue_type,
+                            'ticker': ticker_related if ticker_related else None,
+                            'original_data': original_data,
+                            'learning_notes': learning_notes
+                        })
                         db.commit()
 
-                        st.success(f"✅ Issue #{new_issue.id} submitted successfully!")
+                        st.success(f"✅ Issue submitted successfully!")
                         st.balloons()
                         st.info("🤖 Our AI agent will analyze your issue and suggest a fix. We'll review and implement it soon!")
 
@@ -1976,9 +2031,25 @@ elif page == "🐛 Report Issues":
 
         db = SessionLocal()
         try:
-            total_issues = db.query(UserIssue).count()
-            open_issues = db.query(UserIssue).filter(UserIssue.status == 'open').count()
-            resolved_issues = db.query(UserIssue).filter(UserIssue.status == 'resolved').count()
+            from sqlalchemy import text
+
+            # Query data_quality_conversations for user-reported issues
+            total_issues = db.execute(text("""
+                SELECT COUNT(*) FROM data_quality_conversations
+                WHERE issue_source = 'user_reported'
+            """)).scalar()
+
+            open_issues = db.execute(text("""
+                SELECT COUNT(*) FROM data_quality_conversations
+                WHERE issue_source = 'user_reported'
+                AND status IN ('pending', 'active')
+            """)).scalar()
+
+            resolved_issues = db.execute(text("""
+                SELECT COUNT(*) FROM data_quality_conversations
+                WHERE issue_source = 'user_reported'
+                AND status = 'completed'
+            """)).scalar()
 
             st.metric("Total Issues", total_issues)
             st.metric("Open", open_issues)

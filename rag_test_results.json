@@ -1,0 +1,120 @@
+{
+  "test_date": "2025-11-03T21:33:36.806897",
+  "method": "RAG (semantic search)",
+  "total_tests": 10,
+  "baseline_accuracy": 0.0,
+  "rag_accuracy": 0.0,
+  "improvements": 0,
+  "detailed_results": [
+    {
+      "ticker": "HVMC",
+      "field": "trust_cash",
+      "correct_value": "<= $266.0M (15.7% above IPO: 15% overallotment + 0.7% interest)",
+      "baseline_result": "292630000.0",
+      "baseline_correct": false,
+      "rag_result": "292630000.0",
+      "rag_correct": false,
+      "improvement": false,
+      "similar_corrections_found": 3
+    },
+    {
+      "ticker": "FORL",
+      "field": "trust_value",
+      "correct_value": null,
+      "baseline_result": "11.82",
+      "baseline_correct": false,
+      "rag_result": "11.82",
+      "rag_correct": false,
+      "improvement": false,
+      "similar_corrections_found": 3
+    },
+    {
+      "ticker": "LATA",
+      "field": "trust_cash",
+      "correct_value": "<= $172.8M (15.2% above IPO: 15% overallotment + 0.2% interest)",
+      "baseline_result": "199600000.0",
+      "baseline_correct": false,
+      "rag_result": "199600000.0",
+      "rag_correct": false,
+      "improvement": false,
+      "similar_corrections_found": 3
+    },
+    {
+      "ticker": "MKLY",
+      "field": "trust_cash",
+      "correct_value": "<= $173.5M (15.6% above IPO: 15% overallotment + 0.6% interest)",
+      "baseline_result": "236790000.0",
+      "baseline_correct": false,
+      "rag_result": "236790000.0",
+      "rag_correct": false,
+      "improvement": false,
+      "similar_corrections_found": 3
+    },
+    {
+      "ticker": "CEPT",
+      "field": "announced_date",
+      "correct_value": "Date deal was announced",
+      "baseline_result": "None",
+      "baseline_correct": false,
+      "rag_result": "None",
+      "rag_correct": false,
+      "improvement": false,
+      "similar_corrections_found": 3
+    },
+    {
+      "ticker": "KOYN",
+      "field": "trust_cash",
+      "correct_value": "<= $265.6M (15.5% above IPO: 15% overallotment + 0.5% interest)",
+      "baseline_result": "500630000.0",
+      "baseline_correct": false,
+      "rag_result": "265600000.0",
+      "rag_correct": false,
+      "improvement": false,
+      "similar_corrections_found": 3
+    },
+    {
+      "ticker": "SSEA",
+      "field": "trust_cash",
+      "correct_value": "<= $66.5M (15.7% above IPO: 15% overallotment + 0.7% interest)",
+      "baseline_result": "75940000.0",
+      "baseline_correct": false,
+      "rag_result": "75940000.0",
+      "rag_correct": false,
+      "improvement": false,
+      "similar_corrections_found": 3
+    },
+    {
+      "ticker": "GSHR",
+      "field": "announced_date",
+      "correct_value": "Date deal was announced",
+      "baseline_result": "None",
+      "baseline_correct": false,
+      "rag_result": "None",
+      "rag_correct": false,
+      "improvement": false,
+      "similar_corrections_found": 3
+    },
+    {
+      "ticker": "TLNC",
+      "field": "trust_cash",
+      "correct_value": "<= $287.2M (15.3% above IPO: 15% overallotment + 0.3% interest)",
+      "baseline_result": "332710000.0",
+      "baseline_correct": false,
+      "rag_result": "332710000.0",
+      "rag_correct": false,
+      "improvement": false,
+      "similar_corrections_found": 3
+    },
+    {
+      "ticker": "BDCI",
+      "field": "trust_cash",
+      "correct_value": "<= $253.2M (15.1% above IPO: 15% overallotment + 0.1% interest)",
+      "baseline_result": "309840000.0",
+      "baseline_correct": false,
+      "rag_result": "309840000.0",
+      "rag_correct": false,
+      "improvement": false,
+      "similar_corrections_found": 3
+    }
+  ]
+}

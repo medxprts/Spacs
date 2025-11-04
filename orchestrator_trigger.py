@@ -327,13 +327,14 @@ def trigger_price_spike(
         db.commit()
         logger.info(f"✅ Recorded alert for {ticker} in database")
 
-        # TODO: Trigger agent orchestrator to investigate
-        # This will:
-        # - Check recent SEC filings (last 24 hours)
-        # - Run news API scan for the ticker
-        # - Run Reddit sentiment analysis
-        # - Look for correlations with other SPACs (sector movement?)
-        # orchestrator.investigate_price_spike(ticker, change_pct)
+        # Investigation happens automatically via:
+        # 1. Accelerated SEC polling (every 5 min for 24 hours if spike >10%)
+        # 2. SEC filing monitor processes any new filings immediately
+        # 3. Deal detector, redemption extractor, etc. analyze findings
+        # 4. Telegram alert sent with results (deal announcement, extension, etc.)
+        #
+        # No additional investigation trigger needed - the orchestrator's
+        # continuous monitoring handles this automatically.
 
         return True
 

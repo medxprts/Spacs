@@ -203,6 +203,13 @@ Text:
             )
 
             data = json.loads(response.choices[0].message.content)
+
+            # Sanitize numeric fields (AI sometimes returns "1.1M" instead of 1100000)
+            from utils.number_parser import sanitize_ai_response, MONEY_FIELDS, SHARE_FIELDS
+            numeric_fields = ['deal_value', 'pipe_size', 'pipe_price', 'earnout_shares',
+                            'forward_purchase', 'min_cash', 'min_cash_percentage']
+            data = sanitize_ai_response(data, numeric_fields)
+
             return data
 
         except Exception as e:
