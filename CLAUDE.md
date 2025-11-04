@@ -1132,3 +1132,75 @@ except Exception as e:
 - 🎯 Similar errors prevented in future
 - 🎯 Knowledge base for new developers
 - 🎯 Reduces manual intervention
+
+## Git Workflow & GitHub Push Policy
+
+### When to Push to GitHub
+
+**ASK USER BEFORE PUSHING** for:
+- ✅ Major code changes (new features, bug fixes, refactors)
+- ✅ New agent implementations
+- ✅ Database schema changes
+- ✅ Breaking changes
+- ✅ Major documentation updates (new files, significant additions)
+- ✅ Configuration changes (.env, requirements.txt)
+
+**Can push without asking** for:
+- Minor typos or formatting fixes
+- Small documentation clarifications
+- Log file updates
+- Temporary test files (but ask first if unsure)
+
+### Push Workflow
+
+**Pattern**:
+1. Make changes
+2. Commit locally: `git add -A && git commit -m "..."`
+3. **Ask user**: "Should I push these changes to GitHub?"
+4. If yes: `git push origin main`
+5. Confirm: "Pushed to GitHub (commit: abc123)"
+
+**Example Conversation**:
+```
+Assistant: I've fixed the CompletionMonitor agent and updated documentation.
+           Created 3 files, modified 2 files (780 lines added).
+           
+           Should I push these changes to GitHub?
+
+User: yes
+
+## Git Workflow & GitHub Push Policy
+
+### When to Push to GitHub
+
+**ASK USER BEFORE PUSHING** for:
+- ✅ Major code changes (new features, bug fixes, refactors)
+- ✅ New agent implementations
+- ✅ Database schema changes
+- ✅ Breaking changes
+- ✅ Major documentation updates (new files, significant additions)
+- ✅ Configuration changes (.env, requirements.txt)
+
+**Can push without asking** for:
+- Minor typos or formatting fixes
+- Small documentation clarifications
+- Log file updates
+- Temporary test files (but ask first if unsure)
+
+### Push Workflow
+
+**Pattern**:
+1. Make changes
+2. Commit locally: `git add -A && git commit -m "..."`
+3. **Ask user**: "Should I push these changes to GitHub?"
+4. If yes: `git push origin main`
+5. Confirm: "Pushed to GitHub (commit: abc123)"
+
+**Example Conversation**:
+```
+Assistant: I've fixed the CompletionMonitor agent and updated documentation.
+           Created 3 files, modified 2 files (780 lines added).
+
+           Should I push these changes to GitHub?
+
+User: yes
