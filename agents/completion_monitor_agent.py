@@ -102,6 +102,35 @@ class CompletionMonitorAgent(BaseAgent):
 
         return completion_data
 
+    def _fetch_filing_content(self, url: str) -> Optional[str]:
+        """Fetch and parse filing content from SEC"""
+        try:
+            # Get filing page
+            response = requests.get(url, headers=self.headers, timeout=30)
+
+            if response.status_code != 200:
+                return None
+
+            # Parse HTML
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            # Try to find the main document link (8-K document)
+            for link in soup.find_all('a', href=True):
+                href = link['href']
+                if '.htm' in href and ('8k' in href.lower() or 'd8k' in href.lower()):
+                    # This is the main 8-K document
+                    doc_url = f"https://www.sec.gov{href}" if href.startswith('/') else href
+                    doc_response = requests.get(doc_url, headers=self.headers, timeout=30)
+                    doc_soup = BeautifulSoup(doc_response.text, 'html.parser')
+                    return doc_soup.get_text()
+
+            # Fallback: use the page we already have
+            return soup.get_text()
+
+        except Exception as e:
+            print(f"      ⚠️  Error fetching content: {e}")
+            return None
+
     def _extract_completion_with_ai(self, content: str, filing: Dict) -> Optional[Dict]:
         """Use AI to extract completion details from filing"""
 
