@@ -67,6 +67,95 @@ CREATE TABLE data_quality_conversations (
 
 ---
 
+## Two Learning Modes: Reactive vs Proactive
+
+The learning database supports TWO different learning patterns:
+
+### 1. **Reactive Investigation** (IMPLEMENTED ✅)
+**Agent**: `investigation_agent.py`
+**When**: After anomaly detected (deadline passed, trust cash spike, invalid data)
+**How**: Queries past investigations to generate better hypotheses
+
+**Example**:
+```
+Anomaly Detected: BLUW deadline passed (2025-10-15)
+↓
+Investigation Agent:
+  → Queries past "deadline_passed" cases
+  → AI generates hypothesis: "Likely extension or completion"
+  → Searches SEC filings for evidence
+  → Finds extension in 8-K Item 5.03
+  → Saves outcome to learning database
+```
+
+**Implementation**:
+```python
+# investigation_agent.py (lines 661-796)
+def generate_hypotheses(self, anomaly, context):
+    # Retrieve past learnings for similar issue type
+    past_learnings = self._retrieve_past_learnings(issue_type, ticker)
+
+    # Generate hypotheses informed by past patterns
+    return self.hypothesis_generator.generate(anomaly, context, past_learnings)
+```
+
+**Works for**: Anomalies that need investigation (deadline issues, data spikes, validation failures)
+
+---
+
+### 2. **Proactive Extraction** (NOT IMPLEMENTED ❌)
+**Agents**: Extraction agents (deal_detector, redemption_extractor, etc.)
+**When**: During normal extraction, before anomaly occurs
+**How**: Query past extraction errors to improve accuracy
+
+**Example**:
+```
+Agent extracting earnout_shares from 8-K
+↓
+Before extraction:
+  → Queries past "earnout_shares" format errors
+  → Sees: "AI returned '1.1M' instead of 1100000"
+  → Includes this in prompt: "Return numeric values, not '1.1M'"
+  → AI extracts correctly: 1100000
+  → Database write succeeds
+```
+
+**Current Reality**: ❌ NO extraction agents use this yet
+- Infrastructure exists (`SelfLearningMixin`, learning database)
+- Pattern documented but not implemented
+- All agents still extract without learning from past errors
+
+**What's Needed**:
+1. Teach agents to search filings for missing data (not return None)
+2. Include past extraction errors in AI prompts
+3. Apply learnings proactively during extraction
+
+**User Insight** (Nov 4, 2025):
+> "I think the right solution is first confirm it's still a SPAC that isn't completed, and then to try to find it in filings"
+
+**Correct Pattern**:
+```python
+# When encountering missing data
+if trust_value is None:
+    # ❌ WRONG: Return None (current pattern)
+    # ✅ RIGHT: Search filings to find it
+
+    # 1. Check if SPAC is still active
+    if spac.deal_status != 'COMPLETED':
+        # 2. Query past learnings
+        past_fixes = query_learning_db(field='trust_value')
+
+        # 3. Search filings based on past successes
+        # Past learning: "Found in 10-Q, Item 1 - Financial Statements"
+        trust_value = search_filing_for_trust_value(ticker, hint='10-Q Item 1')
+
+        # 4. Update database
+        if trust_value:
+            update_database(ticker, trust_value=trust_value)
+```
+
+---
+
 ## How Few-Shot Learning Works
 
 ### 1. Query Past Corrections
