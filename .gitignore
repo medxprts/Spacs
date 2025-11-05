@@ -163,6 +163,7 @@ config/agents/*.yaml
 !IPO_DETECTION_FAILURE_ROOT_CAUSE.md
 !docs/OPPORTUNITY_AGENT_DESIGN.md
 !docs/OPPORTUNITY_AGENT_DATA_AUDIT.md
+!docs/OPPORTUNITY_AGENT_DATA_SOURCING_APPROVED.md
 
 # Prompts directory (keep the structure, ignore specific prompts if sensitive)
 # prompts/**/*.yaml
