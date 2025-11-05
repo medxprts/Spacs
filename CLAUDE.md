@@ -20,6 +20,160 @@ TELEGRAM_CHAT_ID=...              # For alerts
 
 ---
 
+## MCP Best Practices (Context Optimization)
+
+**Source**: [Anthropic Engineering: Code Execution with MCP](https://www.anthropic.com/engineering/code-execution-with-mcp)
+
+### Core Principles for Reducing Context Usage
+
+**1. Code Execution Over Direct Tool Calls**
+- When using MCP servers (like n8n-MCP), write Python/shell code to interact with them instead of chaining individual tool calls
+- Example: Instead of calling `list_nodes`, `get_node_info`, `search_nodes` separately, write a script that does all three
+- **Why**: Reduces token usage by processing results in execution environment before returning to model
+
+**2. On-Demand Tool Loading**
+- Don't load all MCP tool definitions upfront
+- Use progressive disclosure: Load only the tools needed for current task
+- Example: `search_tools(query="workflow validation")` → Load only validation-related tools
+- **Why**: Prevents context bloat from unused tool definitions
+
+**3. Pre-Filter Large Datasets**
+- Process large result sets in the execution environment before returning to the model
+- Example: Query 10,000 workflow nodes → Filter to 5 relevant ones → Return filtered results
+- **Why**: Saves massive context by not including irrelevant data
+
+**4. Use Native Code Loops & Conditionals**
+- Use while loops, if statements, and error handling in code instead of agent loops
+- Example: Retry logic, pagination, conditional processing
+- **Why**: Improves latency and reduces token usage from repeated tool calls
+
+**5. Aggregation & Transformation in Code**
+- Perform joins, aggregations, and field extractions before returning results
+- Example: Combine data from multiple n8n workflows, extract specific fields only
+- **Why**: Return only the final processed data, not intermediate steps
+
+### Practical MCP Patterns for This Codebase
+
+**Pattern 1: Batch Processing n8n Workflows**
+```python
+# ❌ BAD: Individual tool calls (high context)
+workflows = mcp__n8n_list_templates(limit=100)
+for workflow in workflows:
+    details = mcp__n8n_get_template(templateId=workflow['id'])
+    # Process details...
+
+# ✅ GOOD: Write code that batches operations
+python3 << 'EOF'
+import sys
+sys.path.append('/path/to/mcp')
+from n8n_mcp import list_templates, get_template
+
+# Fetch all workflows
+workflows = list_templates(limit=100)
+
+# Filter and process in one go
+relevant = [w for w in workflows if w['category'] == 'AI']
+results = [get_template(w['id']) for w in relevant]
+
+# Return only final summary
+print(f"Found {len(results)} AI workflows")
+for r in results:
+    print(f"  - {r['name']}: {r['nodeCount']} nodes")
+EOF
+```
+
+**Pattern 2: Progressive Tool Discovery**
+```python
+# ❌ BAD: Load all n8n tools upfront (500+ tools = huge context)
+all_tools = mcp__n8n_tools_documentation()
+
+# ✅ GOOD: Search for specific tools only
+webhook_tools = mcp__n8n_search_nodes(query="webhook", limit=5)
+# Only loads definitions for 5 webhook-related tools
+```
+
+**Pattern 3: Data Filtering Before Return**
+```python
+# ❌ BAD: Return raw data (bloats context)
+all_nodes = mcp__n8n_list_nodes(limit=500)
+# 500 nodes × 50 lines each = 25,000 lines returned
+
+# ✅ GOOD: Filter in code
+python3 << 'EOF'
+from n8n_mcp import list_nodes
+
+nodes = list_nodes(limit=500)
+ai_nodes = [n for n in nodes if n['category'] == 'AI']
+
+# Return only summary
+print(f"AI Nodes ({len(ai_nodes)}):")
+for n in ai_nodes[:10]:  # Top 10 only
+    print(f"  {n['displayName']}")
+EOF
+```
+
+### When to Use MCP Code Execution
+
+**Use Code Execution When**:
+- ✅ Processing >100 result items
+- ✅ Combining data from multiple MCP calls
+- ✅ Implementing retry logic or error handling
+- ✅ Filtering/aggregating large datasets
+- ✅ Looping over collections
+
+**Use Direct Tool Calls When**:
+- ✅ Single query with small result (<50 items)
+- ✅ Simple operations (get one node, validate one workflow)
+- ✅ Exploratory queries (seeing what's available)
+
+### Context Savings Example
+
+**Scenario**: Find all n8n AI workflows and validate their structure
+
+**Direct Tool Approach** (High Context):
+```
+1. list_templates(limit=200)        → 10,000 tokens
+2. filter in Claude's context       → 2,000 tokens processing
+3. get_template(id=1)               → 500 tokens
+4. get_template(id=2)               → 500 tokens
+... (repeat 20 times)
+5. validate_workflow(workflow1)     → 1,000 tokens
+... (repeat 20 times)
+
+Total: ~35,000 tokens
+```
+
+**Code Execution Approach** (Low Context):
+```python
+python3 << 'EOF'
+from n8n_mcp import list_templates, get_template, validate_workflow
+
+# Fetch and filter
+templates = list_templates(limit=200)
+ai_templates = [t for t in templates if 'AI' in t['name']]
+
+# Validate all
+results = []
+for t in ai_templates:
+    workflow = get_template(t['id'])
+    validation = validate_workflow(workflow)
+    if not validation['valid']:
+        results.append({
+            'name': t['name'],
+            'errors': validation['errors']
+        })
+
+# Return only failures
+print(f"Validation complete. {len(results)} failures:")
+for r in results:
+    print(f"  ❌ {r['name']}: {r['errors'][0]}")
+EOF
+```
+**Result returned to model**: ~500 tokens (just the summary)
+**Total context**: ~2,000 tokens (90% reduction)
+
+---
+
 ## Critical Database Fields
 
 **`SPAC` table**: 102 columns. Key fields:
