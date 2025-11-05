@@ -1663,14 +1663,184 @@ elif page == "📊 Analytics":
 elif page == "⭐ Watchlist":
     st.title("⭐ My Watchlist")
 
+    # ==========================================================================
+    # AUTOMATED OPPORTUNITY RANKINGS
+    # ==========================================================================
+    st.markdown("## 🎯 Automated Opportunity Rankings")
+    st.markdown("Algorithmic scoring based on sponsor track record, sector narrative, PIPE quality, and volume signals")
+
+    # Load opportunity scores from database
+    try:
+        from database import SessionLocal
+        from sqlalchemy import text
+        db = SessionLocal()
+
+        # Get top opportunities (combined score)
+        top_opps_query = text("""
+            SELECT
+                s.ticker,
+                s.company,
+                s.deal_status,
+                s.sector_classified,
+                s.price,
+                s.premium,
+                o.total_score,
+                o.loaded_gun_score,
+                o.lit_fuse_score,
+                o.alert_threshold,
+                o.tier
+            FROM spacs s
+            LEFT JOIN opportunity_scores o ON s.ticker = o.ticker
+            WHERE o.total_score >= 70
+            ORDER BY o.total_score DESC
+            LIMIT 10
+        """)
+        top_opps = pd.read_sql(top_opps_query, db.bind)
+
+        # Show top opportunities if any exist
+        if len(top_opps) > 0:
+            st.markdown("### 🔥 Top Opportunities (Score ≥ 70)")
+
+            for idx, row in top_opps.iterrows():
+                col1, col2, col3, col4 = st.columns([3, 2, 2, 3])
+
+                with col1:
+                    threshold_emoji = {
+                        'EXTREME': '🔥',
+                        'STRONG': '🎯',
+                        'MODERATE': '⚠️'
+                    }.get(row['alert_threshold'], '📊')
+
+                    st.markdown(f"**{threshold_emoji} {row['ticker']}** - {row['company'][:40]}")
+                    st.caption(f"{row['sector_classified']} | {row['deal_status']}")
+
+                with col2:
+                    st.metric("Total Score", f"{row['total_score']}/150")
+
+                with col3:
+                    st.metric("Phase 1", f"{row['loaded_gun_score']}/60")
+                    st.caption(f"Phase 2: {row['lit_fuse_score']}/90")
+
+                with col4:
+                    if pd.notna(row['price']):
+                        st.metric("Price", f"${row['price']:.2f}")
+                    if pd.notna(row['premium']):
+                        st.caption(f"Premium: {row['premium']:.1f}%")
+
+                st.markdown("---")
+        else:
+            st.info("No SPACs currently scored. Run opportunity scoring to see rankings.")
+
+        # Show Loaded Guns (pre-deal only)
+        loaded_guns_query = text("""
+            SELECT
+                s.ticker,
+                s.company,
+                s.sponsor_normalized,
+                s.sector_classified,
+                s.price,
+                s.premium,
+                s.deadline_date,
+                o.loaded_gun_score,
+                o.market_cap_score,
+                o.sponsor_score,
+                o.sector_score,
+                o.dilution_score
+            FROM spacs s
+            LEFT JOIN opportunity_scores o ON s.ticker = o.ticker
+            WHERE s.deal_status = 'SEARCHING'
+              AND o.loaded_gun_score >= 30
+            ORDER BY o.loaded_gun_score DESC
+            LIMIT 10
+        """)
+        loaded_guns = pd.read_sql(loaded_guns_query, db.bind)
+
+        if len(loaded_guns) > 0:
+            st.markdown("### 🔫 Loaded Guns - Pre-Deal SPACs (Phase 1 Score ≥ 30)")
+
+            cols = st.columns(3)
+            for idx, row in loaded_guns.iterrows():
+                col_idx = idx % 3
+                with cols[col_idx]:
+                    tier = "A-Tier" if row['loaded_gun_score'] >= 45 else "B-Tier"
+                    tier_emoji = "🥇" if tier == "A-Tier" else "🥈"
+
+                    st.markdown(f"**{tier_emoji} {row['ticker']}** ({row['loaded_gun_score']}/60)")
+                    st.caption(f"{row['company'][:30]}")
+                    st.caption(f"Sector: {row['sector_classified']}")
+                    st.caption(f"Sponsor: {row['sponsor_normalized'][:25]}")
+
+                    if idx < len(loaded_guns) - 1 and col_idx == 2:
+                        st.markdown("---")
+
+        # Show Lit Fuses (announced deals)
+        lit_fuses_query = text("""
+            SELECT
+                s.ticker,
+                s.company,
+                s.target,
+                s.price,
+                s.premium,
+                s.pipe_size,
+                s.volume_pct_of_float,
+                o.lit_fuse_score,
+                o.pipe_size_score,
+                o.pipe_quality_score,
+                o.volume_score,
+                (SELECT COUNT(*) FROM pipe_investors pi
+                 WHERE pi.ticker = s.ticker AND pi.is_tier1 = TRUE) as tier1_count
+            FROM spacs s
+            LEFT JOIN opportunity_scores o ON s.ticker = o.ticker
+            WHERE s.deal_status = 'ANNOUNCED'
+              AND o.lit_fuse_score >= 50
+            ORDER BY o.lit_fuse_score DESC
+            LIMIT 10
+        """)
+        lit_fuses = pd.read_sql(lit_fuses_query, db.bind)
+
+        if len(lit_fuses) > 0:
+            st.markdown("### 🚀 Lit Fuses - Hot Deals (Phase 2 Score ≥ 50)")
+
+            for idx, row in lit_fuses.iterrows():
+                col1, col2, col3, col4 = st.columns([3, 2, 2, 3])
+
+                with col1:
+                    st.markdown(f"**🚀 {row['ticker']}** → {row['target'][:30]}")
+                    st.caption(f"{row['company'][:40]}")
+
+                with col2:
+                    st.metric("Phase 2 Score", f"{row['lit_fuse_score']}/90")
+
+                with col3:
+                    if row['tier1_count'] > 0:
+                        st.caption(f"✅ {row['tier1_count']} Tier-1 Investor{'s' if row['tier1_count'] > 1 else ''}")
+                    if pd.notna(row['volume_pct_of_float']) and row['volume_pct_of_float'] > 5:
+                        st.caption(f"🔥 {row['volume_pct_of_float']:.1f}% float traded")
+
+                with col4:
+                    if pd.notna(row['price']):
+                        st.metric("Price", f"${row['price']:.2f}")
+                    if pd.notna(row['premium']):
+                        st.caption(f"Premium: {row['premium']:.1f}%")
+
+                st.markdown("---")
+
+        db.close()
+
+    except Exception as e:
+        st.warning(f"Opportunity rankings not yet available. Run scoring to populate.")
+        st.caption(f"Debug: {str(e)}")
+
+    st.markdown("---")
+
     # Define watchlist tickers
     LIVE_DEAL_WATCHLIST = ['BACQ']
     PRE_DEAL_WATCHLIST = ['CAEP', 'TACO', 'PMTR', 'ATII', 'CEPT', 'AEXA']
 
     # ==========================================================================
-    # LIVE DEALS WATCHLIST
+    # MANUAL WATCHLIST - LIVE DEALS
     # ==========================================================================
-    st.markdown("## 📈 Live Deals Watchlist")
+    st.markdown("## 📈 Manual Watchlist - Live Deals")
 
     df_live_watchlist = df[df['ticker'].isin(LIVE_DEAL_WATCHLIST) & (df['deal_status'] == 'ANNOUNCED')].copy()
 
