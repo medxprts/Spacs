@@ -161,6 +161,8 @@ config/agents/*.yaml
 !CODEBASE_CLEANUP_RECOMMENDATIONS.md
 !DATA_VALIDATOR_COMPARISON.md
 !IPO_DETECTION_FAILURE_ROOT_CAUSE.md
+!docs/OPPORTUNITY_AGENT_DESIGN.md
+!docs/OPPORTUNITY_AGENT_DATA_AUDIT.md
 
 # Prompts directory (keep the structure, ignore specific prompts if sensitive)
 # prompts/**/*.yaml
