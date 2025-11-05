@@ -120,6 +120,7 @@ archives/
 
 # SQL files and database dumps
 *.sql
+!migrations/*.sql
 *.sql.gz
 backups/*.sql.gz
 
