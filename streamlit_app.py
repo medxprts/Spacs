@@ -1697,7 +1697,7 @@ elif page == "⭐ Watchlist":
         - Missing data = 0 points for that component
         """)
 
-    st.markdown("*Algorithmic scoring based on sponsor quality, sector narrative, PIPE terms, and volume signals*")
+    st.markdown("*Algorithmic scoring based on IPO size, banker tier, sponsor track record, sector trends, dilution, and vesting alignment*")
 
     # Default weights
     market_cap_weight = 1.0
