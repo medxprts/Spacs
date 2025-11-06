@@ -2011,64 +2011,6 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
             print(f"[ORCHESTRATOR] 💤 Price monitoring: Market closed (current time ET: {current_time_et.strftime('%H:%M')})")
 
         # ========================================================================
-        # Volume Tracking (Every 30 minutes during market hours)
-        # ========================================================================
-        volume_interval_minutes = 30
-        last_volume_run = self.state_manager.state['last_run'].get('volume_tracker')
-
-        should_run_volume = False
-        if is_market_hours:
-            if last_volume_run is None:
-                should_run_volume = True
-            else:
-                last_run_dt = datetime.fromisoformat(last_volume_run)
-                minutes_since_last = (current_time - last_run_dt).total_seconds() / 60
-
-                if minutes_since_last >= volume_interval_minutes:
-                    should_run_volume = True
-
-        if should_run_volume:
-            print(f"[ORCHESTRATOR] 📊 Running scheduled volume tracking...")
-
-            try:
-                from agents.volume_tracker_agent import VolumeTrackerAgent
-
-                agent = VolumeTrackerAgent()
-                task = AgentTask(
-                    task_id=f"volume_tracker_{int(time.time())}",
-                    agent_name="volume_tracker",
-                    task_type="update_all",
-                    priority=TaskPriority.MEDIUM,
-                    status=TaskStatus.PENDING,
-                    created_at=current_time,
-                    parameters={'task_type': 'update_all'}
-                )
-
-                result = agent.execute(task)
-
-                # Update last run time
-                self.state_manager.state['last_run']['volume_tracker'] = current_time.isoformat()
-                self.state_manager.save_state()
-
-                if result.get('success'):
-                    spikes = result.get('spikes_detected', 0)
-                    updated = result.get('spacs_updated', 0)
-                    print(f"[ORCHESTRATOR] ✓ Volume tracking complete: {updated} SPACs, {spikes} spikes")
-                else:
-                    print(f"[ORCHESTRATOR] ✗ Volume tracking failed: {result.get('error')}")
-
-            except Exception as e:
-                print(f"[ORCHESTRATOR] ✗ Volume tracking error: {e}")
-
-        elif is_market_hours and last_volume_run:
-            last_run_dt = datetime.fromisoformat(last_volume_run)
-            minutes_since_last = (current_time - last_run_dt).total_seconds() / 60
-            minutes_until_next = volume_interval_minutes - minutes_since_last
-
-            print(f"[ORCHESTRATOR] ⏭️  Volume tracking: Last run {minutes_since_last:.0f} min ago, "
-                  f"next in {minutes_until_next:.0f} min")
-
-        # ========================================================================
         # After-Market Tasks (Daily at 4:30 PM ET after market closes)
         # ========================================================================
         # Run market snapshot and historical price backfill after market close
@@ -2128,6 +2070,34 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
                     print(f"[ORCHESTRATOR]   ✓ Historical prices backfilled")
                 else:
                     print(f"[ORCHESTRATOR]   ✗ Backfill failed: {result.stderr[:200]}")
+
+                # 3. Calculate 30-day volume baseline for all SPACs
+                print(f"[ORCHESTRATOR]   → Calculating 30-day volume baselines...")
+                try:
+                    from agents.volume_tracker_agent import VolumeTrackerAgent
+
+                    volume_agent = VolumeTrackerAgent()
+                    # Only calculate baselines, don't send alerts (PriceMonitor handles alerts)
+                    volume_agent.spike_threshold_extreme = 999  # Disable alerts
+
+                    task_obj = AgentTask(
+                        task_id=f"volume_baseline_{int(time.time())}",
+                        agent_name="volume_baseline",
+                        task_type="update_all",
+                        priority=TaskPriority.LOW,
+                        status=TaskStatus.PENDING,
+                        created_at=current_time,
+                        parameters={'task_type': 'update_all'}
+                    )
+
+                    volume_result = volume_agent.execute(task_obj)
+                    if volume_result.get('success'):
+                        updated = volume_result.get('spacs_updated', 0)
+                        print(f"[ORCHESTRATOR]   ✓ Volume baselines updated for {updated} SPACs")
+                    else:
+                        print(f"[ORCHESTRATOR]   ✗ Volume baseline calculation failed")
+                except Exception as vol_error:
+                    print(f"[ORCHESTRATOR]   ✗ Volume baseline error: {vol_error}")
 
                 # Update last run time
                 self.state_manager.state['last_run']['aftermarket_tasks'] = current_time.isoformat()

@@ -40,8 +40,12 @@ class PriceMonitorAgent(OrchestratorAgentBase):
             volume_spikes = []
 
             for spac in spacs:
-                # Check for price spike (≥5% change)
-                if spac.price_change_24h and abs(spac.price_change_24h) >= 5.0:
+                # Check for price change - threshold depends on deal status
+                # SEARCHING: 5% (near NAV, so smaller moves are significant)
+                # ANNOUNCED: 10% (more volatile post-deal, need higher bar)
+                price_threshold = 5.0 if spac.deal_status == 'SEARCHING' else 10.0
+
+                if spac.price_change_24h and abs(spac.price_change_24h) >= price_threshold:
                     # Trigger orchestrator investigation
                     triggered = trigger_price_spike(
                         ticker=spac.ticker,
@@ -57,13 +61,41 @@ class PriceMonitorAgent(OrchestratorAgentBase):
                             'change': spac.price_change_24h,
                             'status': spac.deal_status
                         })
-                        print(f"   🚨 Price spike detected: {spac.ticker} {spac.price_change_24h:+.1f}%")
+                        print(f"   🚨 Price change detected: {spac.ticker} {spac.price_change_24h:+.1f}% ({spac.deal_status})")
 
-                # Check for volume spike (>5% of float traded)
+                # Check for volume spike with significance filter
+                # Must pass significance filter first (prevents low-volume noise)
                 if spac.volume and spac.shares_outstanding and spac.shares_outstanding > 0:
                     volume_pct_float = (spac.volume / spac.shares_outstanding) * 100
+                    volume_pct_of_outstanding = (spac.volume / spac.shares_outstanding) * 100
+
+                    # Significance filter: Volume must be meaningful
+                    is_significant_volume = (
+                        spac.volume > 100_000 or  # Absolute minimum
+                        volume_pct_of_outstanding > 2.0  # Or >2% of outstanding
+                    )
+
+                    if not is_significant_volume:
+                        continue  # Skip low-volume SPACs
+
+                    # Check for volume spike using dual criteria:
+                    # 1. Absolute: >5% of float traded (existing)
+                    # 2. Relative: >10x the 30-day average (new)
+                    is_volume_spike = False
+                    spike_reason = None
 
                     if volume_pct_float >= 5.0:
+                        is_volume_spike = True
+                        spike_reason = f"{volume_pct_float:.1f}% of float"
+
+                    # Also check 10x 30-day average (if we have baseline data)
+                    if spac.volume_avg_30d and spac.volume_avg_30d > 0:
+                        volume_ratio = spac.volume / spac.volume_avg_30d
+                        if volume_ratio >= 10.0:
+                            is_volume_spike = True
+                            spike_reason = f"{volume_ratio:.1f}x 30-day avg" if not spike_reason else f"{spike_reason} + {volume_ratio:.1f}x avg"
+
+                    if is_volume_spike:
                         # Trigger volume spike investigation
                         triggered = trigger_price_spike(
                             ticker=spac.ticker,
@@ -79,9 +111,10 @@ class PriceMonitorAgent(OrchestratorAgentBase):
                                 'ticker': spac.ticker,
                                 'volume': spac.volume,
                                 'volume_pct_float': volume_pct_float,
-                                'price_change': spac.price_change_24h
+                                'price_change': spac.price_change_24h,
+                                'reason': spike_reason
                             })
-                            print(f"   📊 Volume spike detected: {spac.ticker} {volume_pct_float:.1f}% of float traded ({spac.volume:,} shares)")
+                            print(f"   📊 Volume spike detected: {spac.ticker} {spac.volume:,} shares ({spike_reason})")
 
             db.close()
 
