@@ -2,15 +2,16 @@
 """
 Phase 1 "Loaded Gun" Scoring Agent
 ===================================
-Calculates pre-deal SPAC quality scores across 5 components:
+Calculates pre-deal SPAC quality scores across 6 components:
 
 1. Market Cap Score (0-10): Based on IPO size (liquidity proxy)
-2. Sponsor Score (0-15): Based on banker tier
-3. Sector Score (0-10): Based on hot sector classification
-4. Dilution Score (0-15): Based on founder shares dilution
-5. Promote Score (0-10): Based on vesting alignment
+2. Banker Score (0-15): Based on underwriter tier (Goldman, JPM, etc.)
+3. Sponsor Score (0-15): Based on sponsor track record (TODO: pending historical data)
+4. Sector Score (0-10): Based on hot sector classification
+5. Dilution Score (0-15): Based on founder shares dilution
+6. Promote Score (0-10): Based on vesting alignment
 
-Total: 0-60 points (Loaded Gun Score)
+Total: 0-75 points (Loaded Gun Score)
 
 Usage:
     python3 phase1_scorer.py --all           # Score all pre-deal SPACs
@@ -91,16 +92,14 @@ def score_market_cap(ipo_proceeds_millions):
         return 0
 
 
-def score_sponsor(banker_tier):
+def score_banker(banker_tier):
     """
-    Score based on investment banker tier (0-15 points).
+    Score based on investment banker/underwriter tier (0-15 points).
 
-    Tier 1: 15 points (Goldman, JPM, Citi, etc.)
-    Tier 2: 10 points (Regional banks)
-    Tier 3: 5 points (Small banks)
+    Tier 1: 15 points (Goldman Sachs, JPMorgan, Citigroup, etc.)
+    Tier 2: 10 points (Regional banks, mid-tier underwriters)
+    Tier 3: 5 points (Small banks, boutique underwriters)
     None: 0 points
-
-    Note: Sponsor performance bonus not yet implemented (pending historical data).
     """
     if banker_tier == 'Tier 1':
         return 15
@@ -110,6 +109,28 @@ def score_sponsor(banker_tier):
         return 5
     else:
         return 0
+
+
+def score_sponsor(sponsor_name):
+    """
+    Score based on sponsor/founder team track record (0-15 points).
+
+    Scoring based on historical SPAC performance:
+    - Past SPACs with strong POP (7-day, 14-day, 30-day returns)
+    - Number of successful deals completed
+    - Average investor returns
+
+    TODO: Implement once historical sponsor performance database is built.
+    Currently returns 0 for all sponsors (pending 2016-2019 deal research).
+
+    Future implementation:
+    - 15 points: Top-tier sponsors (3+ successful SPACs, avg >20% returns)
+    - 10 points: Proven sponsors (2 successful SPACs, avg >10% returns)
+    - 5 points: One previous SPAC with positive returns
+    - 0 points: First-time sponsor or negative track record
+    """
+    # Placeholder until historical data is available
+    return 0
 
 
 def score_sector(is_hot_sector):
@@ -184,23 +205,25 @@ def calculate_phase1_score(spac):
     Calculate total Phase 1 score for a SPAC.
 
     Returns:
-        dict with component scores and total
+        dict with component scores and total (max 75 points)
     """
     # Parse IPO proceeds
     ipo_millions = parse_ipo_proceeds(spac.ipo_proceeds)
 
     # Calculate component scores
     market_cap = score_market_cap(ipo_millions)
-    sponsor = score_sponsor(spac.banker_tier)
+    banker = score_banker(spac.banker_tier)
+    sponsor = score_sponsor(spac.sponsor)  # TODO: Will be >0 once historical data added
     sector = score_sector(spac.is_hot_sector)
     dilution = score_dilution(spac.founder_shares, spac.shares_outstanding_base)
     promote = score_promote_vesting(spac.promote_vesting_type)
 
-    # Total
-    total = market_cap + sponsor + sector + dilution + promote
+    # Total (max 75: 10+15+15+10+15+10)
+    total = market_cap + banker + sponsor + sector + dilution + promote
 
     return {
         'market_cap_score': market_cap,
+        'banker_score': banker,
         'sponsor_score': sponsor,
         'sector_score': sector,
         'dilution_score': dilution,
@@ -225,17 +248,19 @@ def save_score(db, ticker, scores):
         db.execute(text("""
             UPDATE opportunity_scores
             SET market_cap_score = :market_cap,
+                banker_score = :banker,
                 sponsor_score = :sponsor,
                 sector_score = :sector,
                 dilution_score = :dilution,
                 promote_score = :promote,
                 loaded_gun_score = :loaded_gun,
                 last_calculated = :now,
-                calculation_version = '1.0'
+                calculation_version = '1.1'
             WHERE ticker = :ticker
         """), {
             'ticker': ticker,
             'market_cap': scores['market_cap_score'],
+            'banker': scores['banker_score'],
             'sponsor': scores['sponsor_score'],
             'sector': scores['sector_score'],
             'dilution': scores['dilution_score'],
@@ -247,17 +272,18 @@ def save_score(db, ticker, scores):
         # Insert new
         db.execute(text("""
             INSERT INTO opportunity_scores (
-                ticker, market_cap_score, sponsor_score, sector_score,
+                ticker, market_cap_score, banker_score, sponsor_score, sector_score,
                 dilution_score, promote_score, loaded_gun_score,
                 last_calculated, calculation_version
             ) VALUES (
-                :ticker, :market_cap, :sponsor, :sector,
+                :ticker, :market_cap, :banker, :sponsor, :sector,
                 :dilution, :promote, :loaded_gun,
-                :now, '1.0'
+                :now, '1.1'
             )
         """), {
             'ticker': ticker,
             'market_cap': scores['market_cap_score'],
+            'banker': scores['banker_score'],
             'sponsor': scores['sponsor_score'],
             'sector': scores['sector_score'],
             'dilution': scores['dilution_score'],
@@ -297,14 +323,14 @@ def score_all_predeal():
         print(f"\n✅ Scoring complete!")
         print(f"\nResults:")
         print(f"  Total SPACs scored: {scored_count}")
-        print(f"  Average Phase 1 score: {sum(total_scores)/len(total_scores):.1f}/60")
-        print(f"  Highest score: {max(total_scores)}/60")
-        print(f"  Lowest score: {min(total_scores)}/60")
+        print(f"  Average Phase 1 score: {sum(total_scores)/len(total_scores):.1f}/75")
+        print(f"  Highest score: {max(total_scores)}/75")
+        print(f"  Lowest score: {min(total_scores)}/75")
 
         # Show top 10
         top_spacs = db.execute(text("""
             SELECT s.ticker, s.company, o.loaded_gun_score,
-                   o.market_cap_score, o.sponsor_score, o.sector_score,
+                   o.market_cap_score, o.banker_score, o.sponsor_score, o.sector_score,
                    o.dilution_score, o.promote_score
             FROM spacs s
             JOIN opportunity_scores o ON s.ticker = o.ticker
@@ -315,9 +341,9 @@ def score_all_predeal():
 
         print(f"\n🔫 Top 10 Loaded Guns:\n")
         for i, spac in enumerate(top_spacs, 1):
-            ticker, company, total, mkt, spon, sect, dil, prom = spac
-            print(f"{i:2d}. {ticker:5s} {total:2d}/60  " +
-                  f"[Mkt:{mkt:2d} Spon:{spon:2d} Sect:{sect:2d} Dil:{dil:2d} Prom:{prom:2d}]  " +
+            ticker, company, total, mkt, bank, spon, sect, dil, prom = spac
+            print(f"{i:2d}. {ticker:5s} {total:2d}/75  " +
+                  f"[Mkt:{mkt:2d} Bank:{bank:2d} Spon:{spon:2d} Sect:{sect:2d} Dil:{dil:2d} Prom:{prom:2d}]  " +
                   f"{company[:40]}")
 
     finally:
@@ -344,14 +370,16 @@ def score_single(ticker):
 
         print(f"\n📊 Phase 1 'Loaded Gun' Score for {ticker}\n")
         print(f"Company: {spac.company}")
-        print(f"Sponsor: {spac.sponsor}")
+        print(f"Sponsor: {spac.sponsor or 'N/A'}")
+        print(f"Banker: {spac.banker or 'N/A'}")
         print(f"\nComponent Scores:")
         print(f"  Market Cap:      {scores['market_cap_score']:2d}/10  (IPO: ${scores['ipo_millions']:.0f}M)" if scores['ipo_millions'] else f"  Market Cap:      {scores['market_cap_score']:2d}/10  (IPO: N/A)")
-        print(f"  Sponsor:         {scores['sponsor_score']:2d}/15  ({spac.banker_tier or 'N/A'})")
+        print(f"  Banker Quality:  {scores['banker_score']:2d}/15  ({spac.banker_tier or 'N/A'})")
+        print(f"  Sponsor Quality: {scores['sponsor_score']:2d}/15  (Track record: TODO)")
         print(f"  Sector:          {scores['sector_score']:2d}/10  ({'Hot' if spac.is_hot_sector else 'Not hot'})")
         print(f"  Dilution:        {scores['dilution_score']:2d}/15  ({(spac.founder_shares/spac.shares_outstanding_base*100):.1f}% founder)" if spac.founder_shares and spac.shares_outstanding_base else f"  Dilution:        {scores['dilution_score']:2d}/15  (N/A)")
         print(f"  Promote Vesting: {scores['promote_score']:2d}/10  ({spac.promote_vesting_type or 'N/A'})")
-        print(f"\n🔫 Total Loaded Gun Score: {scores['loaded_gun_score']}/60")
+        print(f"\n🔫 Total Loaded Gun Score: {scores['loaded_gun_score']}/75")
 
     finally:
         db.close()

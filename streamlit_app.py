@@ -1701,6 +1701,7 @@ elif page == "⭐ Watchlist":
 
     # Default weights
     market_cap_weight = 1.0
+    banker_weight = 1.0
     sponsor_weight = 1.0
     sector_weight = 1.0
     dilution_weight = 1.0
@@ -1714,18 +1715,19 @@ elif page == "⭐ Watchlist":
 
         with col1:
             market_cap_weight = st.slider("Market Cap", 0.0, 2.0, market_cap_weight, 0.1, help="Multiplier for IPO size score")
-            sponsor_weight = st.slider("Sponsor Quality", 0.0, 2.0, sponsor_weight, 0.1, help="Multiplier for banker tier score")
+            banker_weight = st.slider("Banker Quality", 0.0, 2.0, banker_weight, 0.1, help="Multiplier for underwriter tier score (Goldman, JPM, etc.)")
 
         with col2:
+            sponsor_weight = st.slider("Sponsor Quality", 0.0, 2.0, sponsor_weight, 0.1, help="Multiplier for founder team track record")
             sector_weight = st.slider("Hot Sector", 0.0, 2.0, sector_weight, 0.1, help="Multiplier for sector narrative score")
-            dilution_weight = st.slider("Low Dilution", 0.0, 2.0, dilution_weight, 0.1, help="Multiplier for founder dilution score")
 
         with col3:
+            dilution_weight = st.slider("Low Dilution", 0.0, 2.0, dilution_weight, 0.1, help="Multiplier for founder dilution score")
             promote_weight = st.slider("Promote Vesting", 0.0, 2.0, promote_weight, 0.1, help="Multiplier for vesting alignment score")
 
-        if any([market_cap_weight != 1.0, sponsor_weight != 1.0, sector_weight != 1.0,
+        if any([market_cap_weight != 1.0, banker_weight != 1.0, sponsor_weight != 1.0, sector_weight != 1.0,
                 dilution_weight != 1.0, promote_weight != 1.0]):
-            st.info(f"🔧 Custom weights active: Mkt×{market_cap_weight} | Spon×{sponsor_weight} | Sect×{sector_weight} | Dil×{dilution_weight} | Prom×{promote_weight}")
+            st.info(f"🔧 Custom weights active: Mkt×{market_cap_weight} | Bank×{banker_weight} | Spon×{sponsor_weight} | Sect×{sector_weight} | Dil×{dilution_weight} | Prom×{promote_weight}")
             if st.button("Reset to Default Weights"):
                 st.rerun()
 
@@ -1778,7 +1780,7 @@ elif page == "⭐ Watchlist":
                     st.metric("Total Score", f"{row['total_score']}/150")
 
                 with col3:
-                    st.metric("Phase 1", f"{row['loaded_gun_score']}/60")
+                    st.metric("Phase 1", f"{row['loaded_gun_score']}/75")
                     st.caption(f"Phase 2: {row['lit_fuse_score']}/90")
 
                 with col4:
@@ -1803,11 +1805,13 @@ elif page == "⭐ Watchlist":
                 s.deadline_date,
                 o.loaded_gun_score,
                 o.market_cap_score,
+                o.banker_score,
                 o.sponsor_score,
                 o.sector_score,
                 o.dilution_score,
                 o.promote_score,
                 (o.market_cap_score * {market_cap_weight} +
+                 o.banker_score * {banker_weight} +
                  o.sponsor_score * {sponsor_weight} +
                  o.sector_score * {sector_weight} +
                  o.dilution_score * {dilution_weight} +
@@ -1823,22 +1827,22 @@ elif page == "⭐ Watchlist":
 
         if len(loaded_guns) > 0:
             # Update header based on weights
-            if any([market_cap_weight != 1.0, sponsor_weight != 1.0, sector_weight != 1.0,
+            if any([market_cap_weight != 1.0, banker_weight != 1.0, sponsor_weight != 1.0, sector_weight != 1.0,
                     dilution_weight != 1.0, promote_weight != 1.0]):
                 st.markdown("### 🔫 Loaded Guns - Pre-Deal SPACs (Custom Weights)")
-                st.caption(f"Weighted scores shown | Mkt×{market_cap_weight} Spon×{sponsor_weight} Sect×{sector_weight} Dil×{dilution_weight} Prom×{promote_weight}")
+                st.caption(f"Weighted scores shown | Mkt×{market_cap_weight} Bank×{banker_weight} Spon×{sponsor_weight} Sect×{sector_weight} Dil×{dilution_weight} Prom×{promote_weight}")
             else:
                 st.markdown("### 🔫 Loaded Guns - Pre-Deal SPACs (Phase 1 Score ≥ 20)")
-                st.caption("Quality: Mkt Cap (0-10) + Sponsor (0-15) + Sector (0-10) + Dilution (0-15) + Promote (0-10)")
+                st.caption("Quality: Mkt Cap (0-10) + Banker (0-15) + Sponsor (0-15) + Sector (0-10) + Dilution (0-15) + Promote (0-10)")
 
             # Create table data
             table_data = []
             for idx, row in loaded_guns.iterrows():
                 # Use weighted score if custom weights applied
-                display_score = row['weighted_score'] if any([market_cap_weight != 1.0, sponsor_weight != 1.0,
+                display_score = row['weighted_score'] if any([market_cap_weight != 1.0, banker_weight != 1.0, sponsor_weight != 1.0,
                                                                 sector_weight != 1.0, dilution_weight != 1.0,
                                                                 promote_weight != 1.0]) else row['loaded_gun_score']
-                max_score = market_cap_weight*10 + sponsor_weight*15 + sector_weight*10 + dilution_weight*15 + promote_weight*10
+                max_score = market_cap_weight*10 + banker_weight*15 + sponsor_weight*15 + sector_weight*10 + dilution_weight*15 + promote_weight*10
 
                 tier_emoji = "🥇" if display_score >= max_score*0.75 else "🥈" if display_score >= max_score*0.60 else "🥉"
                 price_str = f"${row['price']:.2f}" if pd.notna(row['price']) else "N/A"
@@ -1847,8 +1851,9 @@ elif page == "⭐ Watchlist":
                 table_data.append({
                     'Rank': f"{tier_emoji} #{idx+1}",
                     'Ticker': row['ticker'],
-                    'Score': f"{display_score:.0f}/{max_score:.0f}" if max_score != 60 else f"{row['loaded_gun_score']}/60",
+                    'Score': f"{display_score:.0f}/{max_score:.0f}" if max_score != 75 else f"{row['loaded_gun_score']}/75",
                     'Mkt': row['market_cap_score'],
+                    'Bank': row['banker_score'],
                     'Spon': row['sponsor_score'],
                     'Sect': row['sector_score'],
                     'Dil': row['dilution_score'],
