@@ -199,7 +199,17 @@ class PromoteVestingExtractor(OrchestratorAgentBase):
     def _extract_vesting_from_url(self, url: str, ticker: str) -> Optional[Dict]:
         """Extract vesting terms from a direct 424B4 URL"""
         try:
-            # Fetch document content directly
+            # Handle index URLs - extract actual document URL first
+            if 'index.htm' in url or '-index.htm' in url:
+                print(f"   🔗 Resolving index URL...")
+                actual_url = self.fetcher.extract_document_url(url, filing_type='424B4')
+                if not actual_url:
+                    print(f"   ⚠️  Could not extract document URL from index")
+                    return None
+                url = actual_url
+                print(f"   ✓ Document: {url.split('/')[-1]}")
+
+            # Fetch document content
             doc_content = self.fetcher.fetch_document(url)
             if not doc_content:
                 print(f"   ⚠️  Could not fetch document content")

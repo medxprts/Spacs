@@ -56,6 +56,17 @@ def fetch_424b4_content(url):
     headers = {'User-Agent': 'SPAC Research Platform admin@spacresearch.com'}
 
     try:
+        # Handle index URLs - extract actual document URL first
+        if 'index.htm' in url or '-index.htm' in url:
+            from utils.sec_filing_fetcher import SECFilingFetcher
+            fetcher = SECFilingFetcher()
+            actual_url = fetcher.extract_document_url(url, filing_type='424B4')
+            if not actual_url:
+                print(f"  ⚠️  Could not extract document URL from index")
+                return None
+            url = actual_url
+            print(f"  ✓ Resolved to: {url.split('/')[-1]}")
+
         response = requests.get(url, headers=headers, timeout=30)
         if response.status_code != 200:
             return None
@@ -90,9 +101,17 @@ Extract these fields (use null if not found):
   "banker": "<string>",  // Lead underwriter/representative
   "warrant_exercise_price": <number>,  // Warrant strike price (usually 11.50)
   "warrant_ratio": "<string>",  // Warrants per share (e.g. "1/2" or "1")
+  "warrant_redemption_price": <number>,  // Price at which company can redeem warrants (e.g. 18.00)
+  "warrant_redemption_days": <string>,  // Notice period for warrant redemption (e.g. "30 days")
+  "warrant_cashless_exercise": <boolean>,  // Whether cashless exercise is allowed
+  "warrant_expiration_years": <number>,  // Years until warrant expiration (usually 5)
+  "warrant_expiration_trigger": "<string>",  // What triggers expiration (e.g. "5 years after business combination")
   "extension_months_available": <number>,  // Months of extensions available (3, 6, or 12)
   "extension_deposit_per_share": <number>,  // Deposit per share for extension (e.g. 0.03)
-  "max_deadline_with_extensions": <number>  // Total months to deadline with extensions (18, 24, 27, 30, 36)
+  "max_deadline_with_extensions": <number>,  // Total months to deadline with extensions (18, 24, 27, 30, 36)
+  "management_team": "<string>",  // Names and titles of key management team members (comma-separated)
+  "management_summary": "<string>",  // 2-3 sentence summary of team's relevant experience and background
+  "key_executives": "<string>"  // CEO, President, CFO with brief background (e.g. "John Smith - Former CEO XYZ Corp, 20 years experience")
 }}
 
 Text excerpt:
@@ -201,6 +220,38 @@ def extract_all_data(spac):
             ratio = float(ratio_str)
         spac.warrant_ratio = ratio
         updates.append(f"warrant_ratio: {ai_data['warrant_ratio']} = {ratio}")
+
+    if ai_data.get('warrant_redemption_price') and not spac.warrant_redemption_price:
+        spac.warrant_redemption_price = ai_data['warrant_redemption_price']
+        updates.append(f"warrant_redemption_price: ${ai_data['warrant_redemption_price']}")
+
+    if ai_data.get('warrant_redemption_days') and not spac.warrant_redemption_days:
+        spac.warrant_redemption_days = ai_data['warrant_redemption_days']
+        updates.append(f"warrant_redemption_days: {ai_data['warrant_redemption_days']}")
+
+    if ai_data.get('warrant_cashless_exercise') is not None and spac.warrant_cashless_exercise is None:
+        spac.warrant_cashless_exercise = ai_data['warrant_cashless_exercise']
+        updates.append(f"warrant_cashless_exercise: {ai_data['warrant_cashless_exercise']}")
+
+    if ai_data.get('warrant_expiration_years') and not spac.warrant_expiration_years:
+        spac.warrant_expiration_years = ai_data['warrant_expiration_years']
+        updates.append(f"warrant_expiration_years: {ai_data['warrant_expiration_years']}")
+
+    if ai_data.get('warrant_expiration_trigger') and not spac.warrant_expiration_trigger:
+        spac.warrant_expiration_trigger = ai_data['warrant_expiration_trigger']
+        updates.append(f"warrant_expiration_trigger: {ai_data['warrant_expiration_trigger'][:50]}")
+
+    if ai_data.get('management_team') and not spac.management_team:
+        spac.management_team = ai_data['management_team']
+        updates.append(f"management_team: {ai_data['management_team'][:60]}...")
+
+    if ai_data.get('management_summary') and not spac.management_summary:
+        spac.management_summary = ai_data['management_summary']
+        updates.append(f"management_summary: {ai_data['management_summary'][:60]}...")
+
+    if ai_data.get('key_executives') and not spac.key_executives:
+        spac.key_executives = ai_data['key_executives']
+        updates.append(f"key_executives: {ai_data['key_executives'][:60]}...")
 
     if ai_data.get('extension_months_available') and not spac.extension_months_available:
         spac.extension_months_available = ai_data['extension_months_available']
