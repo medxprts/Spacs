@@ -1699,6 +1699,13 @@ elif page == "⭐ Watchlist":
 
     st.markdown("*Algorithmic scoring based on sponsor quality, sector narrative, PIPE terms, and volume signals*")
 
+    # Default weights
+    market_cap_weight = 1.0
+    sponsor_weight = 1.0
+    sector_weight = 1.0
+    dilution_weight = 1.0
+    promote_weight = 1.0
+
     # Weight adjustment controls
     with st.expander("⚙️ Adjust Scoring Weights (Advanced)", expanded=False):
         st.markdown("Customize the importance of each scoring component:")
@@ -1706,28 +1713,21 @@ elif page == "⭐ Watchlist":
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            market_cap_weight = st.slider("Market Cap", 0.0, 2.0, 1.0, 0.1, help="Multiplier for IPO size score")
-            sponsor_weight = st.slider("Sponsor Quality", 0.0, 2.0, 1.0, 0.1, help="Multiplier for banker tier score")
+            market_cap_weight = st.slider("Market Cap", 0.0, 2.0, market_cap_weight, 0.1, help="Multiplier for IPO size score")
+            sponsor_weight = st.slider("Sponsor Quality", 0.0, 2.0, sponsor_weight, 0.1, help="Multiplier for banker tier score")
 
         with col2:
-            sector_weight = st.slider("Hot Sector", 0.0, 2.0, 1.0, 0.1, help="Multiplier for sector narrative score")
-            dilution_weight = st.slider("Low Dilution", 0.0, 2.0, 1.0, 0.1, help="Multiplier for founder dilution score")
+            sector_weight = st.slider("Hot Sector", 0.0, 2.0, sector_weight, 0.1, help="Multiplier for sector narrative score")
+            dilution_weight = st.slider("Low Dilution", 0.0, 2.0, dilution_weight, 0.1, help="Multiplier for founder dilution score")
 
         with col3:
-            promote_weight = st.slider("Promote Vesting", 0.0, 2.0, 1.0, 0.1, help="Multiplier for vesting alignment score")
+            promote_weight = st.slider("Promote Vesting", 0.0, 2.0, promote_weight, 0.1, help="Multiplier for vesting alignment score")
 
         if any([market_cap_weight != 1.0, sponsor_weight != 1.0, sector_weight != 1.0,
                 dilution_weight != 1.0, promote_weight != 1.0]):
             st.info(f"🔧 Custom weights active: Mkt×{market_cap_weight} | Spon×{sponsor_weight} | Sect×{sector_weight} | Dil×{dilution_weight} | Prom×{promote_weight}")
             if st.button("Reset to Default Weights"):
                 st.rerun()
-    else:
-        # Default weights
-        market_cap_weight = 1.0
-        sponsor_weight = 1.0
-        sector_weight = 1.0
-        dilution_weight = 1.0
-        promote_weight = 1.0
 
     # Load opportunity scores from database
     try:
