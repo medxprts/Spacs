@@ -84,7 +84,7 @@ class PIPEExtractorAgent:
         Returns:
             Dict with PIPE data if found, None otherwise
         """
-        filing_type = filing.get('type')
+        filing_type = filing.get('type', '').strip()  # Strip whitespace
         filing_url = filing.get('url')
 
         if filing_type != '8-K':
@@ -94,7 +94,7 @@ class PIPEExtractorAgent:
         print(f"   URL: {filing_url}")
 
         # Fetch filing content
-        filing_html = self.fetcher.fetch_filing_document(filing_url)
+        filing_html = self.fetcher.fetch_document(filing_url)
         if not filing_html:
             print(f"   ❌ Could not fetch filing")
             return None
@@ -106,11 +106,38 @@ class PIPEExtractorAgent:
             print(f"   ℹ️  Not a deal announcement, skipping PIPE extraction")
             return None
 
-        # Extract exhibits
-        exhibits = self._extract_exhibits(soup, filing_url)
-        if not exhibits:
+        # First, try extracting from 8-K body text (some deals include full BCA text)
+        body_text = soup.get_text()
+        if 'pipe' in body_text.lower():
+            print(f"   🔍 PIPE mentioned in 8-K body, checking...")
+            body_pipe = await self._ai_extract_pipe(body_text[:8000], ticker)
+            if body_pipe and body_pipe.get('has_pipe'):
+                updated = self._update_database(ticker, body_pipe)
+                if updated:
+                    print(f"   ✅ Updated {ticker} with PIPE data from 8-K body")
+                    return {'success': True, 'pipe_data': body_pipe}
+
+        # Extract exhibits using SEC fetcher (handles index pages properly)
+        exhibits = self.fetcher.extract_exhibits(filing_url)
+
+        # Convert to our exhibit format
+        formatted_exhibits = []
+        for ex in exhibits:
+            formatted_exhibits.append({
+                'text': f"EX-{ex['exhibit_number']} - {ex['description']}",
+                'url': ex['url'],
+                'type': self._classify_exhibit(f"EX-{ex['exhibit_number']}")
+            })
+
+        if not formatted_exhibits:
             print(f"   ⚠️  No exhibits found")
             return None
+
+        # Sort by priority (Press Release > Institutional PIPE > Other PIPE > BCA)
+        priority_order = {'press_release': 1, 'pipe_institutional': 2, 'pipe_agreement': 3, 'bca': 4, 'other': 5}
+        formatted_exhibits.sort(key=lambda x: priority_order.get(x['type'], 999))
+
+        exhibits = formatted_exhibits
 
         print(f"   📎 Found {len(exhibits)} exhibits")
 
@@ -175,19 +202,23 @@ class PIPEExtractorAgent:
                     'type': self._classify_exhibit(text)
                 })
 
-        # Sort by priority (PIPE subscription > press release > BCA)
-        priority_order = {'pipe_agreement': 1, 'press_release': 2, 'bca': 3, 'other': 4}
+        # Sort by priority (Press Release > Institutional PIPE > Other PIPE > BCA)
+        # Press release has total PIPE summary, forms/BCAs often have incomplete data
+        priority_order = {'press_release': 1, 'pipe_institutional': 2, 'pipe_agreement': 3, 'bca': 4, 'other': 5}
         exhibits.sort(key=lambda x: priority_order.get(x['type'], 999))
 
         return exhibits
 
     def _classify_exhibit(self, text: str) -> str:
-        """Classify exhibit by type"""
+        """Classify exhibit by type with priority for institutional PIPE"""
         text_upper = text.upper()
 
-        if 'EX-10' in text_upper or 'SUBSCRIPTION' in text_upper or 'PIPE' in text_upper:
+        # Prioritize institutional PIPE subscription agreements
+        if 'EX-10.1' in text_upper or ('SUBSCRIPTION' in text_upper and 'INSTITUTIONAL' in text_upper):
+            return 'pipe_institutional'
+        elif 'EX-10' in text_upper or 'SUBSCRIPTION' in text_upper or 'PIPE' in text_upper:
             return 'pipe_agreement'
-        elif 'EX-99' in text_upper or 'PRESS' in text_upper:
+        elif 'EX-99.1' in text_upper or ('PRESS' in text_upper and 'RELEASE' in text_upper):
             return 'press_release'
         elif 'EX-2' in text_upper or 'BUSINESS COMBINATION' in text_upper:
             return 'bca'
@@ -206,7 +237,7 @@ class PIPEExtractorAgent:
             print(f"   📄 Checking {exhibit['type']}: {exhibit['text']}")
 
             # Fetch exhibit content
-            exhibit_html = self.fetcher.fetch_filing_document(exhibit['url'])
+            exhibit_html = self.fetcher.fetch_document(exhibit['url'])
             if not exhibit_html:
                 continue
 
@@ -273,6 +304,12 @@ class PIPEExtractorAgent:
 
 SPAC Ticker: {ticker}
 
+CRITICAL: Extract TOTAL institutional PIPE amount, NOT sponsor PIPE:
+- Look for "PIPE Investment", "Subscription Agreement", "Private Placement"
+- Focus on third-party investors (institutions, funds, individuals)
+- IGNORE sponsor PIPE / sponsor contributions
+- If document lists multiple PIPE tranches, SUM them for total
+
 IMPORTANT: Return ONLY numeric values (NO formatted strings like "275M" or "$10.00"):
 - pipe_size: Raw number in millions (e.g., 275 not "275M")
 - pipe_price: Raw number (e.g., 10 not "$10.00")
@@ -315,7 +352,17 @@ Document excerpt:
                 max_tokens=1000
             )
 
-            result = json.loads(response.choices[0].message.content)
+            response_text = response.choices[0].message.content.strip()
+
+            # Try to extract JSON from response (AI sometimes adds extra text)
+            if not response_text.startswith('{'):
+                # Find first { and last }
+                start = response_text.find('{')
+                end = response_text.rfind('}')
+                if start != -1 and end != -1:
+                    response_text = response_text[start:end+1]
+
+            result = json.loads(response_text)
 
             # Apply number parsing to sanitize AI output
             numeric_fields = ['pipe_size', 'pipe_price', 'pipe_percentage', 'pipe_lockup_months']
@@ -326,6 +373,7 @@ Document excerpt:
 
         except json.JSONDecodeError as e:
             print(f"      ❌ AI returned invalid JSON: {e}")
+            print(f"      Response preview: {response_text[:200] if 'response_text' in locals() else 'N/A'}")
             return None
         except Exception as e:
             print(f"      ❌ AI extraction failed: {e}")
@@ -383,10 +431,15 @@ async def main():
         for spac in spacs:
             print(f"\n{spac.ticker} → {spac.target}")
 
+            if not spac.cik:
+                print(f"   ⚠️  No CIK found")
+                continue
+
             # Get 8-Ks around announcement date
-            filings = fetcher.get_filings(
-                ticker=spac.ticker,
-                filing_type='8-K',
+            after_date = spac.announced_date - timedelta(days=7) if spac.announced_date else datetime.now() - timedelta(days=30)
+            filings = fetcher.get_8ks_after_date(
+                cik=spac.cik,
+                after_date=after_date,
                 count=5
             )
 
