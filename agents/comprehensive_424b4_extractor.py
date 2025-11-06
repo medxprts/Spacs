@@ -92,8 +92,10 @@ def extract_with_ai(text, ticker):
 
     # Take first 40k + warrant section if found
     if warrant_section_start > 40000:
-        # Include warrant section
-        text_excerpt = text[:40000] + "\n\n[WARRANT REDEMPTION SECTION]:\n" + text[warrant_section_start:warrant_section_start+10000]
+        # Include warrant section with surrounding context (2k before, 12k after)
+        section_start = max(0, warrant_section_start - 2000)
+        section_end = min(len(text), warrant_section_start + 12000)
+        text_excerpt = text[:40000] + "\n\n[WARRANT REDEMPTION SECTION]:\n" + text[section_start:section_end]
     else:
         # Standard 50k excerpt
         text_excerpt = text[:50000]
