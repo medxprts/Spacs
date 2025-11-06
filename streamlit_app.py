@@ -1667,7 +1667,67 @@ elif page == "⭐ Watchlist":
     # AUTOMATED OPPORTUNITY RANKINGS
     # ==========================================================================
     st.markdown("## 🎯 Automated Opportunity Rankings")
-    st.markdown("Algorithmic scoring based on sponsor track record, sector narrative, PIPE quality, and volume signals")
+
+    # Methodology explanation (collapsible)
+    with st.expander("📖 Scoring Methodology", expanded=False):
+        st.markdown("""
+        ### Phase 1: "Loaded Gun" Score (0-60 points) - Pre-Deal Quality
+
+        Evaluates SPAC quality **before** a deal is announced. Higher scores indicate better structure and potential.
+
+        **Components:**
+        - **Market Cap (0-10)**: IPO size as proxy for liquidity and institutional interest
+          - ≥$500M: 10 pts | ≥$300M: 8 pts | ≥$150M: 6 pts | ≥$100M: 4 pts | ≥$50M: 2 pts
+        - **Sponsor Quality (0-15)**: Investment banker tier
+          - Tier 1 (Goldman, JPM, Citi): 15 pts | Tier 2: 10 pts | Tier 3: 5 pts
+        - **Hot Sector (0-10)**: Market narrative strength
+          - Hot sectors (AI, FinTech, EV, etc.): 10 pts | Other: 0 pts
+        - **Dilution (0-15)**: Founder share dilution (lower = better for public shareholders)
+          - <15%: 15 pts | <20%: 12 pts | <25%: 8 pts | <30%: 4 pts | ≥30%: 0 pts
+        - **Promote Vesting (0-10)**: Sponsor alignment with shareholders
+          - Performance vesting: 10 pts | Time-based: 5 pts | Immediate: 0 pts
+
+        ### Phase 2: "Lit Fuse" Score (0-90 points) - Post-Deal Momentum
+
+        *(Not yet implemented)* Will evaluate deal quality, PIPE terms, institutional interest, and volume signals.
+
+        ### Data Sources
+        - All data extracted from SEC filings (424B4, 8-K, 10-Q)
+        - Updated automatically when new filings detected
+        - Missing data = 0 points for that component
+        """)
+
+    st.markdown("*Algorithmic scoring based on sponsor quality, sector narrative, PIPE terms, and volume signals*")
+
+    # Weight adjustment controls
+    with st.expander("⚙️ Adjust Scoring Weights (Advanced)", expanded=False):
+        st.markdown("Customize the importance of each scoring component:")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            market_cap_weight = st.slider("Market Cap", 0.0, 2.0, 1.0, 0.1, help="Multiplier for IPO size score")
+            sponsor_weight = st.slider("Sponsor Quality", 0.0, 2.0, 1.0, 0.1, help="Multiplier for banker tier score")
+
+        with col2:
+            sector_weight = st.slider("Hot Sector", 0.0, 2.0, 1.0, 0.1, help="Multiplier for sector narrative score")
+            dilution_weight = st.slider("Low Dilution", 0.0, 2.0, 1.0, 0.1, help="Multiplier for founder dilution score")
+
+        with col3:
+            promote_weight = st.slider("Promote Vesting", 0.0, 2.0, 1.0, 0.1, help="Multiplier for vesting alignment score")
+
+        if any([market_cap_weight != 1.0, sponsor_weight != 1.0, sector_weight != 1.0,
+                dilution_weight != 1.0, promote_weight != 1.0]):
+            st.info(f"🔧 Custom weights active: Mkt×{market_cap_weight} | Spon×{sponsor_weight} | Sect×{sector_weight} | Dil×{dilution_weight} | Prom×{promote_weight}")
+            if st.button("Reset to Default Weights"):
+                st.rerun()
+    else:
+        # Default weights
+        market_cap_weight = 1.0
+        sponsor_weight = 1.0
+        sector_weight = 1.0
+        dilution_weight = 1.0
+        promote_weight = 1.0
 
     # Load opportunity scores from database
     try:
@@ -1731,8 +1791,8 @@ elif page == "⭐ Watchlist":
         else:
             st.info("No SPACs currently scored. Run opportunity scoring to see rankings.")
 
-        # Show Loaded Guns (pre-deal only)
-        loaded_guns_query = text("""
+        # Show Loaded Guns (pre-deal only) - with custom weights
+        loaded_guns_query = text(f"""
             SELECT
                 s.ticker,
                 s.company,
@@ -1746,33 +1806,51 @@ elif page == "⭐ Watchlist":
                 o.sponsor_score,
                 o.sector_score,
                 o.dilution_score,
-                o.promote_score
+                o.promote_score,
+                (o.market_cap_score * {market_cap_weight} +
+                 o.sponsor_score * {sponsor_weight} +
+                 o.sector_score * {sector_weight} +
+                 o.dilution_score * {dilution_weight} +
+                 o.promote_score * {promote_weight}) as weighted_score
             FROM spacs s
             LEFT JOIN opportunity_scores o ON s.ticker = o.ticker
             WHERE s.deal_status = 'SEARCHING'
-              AND o.loaded_gun_score >= 30
-            ORDER BY o.loaded_gun_score DESC
-            LIMIT 10
+              AND o.loaded_gun_score >= 20
+            ORDER BY weighted_score DESC
+            LIMIT 20
         """)
         loaded_guns = pd.read_sql(loaded_guns_query, db.bind)
 
         if len(loaded_guns) > 0:
-            st.markdown("### 🔫 Loaded Guns - Pre-Deal SPACs (Phase 1 Score ≥ 30)")
-            st.caption("Quality: Mkt Cap (0-10) + Sponsor (0-15) + Sector (0-10) + Dilution (0-15) + Promote (0-10)")
+            # Update header based on weights
+            if any([market_cap_weight != 1.0, sponsor_weight != 1.0, sector_weight != 1.0,
+                    dilution_weight != 1.0, promote_weight != 1.0]):
+                st.markdown("### 🔫 Loaded Guns - Pre-Deal SPACs (Custom Weights)")
+                st.caption(f"Weighted scores shown | Mkt×{market_cap_weight} Spon×{sponsor_weight} Sect×{sector_weight} Dil×{dilution_weight} Prom×{promote_weight}")
+            else:
+                st.markdown("### 🔫 Loaded Guns - Pre-Deal SPACs (Phase 1 Score ≥ 20)")
+                st.caption("Quality: Mkt Cap (0-10) + Sponsor (0-15) + Sector (0-10) + Dilution (0-15) + Promote (0-10)")
 
             # Create table data
             table_data = []
             for idx, row in loaded_guns.iterrows():
-                tier_emoji = "🥇" if row['loaded_gun_score'] >= 45 else "🥈"
+                # Use weighted score if custom weights applied
+                display_score = row['weighted_score'] if any([market_cap_weight != 1.0, sponsor_weight != 1.0,
+                                                                sector_weight != 1.0, dilution_weight != 1.0,
+                                                                promote_weight != 1.0]) else row['loaded_gun_score']
+                max_score = market_cap_weight*10 + sponsor_weight*15 + sector_weight*10 + dilution_weight*15 + promote_weight*10
+
+                tier_emoji = "🥇" if display_score >= max_score*0.75 else "🥈" if display_score >= max_score*0.60 else "🥉"
                 price_str = f"${row['price']:.2f}" if pd.notna(row['price']) else "N/A"
                 premium_str = f"{row['premium']:.1f}%" if pd.notna(row['premium']) else "N/A"
 
                 table_data.append({
                     'Rank': f"{tier_emoji} #{idx+1}",
                     'Ticker': row['ticker'],
-                    'Score': f"{row['loaded_gun_score']}/60",
+                    'Score': f"{display_score:.0f}/{max_score:.0f}" if max_score != 60 else f"{row['loaded_gun_score']}/60",
                     'Mkt': row['market_cap_score'],
                     'Spon': row['sponsor_score'],
+                    'Sect': row['sector_score'],
                     'Dil': row['dilution_score'],
                     'Prom': row['promote_score'],
                     'Price': price_str,
