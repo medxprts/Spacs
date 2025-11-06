@@ -1745,7 +1745,8 @@ elif page == "⭐ Watchlist":
                 o.market_cap_score,
                 o.sponsor_score,
                 o.sector_score,
-                o.dilution_score
+                o.dilution_score,
+                o.promote_score
             FROM spacs s
             LEFT JOIN opportunity_scores o ON s.ticker = o.ticker
             WHERE s.deal_status = 'SEARCHING'
@@ -1757,21 +1758,33 @@ elif page == "⭐ Watchlist":
 
         if len(loaded_guns) > 0:
             st.markdown("### 🔫 Loaded Guns - Pre-Deal SPACs (Phase 1 Score ≥ 30)")
+            st.caption("Pre-deal quality scoring: Market Cap (0-10) + Sponsor (0-15) + Sector (0-10) + Dilution (0-15) + Promote (0-10) = 60 max")
 
-            cols = st.columns(3)
             for idx, row in loaded_guns.iterrows():
-                col_idx = idx % 3
-                with cols[col_idx]:
+                col1, col2, col3 = st.columns([4, 3, 3])
+
+                with col1:
                     tier = "A-Tier" if row['loaded_gun_score'] >= 45 else "B-Tier"
                     tier_emoji = "🥇" if tier == "A-Tier" else "🥈"
 
-                    st.markdown(f"**{tier_emoji} {row['ticker']}** ({row['loaded_gun_score']}/60)")
-                    st.caption(f"{row['company'][:30]}")
-                    st.caption(f"Sector: {row['sector_classified']}")
-                    st.caption(f"Sponsor: {row['sponsor_normalized'][:25]}")
+                    st.markdown(f"**{tier_emoji} {row['ticker']}** - {row['company'][:35]}")
+                    if pd.notna(row['sponsor_normalized']):
+                        st.caption(f"Sponsor: {row['sponsor_normalized'][:30]}")
 
-                    if idx < len(loaded_guns) - 1 and col_idx == 2:
-                        st.markdown("---")
+                with col2:
+                    st.metric("Phase 1 Score", f"{row['loaded_gun_score']}/60")
+                    # Score breakdown
+                    breakdown = f"Mkt:{row['market_cap_score']} Spon:{row['sponsor_score']} "
+                    breakdown += f"Dil:{row['dilution_score']} Prom:{row['promote_score']}"
+                    st.caption(breakdown)
+
+                with col3:
+                    if pd.notna(row['price']):
+                        st.metric("Price", f"${row['price']:.2f}")
+                    if pd.notna(row['premium']):
+                        st.caption(f"Premium: {row['premium']:.1f}%")
+
+                st.markdown("---")
 
         # Show Lit Fuses (announced deals)
         lit_fuses_query = text("""
