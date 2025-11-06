@@ -141,6 +141,10 @@ class IPODetectorAgent(BaseAgent):
             print(f"      Proceeds: {result.get('ipo_proceeds', 'N/A')}")
             print(f"      Deadline: {result.get('deadline_date', 'N/A')}")
 
+            # Run comprehensive 424B4 extraction for all key datapoints
+            print(f"   🔍 Running comprehensive 424B4 extraction...")
+            self._run_comprehensive_extraction(pre_ipo_spac.expected_ticker)
+
             return {
                 'action': 'graduated',
                 'ticker': pre_ipo_spac.expected_ticker,
@@ -346,6 +350,44 @@ Return JSON only (use null for missing fields):"""
             self.db.rollback()
             self.pre_ipo_db.rollback()
             return None
+
+    def _run_comprehensive_extraction(self, ticker: str):
+        """
+        Run comprehensive 424B4 extraction for newly graduated SPAC
+
+        Extracts:
+        - Founder shares
+        - Shares outstanding (base + overallotment)
+        - Banker + tier classification
+        - Warrant terms
+        - Extension terms
+        - Overallotment details
+        """
+        try:
+            # Import here to avoid circular dependency
+            import subprocess
+
+            # Run extractor as subprocess
+            result = subprocess.run(
+                ['python3', '/home/ubuntu/spac-research/agents/comprehensive_424b4_extractor.py', '--ticker', ticker],
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+
+            if result.returncode == 0:
+                print(f"      ✅ Comprehensive extraction complete")
+                # Show summary of updates
+                for line in result.stdout.split('\n'):
+                    if 'Updated' in line or 'fields:' in line or line.strip().startswith('-'):
+                        print(f"      {line}")
+            else:
+                print(f"      ⚠️  Comprehensive extraction had issues:")
+                print(f"      {result.stderr[:200]}")
+
+        except Exception as e:
+            print(f"      ⚠️  Comprehensive extraction failed: {e}")
+            print(f"         (Data can be backfilled later)")
 
     def close(self):
         """Close database connections"""
