@@ -119,7 +119,14 @@ class SECFilingMonitor:
         print(f"   ✓ Marked {len(filing_ids)} filing(s) as processed and saved state")
 
     def _load_tracked_ciks(self) -> List[str]:
-        """Load CIKs of all SPACs we're tracking"""
+        """
+        Load CIKs of all SPACs we're tracking
+
+        Includes:
+        - All SPACs in main database (post-IPO)
+        - Pre-IPO SPACs with EFFECTIVE status (awaiting 424B4)
+        """
+        # Get main database SPACs
         db = SessionLocal()
         try:
             spacs = db.query(SPAC).filter(
@@ -127,10 +134,30 @@ class SECFilingMonitor:
             ).all()
 
             ciks = [spac.cik for spac in spacs if spac.cik]
-            print(f"   ✓ Loaded {len(ciks)} CIKs from database")
-            return ciks
+            main_count = len(ciks)
         finally:
             db.close()
+
+        # Get pre-IPO SPACs that are EFFECTIVE (awaiting 424B4)
+        pre_ipo_db = PreIPOSessionLocal()
+        try:
+            pre_ipo_spacs = pre_ipo_db.query(PreIPOSPAC).filter(
+                PreIPOSPAC.filing_status == 'EFFECTIVE',
+                PreIPOSPAC.moved_to_main_pipeline != True,
+                PreIPOSPAC.cik.isnot(None)
+            ).all()
+
+            # Add pre-IPO CIKs (avoid duplicates)
+            for spac in pre_ipo_spacs:
+                if spac.cik and spac.cik not in ciks:
+                    ciks.append(spac.cik)
+
+            pre_ipo_count = len(ciks) - main_count
+        finally:
+            pre_ipo_db.close()
+
+        print(f"   ✓ Loaded {len(ciks)} CIKs: {main_count} main + {pre_ipo_count} pre-IPO (EFFECTIVE)")
+        return ciks
 
 
     def poll_sec_for_filing(self, cik: str) -> List[Dict]:
