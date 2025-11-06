@@ -225,7 +225,14 @@ class PIPEExtractorAgent:
         """Classify exhibit by type with priority for institutional PIPE"""
         text_upper = text.upper()
 
-        # Prioritize institutional PIPE subscription agreements
+        # Prioritize ANY subscription agreement (regardless of EX- number)
+        if 'SUBSCRIPTION AGREEMENT' in text_upper:
+            if 'INSTITUTIONAL' in text_upper:
+                return 'pipe_institutional'
+            else:
+                return 'pipe_agreement'
+
+        # Then check by EX- number
         if 'EX-10.1' in text_upper or ('SUBSCRIPTION' in text_upper and 'INSTITUTIONAL' in text_upper):
             return 'pipe_institutional'
         elif 'EX-10' in text_upper or 'SUBSCRIPTION' in text_upper or 'PIPE' in text_upper:
@@ -244,8 +251,8 @@ class PIPEExtractorAgent:
             print(f"   ⚠️  AI not available, skipping PIPE extraction")
             return None
 
-        # Try each exhibit in priority order
-        for exhibit in exhibits[:3]:  # Check top 3 exhibits
+        # Try each exhibit in priority order (check top 5 to catch EX-99.X subscription agreements)
+        for exhibit in exhibits[:5]:  # Check top 5 exhibits
             print(f"   📄 Checking {exhibit['type']}: {exhibit['text']}")
 
             # Fetch exhibit content
@@ -256,12 +263,16 @@ class PIPEExtractorAgent:
             soup = BeautifulSoup(exhibit_html, 'html.parser')
             text = soup.get_text()
 
-            # Check if PIPE is mentioned
-            if not self._has_pipe_mentions(text):
+            # Always extract from press releases and subscription agreements (they're specifically about deals/financing)
+            # For other exhibits, check for PIPE keywords first
+            is_key_exhibit = exhibit['type'] in ['press_release', 'pipe_agreement', 'pipe_institutional']
+            has_keywords = self._has_pipe_mentions(text)
+
+            if not is_key_exhibit and not has_keywords:
                 print(f"      ℹ️  No PIPE mentions found")
                 continue
 
-            print(f"      🔍 PIPE mentioned, extracting with AI...")
+            print(f"      🔍 Extracting PIPE data with AI...")
 
             # Extract relevant section (around PIPE mentions)
             pipe_section = self._extract_pipe_section(text)
@@ -275,7 +286,7 @@ class PIPEExtractorAgent:
         return None
 
     def _has_pipe_mentions(self, text: str) -> bool:
-        """Check if text mentions PIPE financing"""
+        """Check if text mentions PIPE financing or related terms"""
         text_lower = text.lower()
         pipe_keywords = [
             'pipe',
@@ -283,7 +294,11 @@ class PIPEExtractorAgent:
             'pipe financing',
             'pipe investors',
             'subscription agreement',
-            'committed financing'
+            'committed financing',
+            'private placement',  # Common alternative term
+            'subscription shares',  # PIPE subscription
+            'concurrent financing',  # Alternative phrasing
+            'private investors',  # Common in deal press releases
         ]
         return any(keyword in text_lower for keyword in pipe_keywords)
 
