@@ -362,10 +362,13 @@ Return JSON only (use null for missing fields):"""
         - Warrant terms
         - Extension terms
         - Overallotment details
+
+        If extraction fails or is incomplete, marks SPAC for retry
         """
         try:
             # Import here to avoid circular dependency
             import subprocess
+            from datetime import datetime
 
             # Run extractor as subprocess
             result = subprocess.run(
@@ -375,19 +378,54 @@ Return JSON only (use null for missing fields):"""
                 timeout=60
             )
 
-            if result.returncode == 0:
-                print(f"      ✅ Comprehensive extraction complete")
-                # Show summary of updates
-                for line in result.stdout.split('\n'):
-                    if 'Updated' in line or 'fields:' in line or line.strip().startswith('-'):
-                        print(f"      {line}")
-            else:
-                print(f"      ⚠️  Comprehensive extraction had issues:")
-                print(f"      {result.stderr[:200]}")
+            # Check if data is complete after extraction
+            spac = self.db.query(SPAC).filter(SPAC.ticker == ticker).first()
+            if spac:
+                data_complete = (
+                    spac.founder_shares is not None and
+                    spac.shares_outstanding_base is not None and
+                    spac.banker is not None
+                )
+
+                if result.returncode == 0 and data_complete:
+                    print(f"      ✅ Comprehensive extraction complete")
+                    # Show summary of updates
+                    for line in result.stdout.split('\n'):
+                        if 'Updated' in line or 'fields:' in line or line.strip().startswith('-'):
+                            print(f"      {line}")
+
+                    # Mark as complete
+                    spac.comprehensive_extraction_needed = False
+                    self.db.commit()
+                else:
+                    print(f"      ⚠️  Incomplete extraction - will retry")
+                    print(f"         Missing: ", end="")
+                    missing = []
+                    if not spac.founder_shares: missing.append("founder_shares")
+                    if not spac.shares_outstanding_base: missing.append("shares_outstanding")
+                    if not spac.banker: missing.append("banker")
+                    print(", ".join(missing) if missing else "unknown")
+
+                    # Mark for retry (will retry for 7 days)
+                    spac.comprehensive_extraction_needed = True
+                    spac.comprehensive_extraction_attempts = (spac.comprehensive_extraction_attempts or 0) + 1
+                    spac.last_extraction_attempt = datetime.now()
+                    self.db.commit()
 
         except Exception as e:
             print(f"      ⚠️  Comprehensive extraction failed: {e}")
-            print(f"         (Data can be backfilled later)")
+            print(f"         (Will retry automatically)")
+
+            # Mark for retry
+            try:
+                spac = self.db.query(SPAC).filter(SPAC.ticker == ticker).first()
+                if spac:
+                    spac.comprehensive_extraction_needed = True
+                    spac.comprehensive_extraction_attempts = (spac.comprehensive_extraction_attempts or 0) + 1
+                    spac.last_extraction_attempt = datetime.now()
+                    self.db.commit()
+            except:
+                pass
 
     def close(self):
         """Close database connections"""

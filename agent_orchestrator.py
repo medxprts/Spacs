@@ -686,6 +686,52 @@ class Orchestrator:
             print(f"      ⚠️  Error fetching filing content: {e}")
             return None
 
+    def _retry_comprehensive_extraction(self, ticker: str):
+        """
+        Retry comprehensive 424B4 extraction for SPAC missing data
+
+        Called opportunistically whenever we see ANY filing from a SPAC that needs extraction.
+        This ensures data gets filled in within days rather than waiting for manual intervention.
+        """
+        try:
+            import subprocess
+            from datetime import datetime
+
+            # Run extractor as subprocess (non-blocking)
+            result = subprocess.run(
+                ['python3', '/home/ubuntu/spac-research/agents/comprehensive_424b4_extractor.py', '--ticker', ticker],
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+
+            # Update database
+            db = SessionLocal()
+            try:
+                spac = db.query(SPAC).filter(SPAC.ticker == ticker).first()
+                if spac:
+                    # Check if data is now complete
+                    data_complete = (
+                        spac.founder_shares is not None and
+                        spac.shares_outstanding_base is not None and
+                        spac.banker is not None
+                    )
+
+                    if data_complete:
+                        print(f"   ✅ Extraction complete - {ticker} now has all data")
+                        spac.comprehensive_extraction_needed = False
+                    else:
+                        print(f"   ⚠️  Still missing data - will retry on next filing")
+                        spac.comprehensive_extraction_attempts = (spac.comprehensive_extraction_attempts or 0) + 1
+
+                    spac.last_extraction_attempt = datetime.now()
+                    db.commit()
+            finally:
+                db.close()
+
+        except Exception as e:
+            print(f"   ❌ Extraction retry failed: {e}")
+
     def _analyze_filing_relevance(self, content: str, agents_needed: List[str], classification: Dict, filing: Dict) -> Dict[str, bool]:
         """
         Use AI to analyze if filing contains pertinent information for each agent
@@ -1547,6 +1593,15 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
             spac = db.query(SPAC).filter(SPAC.cik == cik).first()
             if spac:
                 filing['ticker'] = spac.ticker
+
+                # Check if SPAC needs comprehensive extraction retry
+                if (spac.comprehensive_extraction_needed and
+                    spac.deal_status == 'SEARCHING' and
+                    (spac.comprehensive_extraction_attempts or 0) < 10):  # Max 10 attempts
+
+                    print(f"\n🔄 [EXTRACTION RETRY] {spac.ticker} needs data extraction (attempt {(spac.comprehensive_extraction_attempts or 0) + 1})")
+                    self._retry_comprehensive_extraction(spac.ticker)
+
             db.close()
 
         ticker = filing.get('ticker', 'UNKNOWN')
