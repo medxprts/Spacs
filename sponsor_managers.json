@@ -1,0 +1,64 @@
+[
+  {
+    "managing_members": [
+      "Dan Tapiero"
+    ],
+    "board_members": null,
+    "sponsor_address": null,
+    "formation_state": "Delaware",
+    "confidence": 40,
+    "reasoning": "Found sponsor formation state explicitly stated as 'Delaware limited liability company' in the definitions section. Found Dan Tapiero as the only person with material interest in the sponsor, but no explicit managing member language. No board member information, sponsor address, or complete management team details in the provided excerpt.",
+    "ticker": "ONCH",
+    "sponsor": "1RT Acquisition Sponsor LLC",
+    "sponsor_normalized": "1RT Acquisition Sponsor"
+  },
+  {
+    "managing_members": null,
+    "board_members": [
+      "Claudius Tsang",
+      "Ashley Bancroft",
+      "Nathan Pau",
+      "Tracy Hui Yin Choi"
+    ],
+    "sponsor_address": null,
+    "formation_state": "British Virgin Islands",
+    "confidence": 70,
+    "reasoning": "Found board members in the 'Business Strategy' section which lists management team members: Mr. Claudius Tsang, Mr. Ashley Bancroft, Mr. Nathan Pau and Ms. Tracy Hui Yin Choi. Found formation state in the 'Our Company' section which states 'incorporated in the British Virgin Islands'. Could not find explicit managing members of the sponsor or sponsor mailing address in the provided excerpt.",
+    "ticker": "APAD",
+    "sponsor": "A SPAC IV (Holdings) Corp.",
+    "sponsor_normalized": "A SPAC (Holdings)"
+  },
+  {
+    "managing_members": null,
+    "board_members": null,
+    "sponsor_address": null,
+    "formation_state": "British Virgin Islands",
+    "confidence": 20,
+    "reasoning": "The excerpt references sections like 'Management \u2014 Directors and Officers' and 'Principal Shareholders' but does not contain the actual names or details. The SPAC is identified as a British Virgin Islands company, but no explicit sponsor address, managing members, or board members are found in the provided text.",
+    "ticker": "ASPC",
+    "sponsor": "A SPAC III (Holdings) Corp.",
+    "sponsor_normalized": "A SPAC I (Holdings)"
+  },
+  {
+    "managing_members": null,
+    "board_members": null,
+    "sponsor_address": "the Woodlands, Texas",
+    "formation_state": "Delaware",
+    "confidence": 30,
+    "reasoning": "The excerpt contains the sponsor's state of formation (Delaware) and location (the Woodlands, Texas), but does not include the Principal Stockholders table, Management section, or any explicit mentions of managing members or board members by name. The excerpt repeatedly references 'executive officers and directors' but does not list their names.",
+    "ticker": "AAM",
+    "sponsor": "AA Mission Acquisition Sponsor Holdco LLC",
+    "sponsor_normalized": "AA Mission Acquisition Sponsor Holdco"
+  },
+  {
+    "managing_members": null,
+    "board_members": null,
+    "sponsor_address": null,
+    "formation_state": "Cayman Islands",
+    "confidence": 25,
+    "reasoning": "The excerpt contains references to the sponsor being 'AA Mission Sponsor II, an exempted company incorporated in the Cayman Islands with limited liability' but does not explicitly list managing members of the sponsor, board members of the SPAC, or the sponsor's mailing address. The formation state is identified as Cayman Islands from the sponsor description. Confidence is low because the excerpt lacks the specific sections (e.g., 'Management' or footnotes to 'Principal Stockholders') that typically contain the requested information.",
+    "ticker": "YCY",
+    "sponsor": "AA Mission Sponsor II",
+    "sponsor_normalized": "AA Mission Sponsor"
+  }
+]

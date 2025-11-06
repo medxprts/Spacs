@@ -255,7 +255,8 @@ def trigger_price_spike(
         ).first()
 
         if existing_alert:
-            logger.info(f"⏭️  Skipping alert for {ticker} - already sent today ({existing_alert.change_pct:+.1f}%)")
+            # Use debug level to reduce log bloat (happens every cycle for existing spikes)
+            logger.debug(f"⏭️  Skipping alert for {ticker} - already sent today ({existing_alert.change_pct:+.1f}%)")
             return False
 
         # Determine if spike is significant enough for accelerated polling

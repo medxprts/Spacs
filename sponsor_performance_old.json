@@ -1,0 +1,1307 @@
+{
+  "Cantor Fitzgerald": {
+    "sponsor_normalized": "Cantor Fitzgerald",
+    "total_deals": 3,
+    "tracked_deals": 3,
+    "deals": [
+      {
+        "ticker": "CEPO",
+        "target": "BSTR Newco, LLC",
+        "announced_date": "2025-07-22",
+        "price_on_announcement": 12.1899995803833,
+        "price_1d": 11.899999618530273,
+        "price_1w": 11.149999618530273,
+        "price_1m": 10.420000076293945,
+        "pop_1d": -2.378998948611191,
+        "pop_1w": -8.531583245717599,
+        "pop_1m": -14.520094872995065
+      },
+      {
+        "ticker": "CEP",
+        "target": "twenty one capital, inc.",
+        "announced_date": "2025-04-23",
+        "price_on_announcement": 16.5,
+        "price_1d": 24.799999237060547,
+        "price_1w": 42.130001068115234,
+        "price_1m": 46.5,
+        "pop_1d": 50.303025679154835,
+        "pop_1w": 155.333339806759,
+        "pop_1m": 181.8181818181818
+      },
+      {
+        "ticker": "CEPT",
+        "target": "Securitize, Inc.",
+        "announced_date": "2025-10-28",
+        "price_on_announcement": 12.329999923706055,
+        "price_1d": 12.029999732971191,
+        "price_1w": 11.399999618530273,
+        "price_1m": null,
+        "pop_1d": -2.43309158630304,
+        "pop_1w": -7.542581597163944,
+        "pop_1m": null
+      }
+    ],
+    "deal_count": 3,
+    "avg_pop_1d": 15.2,
+    "avg_pop_1w": 46.4,
+    "avg_pop_1m": 83.6
+  },
+  "Churchill Capital": {
+    "sponsor_normalized": "Churchill Capital",
+    "total_deals": 2,
+    "tracked_deals": 2,
+    "deals": [
+      {
+        "ticker": "CCCX",
+        "target": "ColdQuanta, Inc.",
+        "announced_date": "2025-09-08",
+        "price_on_announcement": 10.199999809265137,
+        "price_1d": 10.260000228881836,
+        "price_1w": 10.479999542236328,
+        "price_1m": 19.290000915527344,
+        "pop_1d": 0.588239419006636,
+        "pop_1w": 2.745095472618093,
+        "pop_1m": 89.1176595709868
+      },
+      {
+        "ticker": "CCIX",
+        "target": "Plus Automation, Inc.",
+        "announced_date": "2025-06-06",
+        "price_on_announcement": 10.670000076293945,
+        "price_1d": 10.619999885559082,
+        "price_1w": 10.579999923706055,
+        "price_1m": 10.539999961853027,
+        "pop_1d": -0.4686053456171113,
+        "pop_1w": -0.8434878345300888,
+        "pop_1m": -1.2183703234430663
+      }
+    ],
+    "deal_count": 2,
+    "avg_pop_1d": 0.1,
+    "avg_pop_1w": 1.0,
+    "avg_pop_1m": 43.9
+  },
+  "SLG SPAC": {
+    "sponsor_normalized": "SLG SPAC",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "SPKL",
+        "target": "Kneron Holdings",
+        "announced_date": "2024-10-21",
+        "price_on_announcement": 10.550000190734863,
+        "price_1d": 10.5600004196167,
+        "price_1w": 10.539999961853027,
+        "price_1m": 10.609999656677246,
+        "pop_1d": 0.09478889764019396,
+        "pop_1w": -0.09478889764019396,
+        "pop_1m": 0.5687153067075303
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.1,
+    "avg_pop_1w": -0.1,
+    "avg_pop_1m": 0.6
+  },
+  "Yawei Cao / Cayson Holding": {
+    "sponsor_normalized": "Yawei Cao / Cayson Holding",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "CAPN",
+        "target": "Mango Financial Group Limited",
+        "announced_date": "2025-08-15",
+        "price_on_announcement": 10.350000381469727,
+        "price_1d": 10.350000381469727,
+        "price_1w": 10.380000114440918,
+        "price_1m": 10.420000076293945,
+        "pop_1d": 0.0,
+        "pop_1w": 0.28985248179219264,
+        "pop_1m": 0.6763255289298706
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": 0.3,
+    "avg_pop_1m": 0.7
+  },
+  "Aimei": {
+    "sponsor_normalized": "Aimei",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "AFJK",
+        "target": "United Hydrogen Group Inc.",
+        "announced_date": "2024-06-20",
+        "price_on_announcement": 10.329999923706055,
+        "price_1d": 10.345999717712402,
+        "price_1w": 10.345999717712402,
+        "price_1m": 10.380000114440918,
+        "pop_1d": 0.15488668077944642,
+        "pop_1w": 0.15488668077944642,
+        "pop_1m": 0.4840289555096618
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.2,
+    "avg_pop_1w": 0.2,
+    "avg_pop_1m": 0.5
+  },
+  "HCM Investor Holdings": {
+    "sponsor_normalized": "HCM Investor Holdings",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "HOND",
+        "target": "Terrestrial Energy",
+        "announced_date": "2025-03-26",
+        "price_on_announcement": 10.800000190734863,
+        "price_1d": 10.699999809265137,
+        "price_1w": 10.600000381469727,
+        "price_1m": 10.949999809265137,
+        "pop_1d": -0.9259294417005213,
+        "pop_1w": -1.8518500530834543,
+        "pop_1m": 1.3888853322331935
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.9,
+    "avg_pop_1w": -1.9,
+    "avg_pop_1m": 1.4
+  },
+  "Black Hawk Acquisition": {
+    "sponsor_normalized": "Black Hawk Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "BKHA",
+        "target": "Vesicor Therapeutics, Inc.",
+        "announced_date": "2025-04-29",
+        "price_on_announcement": 10.550000190734863,
+        "price_1d": 10.550000190734863,
+        "price_1w": 10.59000015258789,
+        "price_1m": 10.600000381469727,
+        "pop_1d": 0.0,
+        "pop_1w": 0.3791465509939591,
+        "pop_1m": 0.47393544863415304
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": 0.4,
+    "avg_pop_1m": 0.5
+  },
+  "Dynamix": {
+    "sponsor_normalized": "Dynamix",
+    "total_deals": 1,
+    "tracked_deals": 0,
+    "deals": [],
+    "deal_count": 0,
+    "avg_pop_1d": null,
+    "avg_pop_1w": null,
+    "avg_pop_1m": null
+  },
+  "Khosla Ventures": {
+    "sponsor_normalized": "Khosla Ventures",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "KVAC",
+        "target": "Medera Inc.",
+        "announced_date": "2024-09-05",
+        "price_on_announcement": 10.710000038146973,
+        "price_1d": 10.710000038146973,
+        "price_1w": 10.71500015258789,
+        "price_1m": 10.760000228881836,
+        "pop_1d": 0.0,
+        "pop_1w": 0.04668640917935123,
+        "pop_1m": 0.46685518727144876
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": 0.0,
+    "avg_pop_1m": 0.5
+  },
+  "Whale Bay": {
+    "sponsor_normalized": "Whale Bay",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "OAKU",
+        "target": "Huajin (China) Holdings Limited",
+        "announced_date": "2024-03-28",
+        "price_on_announcement": 10.75,
+        "price_1d": 10.729999542236328,
+        "price_1w": 10.739999771118164,
+        "price_1m": 10.770000457763672,
+        "pop_1d": -0.1860507698946221,
+        "pop_1w": -0.09302538494731105,
+        "pop_1m": 0.1860507698946221
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.2,
+    "avg_pop_1w": -0.1,
+    "avg_pop_1m": 0.2
+  },
+  "Eureka Acquisition": {
+    "sponsor_normalized": "Eureka Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "EURK",
+        "target": "Marine Thinking Inc",
+        "announced_date": "2025-11-03",
+        "price_on_announcement": 10.800000190734863,
+        "price_1d": 10.800000190734863,
+        "price_1w": 10.800000190734863,
+        "price_1m": null,
+        "pop_1d": 0.0,
+        "pop_1w": 0.0,
+        "pop_1m": null
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": null,
+    "avg_pop_1m": null
+  },
+  "Chenghe Investment": {
+    "sponsor_normalized": "Chenghe Investment",
+    "total_deals": 1,
+    "tracked_deals": 0,
+    "deals": [],
+    "deal_count": 0,
+    "avg_pop_1d": null,
+    "avg_pop_1w": null,
+    "avg_pop_1m": null
+  },
+  "Alchemy DeepTech": {
+    "sponsor_normalized": "Alchemy DeepTech",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "ALCY",
+        "target": "Cartiga, LLC",
+        "announced_date": "2025-10-30",
+        "price_on_announcement": 11.649999618530273,
+        "price_1d": 11.649999618530273,
+        "price_1w": 11.649999618530273,
+        "price_1m": null,
+        "pop_1d": 0.0,
+        "pop_1w": 0.0,
+        "pop_1m": null
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": null,
+    "avg_pop_1m": null
+  },
+  "WhiteOwl": {
+    "sponsor_normalized": "WhiteOwl",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "QUMS",
+        "target": "Sach Pte. Ltd.",
+        "announced_date": "2025-10-03",
+        "price_on_announcement": 9.9399995803833,
+        "price_1d": 9.9399995803833,
+        "price_1w": 9.979999542236328,
+        "price_1m": 9.970000267028809,
+        "pop_1d": 0.0,
+        "pop_1w": 0.40241412013706435,
+        "pop_1m": 0.3018177858348656
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": 0.4,
+    "avg_pop_1m": 0.3
+  },
+  "Bayview Holdings": {
+    "sponsor_normalized": "Bayview Holdings",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "BAYA",
+        "target": "Oabay Inc.",
+        "announced_date": "2024-06-07",
+        "price_on_announcement": 10.229999542236328,
+        "price_1d": 10.23799991607666,
+        "price_1w": 10.229999542236328,
+        "price_1m": 10.25,
+        "pop_1d": 0.07820502637660051,
+        "pop_1w": 0.0,
+        "pop_1m": 0.19550790477650087
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.1,
+    "avg_pop_1w": null,
+    "avg_pop_1m": 0.2
+  },
+  "Berto Acquisition": {
+    "sponsor_normalized": "Berto Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "TACO",
+        "target": "OnMed LLC",
+        "announced_date": "2025-10-29",
+        "price_on_announcement": 10.210000038146973,
+        "price_1d": 10.210000038146973,
+        "price_1w": 10.170000076293945,
+        "price_1m": null,
+        "pop_1d": 0.0,
+        "pop_1w": -0.3917723967049759,
+        "pop_1m": null
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": -0.4,
+    "avg_pop_1m": null
+  },
+  "AlphaVest": {
+    "sponsor_normalized": "AlphaVest",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "ATMV",
+        "target": "AMC Corporation",
+        "announced_date": "2024-08-19",
+        "price_on_announcement": 11.130000114440918,
+        "price_1d": 11.109999656677246,
+        "price_1w": 11.119999885559082,
+        "price_1m": 11.130000114440918,
+        "pop_1d": -0.17969863035061198,
+        "pop_1w": -0.08984931517530599,
+        "pop_1m": 0.0
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.2,
+    "avg_pop_1w": -0.1,
+    "avg_pop_1m": null
+  },
+  "Vine Hill Capital": {
+    "sponsor_normalized": "Vine Hill Capital",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "VCIC",
+        "target": "CoinShares International Limited",
+        "announced_date": "2025-10-02",
+        "price_on_announcement": 10.770000457763672,
+        "price_1d": 10.819999694824219,
+        "price_1w": 11.100000381469727,
+        "price_1m": 11.180000305175781,
+        "pop_1d": 0.46424544972516113,
+        "pop_1w": 3.064066013740702,
+        "pop_1m": 3.806869359198184
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.5,
+    "avg_pop_1w": 3.1,
+    "avg_pop_1m": 3.8
+  },
+  "FG Merger": {
+    "sponsor_normalized": "FG Merger",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "FGMC",
+        "target": "BOXABL Inc.",
+        "announced_date": "2025-10-06",
+        "price_on_announcement": 10.024999618530273,
+        "price_1d": 10.005000114440918,
+        "price_1w": 10.01200008392334,
+        "price_1m": 10.010000228881836,
+        "pop_1d": -0.19949630773439891,
+        "pop_1w": -0.12967117308319065,
+        "pop_1m": -0.14961985256051813
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.2,
+    "avg_pop_1w": -0.1,
+    "avg_pop_1m": -0.1
+  },
+  "ESH Acquisition": {
+    "sponsor_normalized": "ESH Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "ESHA",
+        "target": "The Original Fit Factory",
+        "announced_date": "2025-09-19",
+        "price_on_announcement": 11.670000076293945,
+        "price_1d": 11.670000076293945,
+        "price_1w": 11.489999771118164,
+        "price_1m": 11.350000381469727,
+        "pop_1d": 0.0,
+        "pop_1w": -1.5424190574036754,
+        "pop_1m": -2.742071060258651
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": -1.5,
+    "avg_pop_1m": -2.7
+  },
+  "Melar Acquisition": {
+    "sponsor_normalized": "Melar Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "MACI",
+        "target": "Everli Global Inc.",
+        "announced_date": "2025-08-05",
+        "price_on_announcement": 10.460000038146973,
+        "price_1d": 10.461000442504883,
+        "price_1w": 10.5,
+        "price_1m": 10.520000457763672,
+        "pop_1d": 0.009564095165026229,
+        "pop_1w": 0.38240881173183516,
+        "pop_1m": 0.5736177762703767
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.0,
+    "avg_pop_1w": 0.4,
+    "avg_pop_1m": 0.6
+  },
+  "Yocto Investments": {
+    "sponsor_normalized": "Yocto Investments",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "QETA",
+        "target": "KM QUAD",
+        "announced_date": "2025-02-14",
+        "price_on_announcement": 10.699999809265137,
+        "price_1d": 10.699999809265137,
+        "price_1w": 10.699999809265137,
+        "price_1m": 10.670000076293945,
+        "pop_1d": 0.0,
+        "pop_1w": 0.0,
+        "pop_1m": -0.28037134117717105
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": null,
+    "avg_pop_1m": -0.3
+  },
+  "M3-Brigade": {
+    "sponsor_normalized": "M3-Brigade",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "MBAV",
+        "target": "ReserveOne, Inc.",
+        "announced_date": "2025-09-30",
+        "price_on_announcement": 10.550000190734863,
+        "price_1d": 10.579999923706055,
+        "price_1w": 10.539999961853027,
+        "price_1m": 10.5600004196167,
+        "pop_1d": 0.28435765335376517,
+        "pop_1w": -0.09478889764019396,
+        "pop_1m": 0.09478889764019396
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.3,
+    "avg_pop_1w": -0.1,
+    "avg_pop_1m": 0.1
+  },
+  "dMY Technology Group": {
+    "sponsor_normalized": "dMY Technology Group",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "DMYY",
+        "target": "Horizon Quantum Computing",
+        "announced_date": "2025-09-09",
+        "price_on_announcement": 12.859999656677246,
+        "price_1d": 12.949999809265137,
+        "price_1w": 14.609999656677246,
+        "price_1m": 12.699999809265137,
+        "pop_1d": 0.6998456842194409,
+        "pop_1w": 13.608087455051793,
+        "pop_1m": -1.2441668093593867
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.7,
+    "avg_pop_1w": 13.6,
+    "avg_pop_1m": -1.2
+  },
+  "Alphamade": {
+    "sponsor_normalized": "Alphamade",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "ATMC",
+        "target": "HCYC Group Company Limited",
+        "announced_date": "2024-01-05",
+        "price_on_announcement": 10.800000190734863,
+        "price_1d": 10.770000457763672,
+        "price_1w": 10.789999961853027,
+        "price_1m": 10.770000457763672,
+        "pop_1d": -0.277775300383121,
+        "pop_1w": -0.09259471023356985,
+        "pop_1m": -0.277775300383121
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.3,
+    "avg_pop_1w": -0.1,
+    "avg_pop_1m": -0.3
+  },
+  "Inflection Point Holdings": {
+    "sponsor_normalized": "Inflection Point Holdings",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "IPCX",
+        "target": "Air Water Ventures Holdings Limited",
+        "announced_date": "2025-08-25",
+        "price_on_announcement": 10.109999656677246,
+        "price_1d": 10.140000343322754,
+        "price_1w": 10.109999656677246,
+        "price_1m": 10.069999694824219,
+        "pop_1d": 0.2967427068673892,
+        "pop_1w": 0.0,
+        "pop_1m": -0.395647509509152
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.3,
+    "avg_pop_1w": null,
+    "avg_pop_1m": -0.4
+  },
+  "Pelican": {
+    "sponsor_normalized": "Pelican",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "PELI",
+        "target": "Greenland Exploration Limited and March GL Company",
+        "announced_date": "2025-09-10",
+        "price_on_announcement": 10.029999732971191,
+        "price_1d": 10.020000457763672,
+        "price_1w": 10.045999526977539,
+        "price_1m": 10.09000015258789,
+        "pop_1d": -0.09969367371615513,
+        "pop_1w": 0.1595193861646099,
+        "pop_1m": 0.5982095833907392
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.1,
+    "avg_pop_1w": 0.2,
+    "avg_pop_1m": 0.6
+  },
+  "Launch Acquisition": {
+    "sponsor_normalized": "Launch Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "LPAA",
+        "target": "Minovia Therapeutics Ltd.",
+        "announced_date": "2025-06-25",
+        "price_on_announcement": 10.420000076293945,
+        "price_1d": 10.399999618530273,
+        "price_1w": 10.399999618530273,
+        "price_1m": 10.40999984741211,
+        "pop_1d": -0.19194297137457783,
+        "pop_1w": -0.19194297137457783,
+        "pop_1m": -0.09597148568728892
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.2,
+    "avg_pop_1w": -0.2,
+    "avg_pop_1m": -0.1
+  },
+  "Trailblazer Acquisition": {
+    "sponsor_normalized": "Trailblazer Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "TBMC",
+        "target": "Cyabra Strategy Ltd.",
+        "announced_date": "2024-07-23",
+        "price_on_announcement": 10.835000038146973,
+        "price_1d": 10.869999885559082,
+        "price_1w": 10.869999885559082,
+        "price_1m": 10.890000343322754,
+        "pop_1d": 0.32302581715629725,
+        "pop_1w": 0.32302581715629725,
+        "pop_1m": 0.507617027984686
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.3,
+    "avg_pop_1w": 0.3,
+    "avg_pop_1m": 0.5
+  },
+  "Voyager Acquisition": {
+    "sponsor_normalized": "Voyager Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "VACH",
+        "target": "VERAXA Biotech AG",
+        "announced_date": "2025-04-23",
+        "price_on_announcement": 10.258999824523926,
+        "price_1d": 10.25,
+        "price_1w": 10.274999618530273,
+        "price_1m": 10.3100004196167,
+        "pop_1d": -0.0877261397588865,
+        "pop_1w": 0.155958614679966,
+        "pop_1m": 0.497130285262873
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.1,
+    "avg_pop_1w": 0.2,
+    "avg_pop_1m": 0.5
+  },
+  "SilverBox Engaged": {
+    "sponsor_normalized": "SilverBox Engaged",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "SBXD",
+        "target": "Parataxis Holdings Inc.",
+        "announced_date": "2025-09-04",
+        "price_on_announcement": 10.470000267028809,
+        "price_1d": 10.460000038146973,
+        "price_1w": 10.472999572753906,
+        "price_1m": 10.482999801635742,
+        "pop_1d": -0.09551316740007894,
+        "pop_1w": 0.02864666331043756,
+        "pop_1m": 0.12415983071051649
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.1,
+    "avg_pop_1w": 0.0,
+    "avg_pop_1m": 0.1
+  },
+  "Wuren Fubao": {
+    "sponsor_normalized": "Wuren Fubao",
+    "total_deals": 1,
+    "tracked_deals": 0,
+    "deals": [],
+    "deal_count": 0,
+    "avg_pop_1d": null,
+    "avg_pop_1w": null,
+    "avg_pop_1m": null
+  },
+  "Alfa Acquisition": {
+    "sponsor_normalized": "Alfa Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "RFAI",
+        "target": "Nanyang Biologics Pte. Ltd.",
+        "announced_date": "2025-10-02",
+        "price_on_announcement": 10.699999809265137,
+        "price_1d": 10.699999809265137,
+        "price_1w": 10.675000190734863,
+        "price_1m": 10.710000038146973,
+        "pop_1d": 0.0,
+        "pop_1w": -0.2336412988402696,
+        "pop_1m": 0.09346008467380283
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": -0.2,
+    "avg_pop_1m": 0.1
+  },
+  "Maywood Acquisition": {
+    "sponsor_normalized": "Maywood Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "MAYA",
+        "target": "GOWell Technology Limited",
+        "announced_date": "2025-10-13",
+        "price_on_announcement": 10.369999885559082,
+        "price_1d": 10.350000381469727,
+        "price_1w": 10.390000343322754,
+        "price_1m": null,
+        "pop_1d": -0.19285925082030247,
+        "pop_1w": 0.19286844729404334,
+        "pop_1m": null
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.2,
+    "avg_pop_1w": 0.2,
+    "avg_pop_1m": null
+  },
+  "Bleichroeder": {
+    "sponsor_normalized": "Bleichroeder",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "BACQ",
+        "target": "Merlin Labs, Inc.",
+        "announced_date": "2025-08-14",
+        "price_on_announcement": 10.40999984741211,
+        "price_1d": 10.430000305175781,
+        "price_1w": 10.380000114440918,
+        "price_1m": 10.350000381469727,
+        "pop_1d": 0.192127358855283,
+        "pop_1w": -0.2881818771462253,
+        "pop_1m": -0.5763637542924506
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.2,
+    "avg_pop_1w": -0.3,
+    "avg_pop_1m": -0.6
+  },
+  "Agriculture & Natural Solutions": {
+    "sponsor_normalized": "Agriculture & Natural Solutions",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "ANSC",
+        "target": "Australian Food & Agriculture Company Limited",
+        "announced_date": "2024-12-16",
+        "price_on_announcement": 10.479999542236328,
+        "price_1d": 10.449999809265137,
+        "price_1w": 10.470000267028809,
+        "price_1m": 10.493000030517578,
+        "pop_1d": -0.2862570065035495,
+        "pop_1w": -0.09541293553707336,
+        "pop_1m": 0.12405046611744246
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.3,
+    "avg_pop_1w": -0.1,
+    "avg_pop_1m": 0.1
+  },
+  "Willow Lane": {
+    "sponsor_normalized": "Willow Lane",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "WLAC",
+        "target": "Boost Run",
+        "announced_date": "2025-09-19",
+        "price_on_announcement": 11.640000343322754,
+        "price_1d": 11.989999771118164,
+        "price_1w": 12.460000038146973,
+        "price_1m": 12.520000457763672,
+        "pop_1d": 3.0068678476988717,
+        "pop_1w": 7.044670709950698,
+        "pop_1m": 7.560138217227176
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 3.0,
+    "avg_pop_1w": 7.0,
+    "avg_pop_1m": 7.6
+  },
+  "Aurora Acquisition": {
+    "sponsor_normalized": "Aurora Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "RDAC",
+        "target": "hzjl cayman limited",
+        "announced_date": "2025-01-27",
+        "price_on_announcement": 10.055000305175781,
+        "price_1d": 10.0600004196167,
+        "price_1w": 10.0600004196167,
+        "price_1m": 10.100000381469727,
+        "pop_1d": 0.04972764086684488,
+        "pop_1w": 0.04972764086684488,
+        "pop_1m": 0.44753928322390657
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.0,
+    "avg_pop_1w": 0.0,
+    "avg_pop_1m": 0.4
+  },
+  "A SPAC Holdings": {
+    "sponsor_normalized": "A SPAC Holdings",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "ASPC",
+        "target": "Bioserica",
+        "announced_date": "2025-05-27",
+        "price_on_announcement": 10.210000038146973,
+        "price_1d": 10.1899995803833,
+        "price_1w": 10.199999809265137,
+        "price_1m": 10.25,
+        "pop_1d": -0.19589086864784958,
+        "pop_1w": -0.09794543432392479,
+        "pop_1m": 0.3917723967049759
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.2,
+    "avg_pop_1w": -0.1,
+    "avg_pop_1m": 0.4
+  },
+  "Mountain Lake": {
+    "sponsor_normalized": "Mountain Lake",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "MLAC",
+        "target": "Avalanche Treasury Company LLC",
+        "announced_date": "2025-10-07",
+        "price_on_announcement": 10.449999809265137,
+        "price_1d": 10.4399995803833,
+        "price_1w": 10.449999809265137,
+        "price_1m": 10.449999809265137,
+        "pop_1d": -0.09569597190776573,
+        "pop_1w": 0.0,
+        "pop_1m": 0.0
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.1,
+    "avg_pop_1w": null,
+    "avg_pop_1m": null
+  },
+  "Four Leaf Acquisition": {
+    "sponsor_normalized": "Four Leaf Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "FORL",
+        "target": "Xiaoyu Dida Interconnect International Limited (Smart Station)",
+        "announced_date": "2024-12-17",
+        "price_on_announcement": 11.100000381469727,
+        "price_1d": 11.100000381469727,
+        "price_1w": 11.039999961853027,
+        "price_1m": 11.100000381469727,
+        "pop_1d": 0.0,
+        "pop_1w": -0.5405443022944716,
+        "pop_1m": 0.0
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": -0.5,
+    "avg_pop_1m": null
+  },
+  "Yorkville Acquisition": {
+    "sponsor_normalized": "Yorkville Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "MCGA",
+        "target": "Trump Media & Technology Group Corp.",
+        "announced_date": "2025-08-26",
+        "price_on_announcement": 10.399999618530273,
+        "price_1d": 10.760000228881836,
+        "price_1w": 10.670000076293945,
+        "price_1m": 10.6899995803833,
+        "pop_1d": 3.4615444572721796,
+        "pop_1w": 2.596158342954135,
+        "pop_1m": 2.7884612739438746
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 3.5,
+    "avg_pop_1w": 2.6,
+    "avg_pop_1m": 2.8
+  },
+  "EQV Ventures": {
+    "sponsor_normalized": "EQV Ventures",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "EQV",
+        "target": "prometheus holdings llc",
+        "announced_date": "2025-08-11",
+        "price_on_announcement": 10.369999885559082,
+        "price_1d": 10.380000114440918,
+        "price_1w": 10.350000381469727,
+        "price_1m": 10.390000343322754,
+        "pop_1d": 0.09643422364702167,
+        "pop_1w": -0.19285925082030247,
+        "pop_1m": 0.19286844729404334
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.1,
+    "avg_pop_1w": -0.2,
+    "avg_pop_1m": 0.2
+  },
+  "BEST SPAC Holdings": {
+    "sponsor_normalized": "BEST SPAC Holdings",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "BSAA",
+        "target": "HDEducation Group Limited",
+        "announced_date": "2025-09-26",
+        "price_on_announcement": 10.050000190734863,
+        "price_1d": 10.050000190734863,
+        "price_1w": 10.050000190734863,
+        "price_1m": 10.109999656677246,
+        "pop_1d": 0.0,
+        "pop_1w": 0.0,
+        "pop_1m": 0.5970096000365908
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": null,
+    "avg_pop_1m": 0.6
+  },
+  "Crane NXT / Crane Harbor": {
+    "sponsor_normalized": "Crane NXT / Crane Harbor",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "CHAC",
+        "target": "Xanadu Quantum Technologies Inc.",
+        "announced_date": "2025-11-03",
+        "price_on_announcement": 12.470000267028809,
+        "price_1d": 12.850000381469727,
+        "price_1w": 12.95989990234375,
+        "price_1m": null,
+        "pop_1d": 3.047314405001689,
+        "pop_1w": 3.9286257002756937,
+        "pop_1m": null
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 3.0,
+    "avg_pop_1w": 3.9,
+    "avg_pop_1m": null
+  },
+  "Cormorant Asset Management": {
+    "sponsor_normalized": "Cormorant Asset Management",
+    "total_deals": 1,
+    "tracked_deals": 0,
+    "deals": [],
+    "deal_count": 0,
+    "avg_pop_1d": null,
+    "avg_pop_1w": null,
+    "avg_pop_1m": null
+  },
+  "GigCapital Global": {
+    "sponsor_normalized": "GigCapital Global",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "GIG",
+        "target": "Hadron Energy, Inc.",
+        "announced_date": "2025-09-29",
+        "price_on_announcement": 10.520000457763672,
+        "price_1d": 10.550000190734863,
+        "price_1w": 10.699999809265137,
+        "price_1m": 10.829999923706055,
+        "pop_1d": 0.2851685519562107,
+        "pop_1w": 1.711020377082083,
+        "pop_1m": 2.9467628560187547
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 0.3,
+    "avg_pop_1w": 1.7,
+    "avg_pop_1m": 2.9
+  },
+  "HWei Acquisition": {
+    "sponsor_normalized": "HWei Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "FVN",
+        "target": "Viwo Technology Inc.",
+        "announced_date": "2024-11-29",
+        "price_on_announcement": 10.029999732971191,
+        "price_1d": 10.029999732971191,
+        "price_1w": 10.010000228881836,
+        "price_1m": 10.020000457763672,
+        "pop_1d": 0.0,
+        "pop_1w": -0.19939685565107196,
+        "pop_1m": -0.09969367371615513
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": -0.2,
+    "avg_pop_1m": -0.1
+  },
+  "Waldencast": {
+    "sponsor_normalized": "Waldencast",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "WALD",
+        "target": "{Obagi,\"Milk Makeup\"}",
+        "announced_date": "2021-11-15",
+        "price_on_announcement": 10.0,
+        "price_1d": 9.949999809265137,
+        "price_1w": 9.949999809265137,
+        "price_1m": 9.920000076293945,
+        "pop_1d": -0.5000019073486328,
+        "pop_1w": -0.5000019073486328,
+        "pop_1m": -0.7999992370605469
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.5,
+    "avg_pop_1w": -0.5,
+    "avg_pop_1m": -0.8
+  },
+  "Columbus Acquisition": {
+    "sponsor_normalized": "Columbus Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 0,
+    "deals": [],
+    "deal_count": 0,
+    "avg_pop_1d": null,
+    "avg_pop_1w": null,
+    "avg_pop_1m": null
+  },
+  "Israel Acquisitions": {
+    "sponsor_normalized": "Israel Acquisitions",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "ISRL",
+        "target": "Gadfin Ltd.",
+        "announced_date": "2025-01-27",
+        "price_on_announcement": 11.579999923706055,
+        "price_1d": 11.5,
+        "price_1w": 11.489999771118164,
+        "price_1m": 11.5649995803833,
+        "pop_1d": -0.6908456324104324,
+        "pop_1w": -0.7772033953441257,
+        "pop_1m": -0.1295366444005399
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.7,
+    "avg_pop_1w": -0.8,
+    "avg_pop_1m": -0.1
+  },
+  "Bengochea SPAC": {
+    "sponsor_normalized": "Bengochea SPAC",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "IROH",
+        "target": "Zhong Guo Liang Tou Group Limited",
+        "announced_date": "2025-09-03",
+        "price_on_announcement": 11.270000457763672,
+        "price_1d": 9.5,
+        "price_1w": 9.587499618530273,
+        "price_1m": 4.090000152587891,
+        "pop_1d": -15.705416023691063,
+        "pop_1w": -14.929021924523154,
+        "pop_1m": -63.70896196574355
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -15.7,
+    "avg_pop_1w": -14.9,
+    "avg_pop_1m": -63.7
+  },
+  "Armada Acquisition": {
+    "sponsor_normalized": "Armada Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "AACI",
+        "target": "Pathfinder Digital Assets (Ripple)",
+        "announced_date": "2025-10-19",
+        "price_on_announcement": 10.239999771118164,
+        "price_1d": 10.239999771118164,
+        "price_1w": 10.300000190734863,
+        "price_1m": null,
+        "pop_1d": 0.0,
+        "pop_1w": 0.5859416109161438,
+        "pop_1m": null
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": 0.6,
+    "avg_pop_1m": null
+  },
+  "GSR Acquisition": {
+    "sponsor_normalized": "GSR Acquisition",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "GSRT",
+        "target": "Terra Innovatum",
+        "announced_date": "2025-04-22",
+        "price_on_announcement": 10.170000076293945,
+        "price_1d": 10.15999984741211,
+        "price_1w": 10.175000190734863,
+        "price_1m": 10.300000190734863,
+        "pop_1d": -0.09833066673368332,
+        "pop_1w": 0.04916533336684166,
+        "pop_1m": 1.2782705355523594
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.1,
+    "avg_pop_1w": 0.0,
+    "avg_pop_1m": 1.3
+  },
+  "UY Scuti": {
+    "sponsor_normalized": "UY Scuti",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "UYSC",
+        "target": "Isdera Group Limited",
+        "announced_date": "2025-07-24",
+        "price_on_announcement": 10.100000381469727,
+        "price_1d": 10.079999923706055,
+        "price_1w": 10.09000015258789,
+        "price_1m": 10.109999656677246,
+        "pop_1d": -0.19802432681454474,
+        "pop_1w": -0.09901216340727237,
+        "pop_1m": 0.09900272108766457
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": -0.2,
+    "avg_pop_1w": -0.1,
+    "avg_pop_1m": 0.1
+  },
+  "Ribbon Investment": {
+    "sponsor_normalized": "Ribbon Investment",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "RIBB",
+        "target": "DRC Medicine Ltd.",
+        "announced_date": "2025-07-01",
+        "price_on_announcement": 10.149999618530273,
+        "price_1d": 10.149999618530273,
+        "price_1w": 10.15999984741211,
+        "price_1m": 10.1899995803833,
+        "pop_1d": 0.0,
+        "pop_1w": 0.09852442618400784,
+        "pop_1m": 0.39408830892960534
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": 0.1,
+    "avg_pop_1m": 0.4
+  },
+  "HC Sponsor Holdings": {
+    "sponsor_normalized": "HC Sponsor Holdings",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "HVII",
+        "target": "ONE Nuclear Energy, LLC",
+        "announced_date": "2025-10-22",
+        "price_on_announcement": 10.34000015258789,
+        "price_1d": 10.899999618530273,
+        "price_1w": 10.680000305175781,
+        "price_1m": null,
+        "pop_1d": 5.41585549012034,
+        "pop_1w": 3.2882025877223566,
+        "pop_1m": null
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": 5.4,
+    "avg_pop_1w": 3.3,
+    "avg_pop_1m": null
+  },
+  "Createcharm": {
+    "sponsor_normalized": "Createcharm",
+    "total_deals": 1,
+    "tracked_deals": 1,
+    "deals": [
+      {
+        "ticker": "BOWN",
+        "target": "Shenzhen Qianzhi Biotech Company Limited",
+        "announced_date": "2024-01-24",
+        "price_on_announcement": 10.350000381469727,
+        "price_1d": 10.350000381469727,
+        "price_1w": 10.359999656677246,
+        "price_1m": 10.359999656677246,
+        "pop_1d": 0.0,
+        "pop_1w": 0.09661135110122197,
+        "pop_1m": 0.09661135110122197
+      }
+    ],
+    "deal_count": 1,
+    "avg_pop_1d": null,
+    "avg_pop_1w": 0.1,
+    "avg_pop_1m": 0.1
+  }
+}

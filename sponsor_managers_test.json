@@ -1,0 +1,34 @@
+[
+  {
+    "managing_members": [
+      "Dan Tapiero"
+    ],
+    "sponsor_address": null,
+    "formation_state": "Delaware",
+    "confidence": 85,
+    "reasoning": "Found explicit mention that 'sponsor' is 1RT Acquisition Sponsor LLC, a Delaware limited liability company in the definitions section. Also found that 'other than Mr. Tapiero, no other person has a direct or indirect material interest in our sponsor' in the 'Our Sponsor' section, indicating Dan Tapiero is the control person.",
+    "ticker": "ONCH",
+    "sponsor": "1RT Acquisition Sponsor LLC",
+    "sponsor_normalized": "1RT Acquisition Sponsor"
+  },
+  {
+    "managing_members": null,
+    "sponsor_address": null,
+    "formation_state": null,
+    "confidence": 10,
+    "reasoning": "No explicit managing members, sponsor address, or formation state found in the provided excerpt. The excerpt mentions the sponsor name 'A SPAC IV (Holdings) Corp.' and references to non-voting sponsor investors, but lacks details on management, address, or state of formation. Confidence is low as this information is typically in sections like 'Summary\u2014Sponsor Information' or footnotes to ownership tables, which are not included here.",
+    "ticker": "APAD",
+    "sponsor": "A SPAC IV (Holdings) Corp.",
+    "sponsor_normalized": "A SPAC (Holdings)"
+  },
+  {
+    "managing_members": null,
+    "sponsor_address": null,
+    "formation_state": null,
+    "confidence": 10,
+    "reasoning": "The provided excerpt does not contain any explicit information about managing members, sponsor address, or formation state. It mentions the sponsor name 'A SPAC III (Holdings) Corp.' but lacks details about its management structure, address, or jurisdiction of formation. The excerpt primarily discusses risk factors, dilution scenarios, and general business information without the specific sponsor details requested.",
+    "ticker": "ASPC",
+    "sponsor": "A SPAC III (Holdings) Corp.",
+    "sponsor_normalized": "A SPAC I (Holdings)"
+  }
+]

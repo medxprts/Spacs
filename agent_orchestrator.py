@@ -1527,9 +1527,18 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
 
         ticker = filing.get('ticker', 'UNKNOWN')
 
-        print(f"\n[ORCHESTRATOR] Processing {filing['type']} filing for {ticker}")
-        print(f"   Priority: {classification['priority']}")
-        print(f"   Routing to: {', '.join(agents_needed)}")
+        # Suppress verbose logging for LOW priority filings (reduces log bloat)
+        show_verbose_logs = classification['priority'] in ['MEDIUM', 'HIGH']
+
+        if show_verbose_logs:
+            print(f"\n[ORCHESTRATOR] Processing {filing['type']} filing for {ticker}")
+            print(f"   Priority: {classification['priority']}")
+            print(f"   Routing to: {', '.join(agents_needed)}")
+        else:
+            # Minimal logging for LOW priority filings
+            agent_count = len(agents_needed)
+            if agent_count == 0:
+                print(f"[ORCHESTRATOR] {filing['type']} for {ticker} (LOW priority, 0 agents)")
 
         # Log to news feed database (track success for SEC monitor confirmation)
         logging_success = False
@@ -1537,27 +1546,32 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
             from utils.filing_logger import log_filing
             filing['classification'] = classification
             logging_success = log_filing(filing)  # Returns True/False
-            if logging_success:
-                print(f"   ✅ Logged to news feed")
-            else:
-                print(f"   ℹ️  Filing already logged (duplicate)")
+            if show_verbose_logs:
+                if logging_success:
+                    print(f"   ✅ Logged to news feed")
+                else:
+                    print(f"   ℹ️  Filing already logged (duplicate)")
         except Exception as e:
-            print(f"   ⚠️  Failed to log to news feed: {e}")
+            if show_verbose_logs:
+                print(f"   ⚠️  Failed to log to news feed: {e}")
             logging_success = False
 
         # OPTIMIZATION 1: Download filing content once if multiple agents need it
         if len(agents_needed) > 1 and 'content' not in filing:
-            print(f"   📥 Pre-fetching filing content (shared by {len(agents_needed)} agents)...")
+            if show_verbose_logs:
+                print(f"   📥 Pre-fetching filing content (shared by {len(agents_needed)} agents)...")
             filing['content'] = self._fetch_filing_content(filing.get('url'))
-            if filing['content']:
-                print(f"   ✓ Content fetched: {len(filing['content']):,} characters")
-            else:
-                print(f"   ⚠️  Content fetch failed - agents will fetch individually")
+            if show_verbose_logs:
+                if filing['content']:
+                    print(f"   ✓ Content fetched: {len(filing['content']):,} characters")
+                else:
+                    print(f"   ⚠️  Content fetch failed - agents will fetch individually")
 
         # OPTIMIZATION 2: AI-powered relevance analysis (skip irrelevant agents)
         relevance_map = {}
         if filing.get('content') and len(agents_needed) > 1:
-            print(f"   🔍 Analyzing filing content for agent relevance...")
+            if show_verbose_logs:
+                print(f"   🔍 Analyzing filing content for agent relevance...")
             relevance_map = self._analyze_filing_relevance(
                 content=filing['content'],
                 agents_needed=agents_needed,
@@ -1573,7 +1587,8 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
 
         if len(relevant_agents) < len(agents_needed):
             skipped = set(agents_needed) - set(relevant_agents)
-            print(f"   ⏭️  Skipping {len(skipped)} irrelevant agents: {', '.join(skipped)}")
+            if show_verbose_logs:
+                print(f"   ⏭️  Skipping {len(skipped)} irrelevant agents: {', '.join(skipped)}")
 
         results = []
 
@@ -1600,27 +1615,30 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
                     'result': completed_task.result
                 })
 
-                if completed_task.status == TaskStatus.COMPLETED:
-                    print(f"   ✅ {agent_name} completed")
-                elif completed_task.status == TaskStatus.FAILED:
-                    print(f"   ❌ {agent_name} failed: {completed_task.error}")
+                if show_verbose_logs:
+                    if completed_task.status == TaskStatus.COMPLETED:
+                        print(f"   ✅ {agent_name} completed")
+                    elif completed_task.status == TaskStatus.FAILED:
+                        print(f"   ❌ {agent_name} failed: {completed_task.error}")
 
             else:
-                print(f"   ⚠️  Agent '{agent_name}' not found in filing_agents")
+                if show_verbose_logs:
+                    print(f"   ⚠️  Agent '{agent_name}' not found in filing_agents")
                 results.append({
                     'agent': agent_name,
                     'status': 'NOT_FOUND',
                     'error': f'{agent_name} not registered'
                 })
 
-        # Summary with AI optimization stats
-        completed = sum(1 for r in results if r.get('status') == 'completed')
-        skipped_count = len(agents_needed) - len(relevant_agents)
+        # Summary with AI optimization stats (only for MEDIUM/HIGH priority)
+        if show_verbose_logs:
+            completed = sum(1 for r in results if r.get('status') == 'completed')
+            skipped_count = len(agents_needed) - len(relevant_agents)
 
-        if skipped_count > 0:
-            print(f"   📊 Summary: {completed}/{len(relevant_agents)} relevant agents completed ({skipped_count} skipped by AI)\n")
-        else:
-            print(f"   📊 Summary: {completed}/{len(agents_needed)} agents completed\n")
+            if skipped_count > 0:
+                print(f"   📊 Summary: {completed}/{len(relevant_agents)} relevant agents completed ({skipped_count} skipped by AI)\n")
+            else:
+                print(f"   📊 Summary: {completed}/{len(agents_needed)} agents completed\n")
 
         # Return logging success status (for SEC monitor to track which filings were successfully processed)
         return logging_success

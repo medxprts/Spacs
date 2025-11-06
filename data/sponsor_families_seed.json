@@ -1,0 +1,343 @@
+[
+  {
+    "family_name": "The Gores Group",
+    "principals": ["Alec Gores"],
+    "sponsor_variations": [
+      "Gores Sponsor",
+      "Metropoulos Sponsor"
+    ],
+    "example_spacs": ["GRSH", "GSHT", "GRSHU", "GHIV", "GRSV", "GIIX", "GMHI", "GMII"],
+    "notable_targets": ["Hostess Brands", "Verra Mobility", "United Wholesale Mortgage", "Matterport"],
+    "primary_sector": "General/Industrial/Tech"
+  },
+  {
+    "family_name": "Churchill Capital",
+    "principals": ["Michael Klein"],
+    "sponsor_variations": [
+      "Churchill Sponsor",
+      "Klein Sponsor"
+    ],
+    "example_spacs": ["CCX", "CCXI", "CCIV", "CCV", "CCVI", "CCVII", "CCIX", "DYNX", "AIIA", "MBAV"],
+    "notable_targets": ["Lucid Motors", "Skillsoft"],
+    "primary_sector": "Financial/Industrial"
+  },
+  {
+    "family_name": "FTAC / FinTech / Cohen Family",
+    "principals": ["Betsy Cohen"],
+    "sponsor_variations": [
+      "FTAC Sponsor",
+      "Hera Sponsor",
+      "Emerald Sponsor",
+      "Athena Tech Sponsor"
+    ],
+    "example_spacs": ["FNTC", "FNTE", "FTACU", "HERA", "EMLD", "ATHN"],
+    "notable_targets": ["Payoneer", "Paya", "Perella Weinberg"],
+    "primary_sector": "Fintech/Payments"
+  },
+  {
+    "family_name": "Cantor Fitzgerald",
+    "principals": ["Howard Lutnick"],
+    "sponsor_variations": [
+      "CF Sponsor",
+      "Cantor Sponsor"
+    ],
+    "example_spacs": ["CFFA", "CFAC", "CFVI", "CFIV", "CFFS", "CFVIU"],
+    "notable_targets": ["Rumble", "View"],
+    "primary_sector": "General/Healthcare"
+  },
+  {
+    "family_name": "dMY Technology Group",
+    "principals": ["Harry You", "Niccolo de Masi"],
+    "sponsor_variations": [
+      "dMY Sponsor"
+    ],
+    "example_spacs": ["DMYI", "DMYD", "DMYQ", "DMYT", "DMYA"],
+    "notable_targets": ["Genius Sports", "IONQ", "Planet Labs"],
+    "primary_sector": "Tech/Gaming/Space"
+  },
+  {
+    "family_name": "GigCapital Global",
+    "principals": ["Dr. Avi Katz"],
+    "sponsor_variations": [
+      "GigCapital Sponsor",
+      "Gig Sponsor"
+    ],
+    "example_spacs": ["GIG", "GIX", "GIGM", "GIGY", "GIGA"],
+    "notable_targets": ["Kaleyra", "UpHealth", "Cepton"],
+    "primary_sector": "Technology/Comms"
+  },
+  {
+    "family_name": "Social Capital Hedosophia",
+    "principals": ["Chamath Palihapitiya"],
+    "sponsor_variations": [
+      "Social Capital Sponsor",
+      "SCH Sponsor"
+    ],
+    "example_spacs": ["IPOA", "IPOB", "IPOC", "IPOD", "IPOE", "IPOF"],
+    "notable_targets": ["Virgin Galactic", "Opendoor", "Clover Health", "SoFi"],
+    "primary_sector": "Consumer/Tech"
+  },
+  {
+    "family_name": "JAWS (Barry Sternlicht)",
+    "principals": ["Barry Sternlicht"],
+    "sponsor_variations": [
+      "JAWS Sponsor",
+      "Spitfire Sponsor",
+      "Mustang Sponsor",
+      "Hurricane Sponsor"
+    ],
+    "example_spacs": ["JAWS", "SPFR", "JWSM", "JWAC"],
+    "notable_targets": ["Cano Health", "Avaya"],
+    "primary_sector": "Consumer/Real Estate/Tech"
+  },
+  {
+    "family_name": "Dragoneer Growth Opportunities",
+    "principals": ["Marc Stad"],
+    "sponsor_variations": [
+      "Dragoneer Sponsor"
+    ],
+    "example_spacs": ["DGNR", "DGNS", "DGNU"],
+    "notable_targets": ["Cvent", "CCC Intelligence"],
+    "primary_sector": "Technology/Growth"
+  },
+  {
+    "family_name": "Khosla Ventures",
+    "principals": ["Khosla family"],
+    "sponsor_variations": [
+      "Khosla Sponsor",
+      "KV Sponsor"
+    ],
+    "example_spacs": ["KVSA", "KVSB", "KVSC", "KVSD"],
+    "notable_targets": ["Nextdoor", "Valo"],
+    "primary_sector": "Deep Tech/Sustainability"
+  },
+  {
+    "family_name": "CC Neuberger / CC Capital",
+    "principals": ["Chinh Chu", "Paul Neuberger"],
+    "sponsor_variations": [
+      "CC Neuberger Sponsor",
+      "CCNB Sponsor",
+      "CC Capital Sponsor"
+    ],
+    "example_spacs": ["PCPL", "CCNB", "CCNC"],
+    "notable_targets": ["Getty Images", "EToro"],
+    "primary_sector": "Financial Services"
+  },
+  {
+    "family_name": "Thunder Bridge Capital",
+    "principals": ["Blake Battaglia"],
+    "sponsor_variations": [
+      "Thunder Bridge Sponsor"
+    ],
+    "example_spacs": ["THBR", "THCP", "THCB", "THCA"],
+    "notable_targets": ["Repay", "Indie Semiconductor"],
+    "primary_sector": "Fintech/Payments"
+  },
+  {
+    "family_name": "CM Life Sciences",
+    "principals": ["Casdin Capital", "Corvex"],
+    "sponsor_variations": [
+      "CM Life Sponsor",
+      "CML Sponsor"
+    ],
+    "example_spacs": ["CMLF", "CMLT", "CMLA"],
+    "notable_targets": ["Sema4", "SomaLogic"],
+    "primary_sector": "Healthcare/Biotech"
+  },
+  {
+    "family_name": "LifeSci Acquisition",
+    "principals": ["LifeSci Advisors"],
+    "sponsor_variations": [
+      "LifeSci Sponsor"
+    ],
+    "example_spacs": ["LSAC", "LSAQ"],
+    "notable_targets": ["Vincera", "Imago BioSciences"],
+    "primary_sector": "Biotech"
+  },
+  {
+    "family_name": "Ares Acquisition",
+    "principals": ["Ares Management"],
+    "sponsor_variations": [
+      "Ares Sponsor"
+    ],
+    "example_spacs": ["AAC", "AACT"],
+    "notable_targets": ["XEnergy"],
+    "primary_sector": "General"
+  },
+  {
+    "family_name": "Oaktree Acquisition",
+    "principals": ["Oaktree Capital"],
+    "sponsor_variations": [
+      "Oaktree Sponsor"
+    ],
+    "example_spacs": ["OAC", "OACB"],
+    "notable_targets": ["Hims & Hers", "Alvotech"],
+    "primary_sector": "General"
+  },
+  {
+    "family_name": "Tortoise Ecofin",
+    "principals": ["Tortoise Capital Advisors"],
+    "sponsor_variations": [
+      "Tortoise Sponsor"
+    ],
+    "example_spacs": ["SNPR", "TRTU"],
+    "notable_targets": ["Volta Charging", "Grid Dynamics"],
+    "primary_sector": "Energy/Infra"
+  },
+  {
+    "family_name": "NGP / Switchback",
+    "principals": ["NGP Energy Capital"],
+    "sponsor_variations": [
+      "Switchback Sponsor",
+      "NGP Sponsor"
+    ],
+    "example_spacs": ["SBE", "SBEA"],
+    "notable_targets": ["ChargePoint"],
+    "primary_sector": "Energy/EVs"
+  },
+  {
+    "family_name": "Northern Star",
+    "principals": ["Joanna Coles", "Jonathan Ledecky"],
+    "sponsor_variations": [
+      "Northern Star Sponsor"
+    ],
+    "example_spacs": ["NSTB", "NSTC", "NSTD"],
+    "notable_targets": ["Barstool Sports"],
+    "primary_sector": "Consumer/Media"
+  },
+  {
+    "family_name": "Altimeter Growth",
+    "principals": ["Brad Gerstner"],
+    "sponsor_variations": [
+      "Altimeter Sponsor"
+    ],
+    "example_spacs": ["AGC", "AGCB"],
+    "notable_targets": ["Grab"],
+    "primary_sector": "Technology"
+  },
+  {
+    "family_name": "10X Capital Venture Acquisition",
+    "principals": ["Hans Thomas"],
+    "sponsor_variations": [
+      "10X Capital Sponsor",
+      "VCX Sponsor"
+    ],
+    "example_spacs": ["VCXA", "VCXB", "VCXC"],
+    "notable_targets": ["REE Automotive", "Addionics"],
+    "primary_sector": "Tech/Venture"
+  },
+  {
+    "family_name": "Leo Holdings",
+    "principals": ["Lion Capital"],
+    "sponsor_variations": [
+      "Leo Sponsor",
+      "Lion Capital Sponsor"
+    ],
+    "example_spacs": ["LHC", "LHCN"],
+    "notable_targets": ["Digital Media", "World View"],
+    "primary_sector": "Consumer/Retail"
+  },
+  {
+    "family_name": "Colonnade Acquisition",
+    "principals": ["Colonnade Capital Partners"],
+    "sponsor_variations": [
+      "Colonnade Sponsor"
+    ],
+    "example_spacs": ["CLA", "CLAA"],
+    "notable_targets": ["Ouster"],
+    "primary_sector": "Auto/Consumer"
+  },
+  {
+    "family_name": "Foley Trasimene / Austerlitz / Trebia",
+    "principals": ["William Foley"],
+    "sponsor_variations": [
+      "Foley Sponsor",
+      "Austerlitz Sponsor",
+      "Trebia Sponsor"
+    ],
+    "example_spacs": ["WPF", "BFT", "AUS", "TREB"],
+    "notable_targets": ["Paysafe", "Dun & Bradstreet", "Alight"],
+    "primary_sector": "Fintech/Insurance"
+  },
+  {
+    "family_name": "Reinvent Technology Partners",
+    "principals": ["Reid Hoffman", "Mark Pincus"],
+    "sponsor_variations": [
+      "Reinvent Sponsor",
+      "RTP Sponsor"
+    ],
+    "example_spacs": ["RTP", "RTPZ", "RTPX"],
+    "notable_targets": ["Joby Aviation", "Hippo"],
+    "primary_sector": "Tech/Software"
+  },
+  {
+    "family_name": "Spartan (Apollo)",
+    "principals": ["Apollo Global Management"],
+    "sponsor_variations": [
+      "Spartan Sponsor"
+    ],
+    "example_spacs": ["SPAQ", "SPRQ"],
+    "notable_targets": ["Fisker"],
+    "primary_sector": "Energy/EVs"
+  },
+  {
+    "family_name": "Conyers Park",
+    "principals": ["James Kilts", "David West"],
+    "sponsor_variations": [
+      "Conyers Park Sponsor"
+    ],
+    "example_spacs": ["CPAA"],
+    "notable_targets": ["Atkins Nutritionals", "Inspirato"],
+    "primary_sector": "Consumer"
+  },
+  {
+    "family_name": "Union Acquisition",
+    "principals": ["Juan Sartori"],
+    "sponsor_variations": [
+      "Union Sponsor"
+    ],
+    "example_spacs": ["LATN"],
+    "notable_targets": ["Procaps"],
+    "primary_sector": "LatAm"
+  },
+  {
+    "family_name": "CIIG Capital Partners",
+    "principals": ["CIIG Partners"],
+    "sponsor_variations": [
+      "CIIG Sponsor"
+    ],
+    "example_spacs": ["CIIC", "CIIG"],
+    "notable_targets": ["Arrival Ltd."],
+    "primary_sector": "EV/Industrial"
+  },
+  {
+    "family_name": "Crescent Acquisition",
+    "principals": ["Crescent Capital"],
+    "sponsor_variations": [
+      "Crescent Sponsor"
+    ],
+    "example_spacs": ["CRSA"],
+    "notable_targets": ["LiveVox"],
+    "primary_sector": "General"
+  },
+  {
+    "family_name": "Silver Spike Capital",
+    "principals": ["SCT Management"],
+    "sponsor_variations": [
+      "Silver Spike Sponsor"
+    ],
+    "example_spacs": ["SSPK", "SPKB", "SPKC"],
+    "notable_targets": ["WM Technology", "Eleven Labs"],
+    "primary_sector": "Cannabis"
+  },
+  {
+    "family_name": "Atlas Crest Investment",
+    "principals": ["Ken Moelis"],
+    "sponsor_variations": [
+      "Atlas Crest Sponsor"
+    ],
+    "example_spacs": ["ACIC", "ACII"],
+    "notable_targets": ["Archer Aviation"],
+    "primary_sector": "Transport/Tech"
+  }
+]

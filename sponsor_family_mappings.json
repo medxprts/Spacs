@@ -1,0 +1,137 @@
+[
+  {
+    "ticker": "CCIX",
+    "sponsor": "Churchill Sponsor IX LLC",
+    "old_normalized": "Churchill Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "DYNX",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "GTEN",
+    "sponsor": "Gores Sponsor X LLC",
+    "old_normalized": "Gores Sponsor",
+    "new_normalized": "The Gores Group",
+    "principals": [
+      "Alec Gores"
+    ]
+  },
+  {
+    "ticker": "MBAV",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "CCCX",
+    "sponsor": "Churchill Sponsor X LLC",
+    "old_normalized": "Churchill Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "PELI",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "AIIA",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "RAAQ",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "DAAQ",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "KCHV",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "OACC",
+    "sponsor": "Oaktree Acquisition Holdings III LS, LLC",
+    "old_normalized": "Oaktree Acquisition Holdings I LS",
+    "new_normalized": "Oaktree Acquisition",
+    "principals": [
+      "Oaktree Capital"
+    ]
+  },
+  {
+    "ticker": "EGHA",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "CRA",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "AXIN",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  },
+  {
+    "ticker": "CGCT",
+    "sponsor": "Klein Sponsor LLC",
+    "old_normalized": "Klein Sponsor",
+    "new_normalized": "Churchill Capital",
+    "principals": [
+      "Michael Klein"
+    ]
+  }
+]

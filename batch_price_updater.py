@@ -84,7 +84,8 @@ def batch_update_prices(batch_size=20, delay_seconds=3) -> int:
                     period='5d',
                     group_by='ticker',
                     threads=True,  # Parallel downloads
-                    progress=False
+                    progress=False,
+                    auto_adjust=True  # Suppress FutureWarning
                 )
 
                 # Process each ticker in the batch

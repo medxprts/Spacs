@@ -99,11 +99,17 @@ class SPAC(Base):
     volume_24h = Column(Float)
     volume_avg_30d = Column(Float)
     price_change_24h = Column(Float)
+    public_float = Column(Integer)  # Shares available for public trading (shares_outstanding - founder - PP)
+    volume_on_announcement_day = Column(Integer)  # Volume on deal announcement day
+    volume_pct_of_float = Column(Float)  # Volume as % of public float
     
     # Risk and Classification
     risk_level = Column(String)
     sector = Column(String)
     sector_details = Column(Text)  # Detailed sector/subsector description from 424B4
+    sector_classified = Column(String)  # Classified sector from AI extraction (AI, FinTech, etc.)
+    sector_confidence = Column(Integer)  # Confidence score 0-100 for sector classification
+    is_hot_sector = Column(Boolean, default=False)  # Whether sector is in hot narrative list
     geography = Column(String)
     banker_tier = Column(String)
     sponsor_quality_score = Column(Float)
@@ -149,6 +155,8 @@ class SPAC(Base):
     min_cash_percentage = Column(Float)
     pipe_size = Column(Float)
     pipe_price = Column(Float)
+    pipe_percentage = Column(Float)            # PIPE size as % of trust
+    pipe_lockup_months = Column(Integer)       # PIPE share lockup period in months
     has_pipe = Column(Boolean)
     earnout_shares = Column(Float)
     has_earnout = Column(Boolean)
@@ -159,6 +167,7 @@ class SPAC(Base):
     banker = Column(String)                # Lead investment banker
     co_bankers = Column(String)            # Other co-managers/underwriters
     sponsor = Column(String)
+    sponsor_normalized = Column(String)    # Normalized sponsor name (grouped by family)
     sponsor_promote = Column(Float)
     legal_advisor = Column(String)
 
@@ -173,6 +182,8 @@ class SPAC(Base):
     private_placement_units = Column(Float)           # Number of private placement units
     sponsor_total_at_risk = Column(Float)             # Total sponsor capital at risk
     sponsor_at_risk_percentage = Column(Float)        # Sponsor capital as % of IPO size
+    promote_vesting_type = Column(String)             # 'standard' or 'performance' based vesting
+    promote_vesting_prices = Column(Text)             # JSON array of price milestones (e.g., [12.00, 15.00, 18.00])
     
     # SEC Filings (NO sec_cik - dropped)
     cik = Column(String)                   # CIK number
