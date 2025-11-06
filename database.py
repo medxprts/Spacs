@@ -1,6 +1,6 @@
 # database.py - COMPLETE MODEL (97 COLUMNS - Phase 1+2: Added 424B4 + management + sponsor economics)
 
-from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, Boolean, Numeric
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, Text, Boolean, Numeric, ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -182,8 +182,8 @@ class SPAC(Base):
     private_placement_units = Column(Float)           # Number of private placement units
     sponsor_total_at_risk = Column(Float)             # Total sponsor capital at risk
     sponsor_at_risk_percentage = Column(Float)        # Sponsor capital as % of IPO size
-    promote_vesting_type = Column(String)             # 'standard' or 'performance' based vesting
-    promote_vesting_prices = Column(Text)             # JSON array of price milestones (e.g., [12.00, 15.00, 18.00])
+    promote_vesting_type = Column(String)             # 'standard', 'performance', 'time-based', or 'immediate'
+    promote_vesting_prices = Column(ARRAY(Float))    # Price milestones for performance vesting (e.g., [12.00, 15.00, 18.00])
     
     # SEC Filings (NO sec_cik - dropped)
     cik = Column(String)                   # CIK number

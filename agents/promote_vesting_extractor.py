@@ -406,9 +406,9 @@ IMPORTANT:
         """Update SPAC with vesting data"""
         spac.promote_vesting_type = vesting_data['vesting_type']
 
-        # Store vesting_prices as JSON string
+        # Store vesting_prices as Python list (PostgreSQL ARRAY column)
         if vesting_data.get('vesting_prices'):
-            spac.promote_vesting_prices = json.dumps(vesting_data['vesting_prices'])
+            spac.promote_vesting_prices = vesting_data['vesting_prices']
         else:
             spac.promote_vesting_prices = None
 
