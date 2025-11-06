@@ -351,7 +351,7 @@ class SECFilingMonitor:
         elif filing_type == '425':
             return {
                 'priority': 'HIGH',
-                'agents_needed': ['DealDetector'],
+                'agents_needed': ['DealDetector', 'PipeExtractor'],
                 'reason': 'Form 425 - Deal communication'
             }
         elif filing_type == 'S-4':
@@ -412,7 +412,7 @@ class SECFilingMonitor:
         elif filing_type == '8-K/A':
             return {
                 'priority': 'MEDIUM',
-                'agents_needed': ['DealDetector', 'RedemptionExtractor'],
+                'agents_needed': ['DealDetector', 'PipeExtractor', 'RedemptionExtractor'],
                 'reason': '8-K amendment - may correct deal terms or redemptions'
             }
         elif filing_type == 'S-4/A':
@@ -460,7 +460,7 @@ class SECFilingMonitor:
             # Fallback: assume medium priority
             return {
                 'priority': 'MEDIUM',
-                'agents_needed': ['DealDetector', 'ExtensionMonitor'],
+                'agents_needed': ['DealDetector', 'PipeExtractor', 'ExtensionMonitor'],
                 'reason': '8-K filing - AI not available, checking all'
             }
 
@@ -486,6 +486,7 @@ Determine:
 
 Agents available:
 - DealDetector: Detects business combination announcements
+- PipeExtractor: Extracts PIPE financing data from deal announcements
 - ExtensionMonitor: Detects deadline extensions and redemptions
 - RedemptionExtractor: Extracts vote results and redemption data
 - CompletionMonitor: Detects deal closures
@@ -494,10 +495,11 @@ Return JSON:
 {{
     "item_number": "1.01",
     "priority": "HIGH",
-    "agents_needed": ["DealDetector"],
+    "agents_needed": ["DealDetector", "PipeExtractor"],
     "reason": "Likely business combination announcement"
 }}
 
+NOTE: If Item 1.01 (material agreement/deal), include both DealDetector and PipeExtractor.
 NOTE: If Item 5.07 (shareholder vote results), include RedemptionExtractor to extract redemptions.
 """
 
@@ -518,7 +520,7 @@ NOTE: If Item 5.07 (shareholder vote results), include RedemptionExtractor to ex
             # Fallback
             return {
                 'priority': 'MEDIUM',
-                'agents_needed': ['DealDetector', 'ExtensionMonitor'],
+                'agents_needed': ['DealDetector', 'PipeExtractor', 'ExtensionMonitor'],
                 'reason': '8-K filing - AI classification failed'
             }
 

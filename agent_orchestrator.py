@@ -418,6 +418,7 @@ class Orchestrator:
 
             # Deal-related agents
             'DealDetector': FilingAgentWrapper('DealDetector', self.state_manager, self._dispatch_deal_detector),
+            'PipeExtractor': FilingAgentWrapper('PipeExtractor', self.state_manager, self._dispatch_pipe_extractor),
             'FilingProcessor': FilingAgentWrapper('FilingProcessor', self.state_manager, self._dispatch_filing_processor),
 
             # Trust account agents
@@ -731,6 +732,7 @@ class Orchestrator:
             # Build agent descriptions for AI
             agent_descriptions = {
                 'DealDetector': 'Detects deal announcements - looks for business combination agreements, merger terms, target companies, deal values',
+                'PipeExtractor': 'Extracts PIPE financing data from deal announcements - institutional investment amounts, prices, lock-up terms',
                 'TrustAccountProcessor': 'Extracts trust account financial data - balance sheets, trust cash, shares outstanding from 10-Q/10-K',
                 'ExtensionMonitor': 'Detects deadline extensions - charter amendments, new termination dates, sponsor deposits',
                 'RedemptionExtractor': 'Extracts redemption data from all filings - 8-K votes, DEFM14A proxies, 10-Q notes, extensions',
@@ -937,6 +939,28 @@ Be conservative - if unsure, mark as true (let agent process). Only mark false i
             return result if result else {'success': False, 'findings': 'No redemption data'}
         except ImportError as e:
             return {'success': False, 'error': f'RedemptionExtractor not available: {e}'}
+
+    def _dispatch_pipe_extractor(self, filing: Dict, classification: Dict) -> Dict:
+        """Dispatch to PipeExtractor"""
+        try:
+            from agents.pipe_extractor_agent import PIPEExtractorAgent
+            import asyncio
+
+            ticker = filing.get('ticker')
+            if not ticker:
+                return {'success': False, 'error': 'No ticker in filing'}
+
+            extractor = PIPEExtractorAgent()
+
+            # Run async extraction
+            if asyncio.get_event_loop().is_running():
+                result = asyncio.ensure_future(extractor.process_filing(filing, ticker))
+            else:
+                result = asyncio.run(extractor.process_filing(filing, ticker))
+
+            return result if result else {'success': False, 'findings': 'No PIPE data'}
+        except ImportError as e:
+            return {'success': False, 'error': f'PipeExtractor not available: {e}'}
 
     def _dispatch_s4_processor(self, filing: Dict, classification: Dict) -> Dict:
         """Dispatch to S4Processor"""

@@ -251,8 +251,8 @@ class PIPEExtractorAgent:
             print(f"   ⚠️  AI not available, skipping PIPE extraction")
             return None
 
-        # Try each exhibit in priority order (check top 5 to catch EX-99.X subscription agreements)
-        for exhibit in exhibits[:5]:  # Check top 5 exhibits
+        # Try each exhibit in priority order (check top 8 to catch later subscription agreements like EX-10.5)
+        for exhibit in exhibits[:8]:  # Check top 8 exhibits
             print(f"   📄 Checking {exhibit['type']}: {exhibit['text']}")
 
             # Fetch exhibit content
