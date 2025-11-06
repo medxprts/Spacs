@@ -326,7 +326,17 @@ VESTING TYPES:
    - Example: "Founder shares have no forfeiture provisions"
    - Example: No vesting terms mentioned
 
-CRITICAL: Price thresholds are usually in format like "$12.00", "$15.00", "$18.00" (common is $12, $15, $18 or $12.50, $15.00)
+EXTRACT FOUNDER SHARE COUNTS:
+- Total founder shares: "14,785,714 founder shares" or "sponsor paid $25,000 for 12,321,429 Class B shares"
+- Look for: "founder shares", "Class B shares", "sponsor shares", "initial shareholders holding"
+- May be stated after overallotment: "Up to X shares will be surrendered"
+
+EXTRACT VESTING DISTRIBUTION:
+- If "one-third" or "1/3" → 0.33 (33.3%)
+- If "one-half" or "50%" → 0.50
+- If "25%" → 0.25
+- Look for phrases like "one-third of such aggregate number of founder shares"
+- Distribution should add up to 1.0 (100%)
 
 Document Excerpt:
 {text}
@@ -335,12 +345,17 @@ Return JSON:
 {{
   "vesting_type": "performance" | "time-based" | "immediate",
   "vesting_prices": [12.00, 15.00, 18.00],  // ONLY if performance-based, otherwise null
+  "founder_shares": 14785714,  // Total founder shares (numeric only, no commas)
+  "vesting_distribution": [0.33, 0.33, 0.34],  // Distribution at each milestone (must sum to 1.0)
   "vesting_description": "Brief description of exact terms",
   "confidence": 0-100
 }}
 
 IMPORTANT:
-- Return ONLY numeric values in vesting_prices (e.g., [12.00, 15.00], NOT ["$12.00", "$15.00"])
+- Return ONLY numeric values (no commas, no "$" signs)
+- vesting_prices: [12.00, 15.00] NOT ["$12.00", "$15.00"]
+- founder_shares: 14785714 NOT "14,785,714"
+- vesting_distribution must sum to 1.0 (e.g., [0.33, 0.33, 0.34])
 - If ANY price targets mentioned = "performance"
 - If time-based only = "time-based"
 - If no restrictions = "immediate"
@@ -387,9 +402,44 @@ IMPORTANT:
                     print(f"   ⚠️  Error parsing vesting prices: {e}")
                     result['vesting_prices'] = None
 
+            # Clean founder_shares - ensure numeric
+            if result.get('founder_shares'):
+                try:
+                    shares = result['founder_shares']
+                    if isinstance(shares, str):
+                        shares = shares.replace(',', '').strip()
+                    result['founder_shares'] = float(shares)
+                except Exception as e:
+                    print(f"   ⚠️  Error parsing founder shares: {e}")
+                    result['founder_shares'] = None
+
+            # Clean vesting_distribution - ensure numeric array that sums to ~1.0
+            if result.get('vesting_distribution'):
+                try:
+                    distribution = []
+                    for pct in result['vesting_distribution']:
+                        if isinstance(pct, str):
+                            pct = pct.replace('%', '').strip()
+                        distribution.append(float(pct))
+
+                    # Validate distribution sums to ~1.0 (allow 0.99-1.01 for rounding)
+                    total = sum(distribution)
+                    if 0.99 <= total <= 1.01:
+                        result['vesting_distribution'] = distribution
+                    else:
+                        print(f"   ⚠️  Vesting distribution doesn't sum to 1.0 (got {total})")
+                        result['vesting_distribution'] = None
+                except Exception as e:
+                    print(f"   ⚠️  Error parsing vesting distribution: {e}")
+                    result['vesting_distribution'] = None
+
             print(f"      🤖 AI extracted: {result['vesting_type']}")
             if result.get('vesting_prices'):
                 print(f"         Prices: {result['vesting_prices']}")
+            if result.get('founder_shares'):
+                print(f"         Founder shares: {result['founder_shares']:,.0f}")
+            if result.get('vesting_distribution'):
+                print(f"         Distribution: {result['vesting_distribution']}")
             print(f"         Confidence: {result.get('confidence')}%")
 
             return result
@@ -411,6 +461,16 @@ IMPORTANT:
             spac.promote_vesting_prices = vesting_data['vesting_prices']
         else:
             spac.promote_vesting_prices = None
+
+        # Store founder_shares count
+        if vesting_data.get('founder_shares'):
+            spac.founder_shares = vesting_data['founder_shares']
+
+        # Store vesting_distribution as Python list (PostgreSQL ARRAY column)
+        if vesting_data.get('vesting_distribution'):
+            spac.promote_vesting_distribution = vesting_data['vesting_distribution']
+        else:
+            spac.promote_vesting_distribution = None
 
 
 if __name__ == "__main__":

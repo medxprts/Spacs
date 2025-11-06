@@ -184,7 +184,8 @@ class SPAC(Base):
     sponsor_at_risk_percentage = Column(Float)        # Sponsor capital as % of IPO size
     promote_vesting_type = Column(String)             # 'standard', 'performance', 'time-based', or 'immediate'
     promote_vesting_prices = Column(ARRAY(Float))    # Price milestones for performance vesting (e.g., [12.00, 15.00, 18.00])
-    
+    promote_vesting_distribution = Column(ARRAY(Float))  # Distribution of founder shares at each milestone (e.g., [0.33, 0.33, 0.34])
+
     # SEC Filings (NO sec_cik - dropped)
     cik = Column(String)                   # CIK number
     latest_8k_date = Column(Date)
