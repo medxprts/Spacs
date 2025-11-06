@@ -111,11 +111,14 @@ class PIPEExtractorAgent:
         if 'pipe' in body_text.lower():
             print(f"   🔍 PIPE mentioned in 8-K body, checking...")
             body_pipe = await self._ai_extract_pipe(body_text[:8000], ticker)
-            if body_pipe and body_pipe.get('has_pipe'):
+            # Only return if we got actual PIPE amounts (confidence > 70%)
+            if body_pipe and body_pipe.get('has_pipe') and body_pipe.get('pipe_size') and body_pipe.get('confidence', 0) > 70:
                 updated = self._update_database(ticker, body_pipe)
                 if updated:
                     print(f"   ✅ Updated {ticker} with PIPE data from 8-K body")
                     return {'success': True, 'pipe_data': body_pipe}
+            elif body_pipe and body_pipe.get('has_pipe'):
+                print(f"   ℹ️  PIPE detected in body but no amounts, checking exhibits...")
 
         # Extract exhibits using SEC fetcher (handles index pages properly)
         exhibits = self.fetcher.extract_exhibits(filing_url)
@@ -158,10 +161,10 @@ class PIPEExtractorAgent:
             return None
 
     def _is_deal_announcement(self, soup: BeautifulSoup) -> bool:
-        """Check if 8-K is a deal announcement (Item 1.01)"""
+        """Check if 8-K is a deal announcement (Item 1.01 or Item 8.01 with press release)"""
         text = soup.get_text().lower()
 
-        # Look for Item 1.01 and deal keywords
+        # Look for Item 1.01 (Entry into Material Definitive Agreement)
         has_item_101 = 'item 1.01' in text or 'item 1.1' in text
         has_deal_keywords = any(keyword in text for keyword in [
             'business combination agreement',
@@ -170,7 +173,16 @@ class PIPEExtractorAgent:
             'agreement and plan of merger'
         ])
 
-        return has_item_101 and has_deal_keywords
+        # Item 1.01 with deal keywords = definitive deal announcement
+        if has_item_101 and has_deal_keywords:
+            return True
+
+        # Item 8.01 (Other Events) often used for deal press releases
+        # Check if it has press release exhibits
+        has_item_801 = 'item 8.01' in text
+        has_press_release = 'press release' in text.lower()
+
+        return has_item_801 and has_press_release
 
     def _extract_exhibits(self, soup: BeautifulSoup, base_url: str) -> List[Dict]:
         """
