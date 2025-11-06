@@ -85,8 +85,18 @@ def extract_with_ai(text, ticker):
     if not AI_AVAILABLE:
         return {}
 
-    # Truncate to 50k chars for AI
-    text_excerpt = text[:50000]
+    # Look for warrant redemption section specifically
+    warrant_section_start = text.lower().find('redemption of warrants')
+    if warrant_section_start == -1:
+        warrant_section_start = text.lower().find('warrant redemption')
+
+    # Take first 40k + warrant section if found
+    if warrant_section_start > 40000:
+        # Include warrant section
+        text_excerpt = text[:40000] + "\n\n[WARRANT REDEMPTION SECTION]:\n" + text[warrant_section_start:warrant_section_start+10000]
+    else:
+        # Standard 50k excerpt
+        text_excerpt = text[:50000]
 
     prompt = f"""Extract SPAC IPO data from this 424B4 prospectus for {ticker}. Return ONLY valid JSON with NO markdown.
 
@@ -101,8 +111,8 @@ Extract these fields (use null if not found):
   "banker": "<string>",  // Lead underwriter/representative
   "warrant_exercise_price": <number>,  // Warrant strike price (usually 11.50)
   "warrant_ratio": "<string>",  // Warrants per share (e.g. "1/2" or "1")
-  "warrant_redemption_price": <number>,  // Price at which company can redeem warrants (e.g. 18.00)
-  "warrant_redemption_days": <string>,  // Notice period for warrant redemption (e.g. "30 days")
+  "warrant_redemption_price": <number>,  // Price at which company can CALL/REDEEM warrants (typically 18.00)
+  "warrant_redemption_days": "<string>",  // Full redemption condition e.g. "20 trading days within a 30-trading day period" at redemption price
   "warrant_cashless_exercise": <boolean>,  // Whether cashless exercise is allowed
   "warrant_expiration_years": <number>,  // Years until warrant expiration (usually 5)
   "warrant_expiration_trigger": "<string>",  // What triggers expiration (e.g. "5 years after business combination")
