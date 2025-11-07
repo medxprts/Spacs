@@ -1671,14 +1671,16 @@ elif page == "⭐ Watchlist":
     # Methodology explanation (collapsible)
     with st.expander("📖 Scoring Methodology", expanded=False):
         st.markdown("""
-        ### Phase 1: "Loaded Gun" Score (0-60 points) - Pre-Deal Quality
+        ### Phase 1: "Loaded Gun" Score (0-80 points) - Pre-Deal Quality
 
         Evaluates SPAC quality **before** a deal is announced. Higher scores indicate better structure and potential.
 
         **Components:**
         - **Market Cap (0-10)**: IPO size as proxy for liquidity and institutional interest
           - ≥$500M: 10 pts | ≥$300M: 8 pts | ≥$150M: 6 pts | ≥$100M: 4 pts | ≥$50M: 2 pts
-        - **Sponsor Quality (0-15)**: Investment banker tier
+        - **Sponsor Quality (0-15)**: Historical deal performance (30-day POP)
+          - Top tier sponsors: 15 pts | Mid tier: 10 pts | Lower tier: 5 pts
+        - **Banker Quality (0-15)**: Investment banker tier
           - Tier 1 (Goldman, JPM, Citi): 15 pts | Tier 2: 10 pts | Tier 3: 5 pts
         - **Hot Sector (0-10)**: Market narrative strength
           - Hot sectors (AI, FinTech, EV, etc.): 10 pts | Other: 0 pts
@@ -1686,10 +1688,22 @@ elif page == "⭐ Watchlist":
           - <15%: 15 pts | <20%: 12 pts | <25%: 8 pts | <30%: 4 pts | ≥30%: 0 pts
         - **Promote Vesting (0-10)**: Sponsor alignment with shareholders
           - Performance vesting: 10 pts | Time-based: 5 pts | Immediate: 0 pts
+        - **Social Buzz (0-5)**: Reddit community interest
+          - Very High: 5 pts | High: 4 pts | Medium: 3 pts | Low: 2 pts | Minimal: 1 pt
 
-        ### Phase 2: "Lit Fuse" Score (0-90 points) - Post-Deal Momentum
+        ### Phase 2: "Deal Quality" Score (0-100 points) - Post-Announcement Evaluation
 
-        *(Not yet implemented)* Will evaluate deal quality, PIPE terms, institutional interest, and volume signals.
+        Evaluates announced deals across 6 dimensions:
+
+        **Components:**
+        - **Market Reception (0-20)**: Premium and price performance since announcement
+          - >40% premium: 15 pts | Strong returns: +5 pts
+        - **Financing Structure (0-20)**: PIPE quality and min cash conditions
+          - Strong PIPE: 15 pts | Realistic min cash: 5 pts
+        - **Valuation Quality (0-15)**: Deal size appropriateness (5-15x trust = ideal)
+        - **Timeline (0-15)**: Days to expected close (faster = better execution)
+        - **Redemption Risk (0-15)**: Estimated redemption exposure
+        - **Loaded Gun Carryover (0-15)**: Phase 1 score scaled down
 
         ### Data Sources
         - All data extracted from SEC filings (424B4, 8-K, 10-Q)
@@ -1866,8 +1880,8 @@ elif page == "⭐ Watchlist":
             df_display = pd.DataFrame(table_data)
             st.dataframe(df_display, use_container_width=True, hide_index=True)
 
-        # Show Lit Fuses (announced deals)
-        lit_fuses_query = text("""
+        # Show Phase II Deal Quality (announced deals)
+        deal_quality_query = text("""
             SELECT
                 s.ticker,
                 s.company,
@@ -1875,46 +1889,65 @@ elif page == "⭐ Watchlist":
                 s.price,
                 s.premium,
                 s.pipe_size,
-                s.volume_pct_of_float,
-                o.lit_fuse_score,
-                o.pipe_size_score,
-                o.pipe_quality_score,
-                o.volume_score,
+                s.return_since_announcement,
+                o.deal_quality_score,
+                o.market_reception_score,
+                o.financing_score,
+                o.valuation_score,
+                o.timeline_score,
+                o.redemption_score,
+                o.loaded_gun_carryover,
                 (SELECT COUNT(*) FROM pipe_investors pi
                  WHERE pi.ticker = s.ticker AND pi.is_tier1 = TRUE) as tier1_count
             FROM spacs s
             LEFT JOIN opportunity_scores o ON s.ticker = o.ticker
             WHERE s.deal_status = 'ANNOUNCED'
-              AND o.lit_fuse_score >= 50
-            ORDER BY o.lit_fuse_score DESC
-            LIMIT 10
+              AND o.deal_quality_score >= 50
+            ORDER BY o.deal_quality_score DESC
+            LIMIT 15
         """)
-        lit_fuses = pd.read_sql(lit_fuses_query, db.bind)
+        deal_quality = pd.read_sql(deal_quality_query, db.bind)
 
-        if len(lit_fuses) > 0:
-            st.markdown("### 🚀 Lit Fuses - Hot Deals (Phase 2 Score ≥ 50)")
+        if len(deal_quality) > 0:
+            st.markdown("### 💎 Phase II: Top Deal Quality (Score ≥ 50/100)")
+            st.caption("Market Reception + Financing + Valuation + Timeline + Redemption Risk + Pre-Deal Quality")
 
-            for idx, row in lit_fuses.iterrows():
-                col1, col2, col3, col4 = st.columns([3, 2, 2, 3])
+            for idx, row in deal_quality.iterrows():
+                col1, col2, col3 = st.columns([3, 2, 3])
 
                 with col1:
-                    st.markdown(f"**🚀 {row['ticker']}** → {row['target'][:30]}")
-                    st.caption(f"{row['company'][:40]}")
+                    tier_emoji = "🥇" if row['deal_quality_score'] >= 60 else "🥈" if row['deal_quality_score'] >= 50 else "🥉"
+                    st.markdown(f"**{tier_emoji} {row['ticker']}** → {row['target'][:35] if pd.notna(row['target']) else 'TBD'}")
+                    st.caption(f"{row['company'][:45] if pd.notna(row['company']) else ''}")
 
                 with col2:
-                    st.metric("Phase 2 Score", f"{row['lit_fuse_score']}/90")
+                    st.metric("Deal Quality", f"{row['deal_quality_score']:.0f}/100")
+
+                    # Show component breakdown
+                    components = []
+                    if pd.notna(row['market_reception_score']):
+                        components.append(f"Mkt:{row['market_reception_score']:.0f}")
+                    if pd.notna(row['financing_score']):
+                        components.append(f"Fin:{row['financing_score']:.0f}")
+                    if pd.notna(row['valuation_score']):
+                        components.append(f"Val:{row['valuation_score']:.0f}")
+                    if pd.notna(row['timeline_score']):
+                        components.append(f"Time:{row['timeline_score']:.0f}")
+                    if pd.notna(row['redemption_score']):
+                        components.append(f"Red:{row['redemption_score']:.0f}")
+                    if pd.notna(row['loaded_gun_carryover']):
+                        components.append(f"Gun:{row['loaded_gun_carryover']:.0f}")
+
+                    st.caption(f"[{' '.join(components)}]")
 
                 with col3:
-                    if row['tier1_count'] > 0:
-                        st.caption(f"✅ {row['tier1_count']} Tier-1 Investor{'s' if row['tier1_count'] > 1 else ''}")
-                    if pd.notna(row['volume_pct_of_float']) and row['volume_pct_of_float'] > 5:
-                        st.caption(f"🔥 {row['volume_pct_of_float']:.1f}% float traded")
-
-                with col4:
                     if pd.notna(row['price']):
-                        st.metric("Price", f"${row['price']:.2f}")
+                        st.metric("Price", f"${row['price']:.2f}",
+                                 delta=f"{row['return_since_announcement']:.1f}%" if pd.notna(row['return_since_announcement']) else None)
                     if pd.notna(row['premium']):
                         st.caption(f"Premium: {row['premium']:.1f}%")
+                    if row['tier1_count'] > 0:
+                        st.caption(f"✅ {row['tier1_count']} Tier-1 PIPE investor{'s' if row['tier1_count'] > 1 else ''}")
 
                 st.markdown("---")
 
