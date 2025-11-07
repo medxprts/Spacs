@@ -30,13 +30,21 @@ def normalize_expected_close(text: Optional[str]) -> Optional[str]:
     if not text or text in ['-', 'TBD', 'N/A', 'Unknown']:
         return None
 
-    text = text.strip()
-
     # Already a date/datetime - convert to string
     if isinstance(text, date):
         return text.strftime('%Y-%m-%d')
     if isinstance(text, datetime):
         return text.date().strftime('%Y-%m-%d')
+
+    # Convert to string if it's a number (AI sometimes returns numbers)
+    if isinstance(text, (int, float)):
+        text = str(text)
+
+    # Must be string at this point
+    if not isinstance(text, str):
+        return None
+
+    text = text.strip()
 
     # Try parsing as date - return string format
     for fmt in ['%Y-%m-%d', '%Y-%m-%d %H:%M:%S', '%m/%d/%Y', '%Y/%m/%d']:

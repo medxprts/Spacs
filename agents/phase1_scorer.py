@@ -2,16 +2,17 @@
 """
 Phase 1 "Loaded Gun" Scoring Agent
 ===================================
-Calculates pre-deal SPAC quality scores across 6 components:
+Calculates pre-deal SPAC quality scores across 7 components:
 
 1. Market Cap Score (0-10): Based on IPO size (liquidity proxy)
 2. Banker Score (0-15): Based on underwriter tier (Goldman, JPM, etc.)
-3. Sponsor Score (0-15): Based on sponsor track record (TODO: pending historical data)
+3. Sponsor Score (0-15): Based on sponsor track record (historical T+30 performance)
 4. Sector Score (0-10): Based on hot sector classification
 5. Dilution Score (0-15): Based on founder shares dilution
 6. Promote Score (0-10): Based on vesting alignment
+7. Social Buzz Score (0-5): Based on Reddit/social media mentions
 
-Total: 0-75 points (Loaded Gun Score)
+Total: 0-80 points (Loaded Gun Score)
 
 Usage:
     python3 phase1_scorer.py --all           # Score all pre-deal SPACs
@@ -120,17 +121,77 @@ def score_sponsor(sponsor_name):
     - Number of successful deals completed
     - Average investor returns
 
-    TODO: Implement once historical sponsor performance database is built.
-    Currently returns 0 for all sponsors (pending 2016-2019 deal research).
-
-    Future implementation:
-    - 15 points: Top-tier sponsors (3+ successful SPACs, avg >20% returns)
-    - 10 points: Proven sponsors (2 successful SPACs, avg >10% returns)
-    - 5 points: One previous SPAC with positive returns
-    - 0 points: First-time sponsor or negative track record
+    Scoring system:
+    - 13-15 points: Top-tier sponsors (exceptional track record, >20% avg returns)
+    - 9-12 points: Strong sponsors (proven track record, >10% avg returns)
+    - 6-8 points: Average sponsors (moderate track record, >5% avg returns)
+    - 3-5 points: Below average sponsors (limited track record or negative returns)
+    - 0-2 points: Poor sponsors (poor track record or first-time sponsor)
     """
-    # Placeholder until historical data is available
-    return 0
+    if not sponsor_name:
+        return 0
+
+    from database import engine
+    from sqlalchemy import text
+
+    # Normalize sponsor name for matching (case-insensitive, strip whitespace)
+    sponsor_normalized = sponsor_name.strip().lower()
+
+    try:
+        with engine.connect() as conn:
+            # Try exact match first
+            result = conn.execute(
+                text("SELECT sponsor_score FROM sponsor_performance WHERE LOWER(sponsor_name) = :name"),
+                {'name': sponsor_normalized}
+            ).fetchone()
+
+            if result:
+                return result[0] or 0
+
+            # Try alias match (check if sponsor name matches any alias)
+            result = conn.execute(
+                text("""
+                    SELECT sponsor_score FROM sponsor_performance
+                    WHERE :name = ANY(SELECT LOWER(unnest(sponsor_aliases)))
+                    LIMIT 1
+                """),
+                {'name': sponsor_normalized}
+            ).fetchone()
+
+            if result:
+                return result[0] or 0
+
+            # Try fuzzy match (contains) on sponsor_name
+            result = conn.execute(
+                text("SELECT sponsor_score FROM sponsor_performance WHERE LOWER(sponsor_name) LIKE :pattern LIMIT 1"),
+                {'pattern': f'%{sponsor_normalized}%'}
+            ).fetchone()
+
+            if result:
+                return result[0] or 0
+
+            # Try fuzzy match on aliases
+            result = conn.execute(
+                text("""
+                    SELECT sponsor_score FROM sponsor_performance
+                    WHERE EXISTS (
+                        SELECT 1 FROM unnest(sponsor_aliases) AS alias
+                        WHERE LOWER(alias) LIKE :pattern
+                    )
+                    LIMIT 1
+                """),
+                {'pattern': f'%{sponsor_normalized}%'}
+            ).fetchone()
+
+            if result:
+                return result[0] or 0
+
+            # No match found - first-time sponsor
+            return 0
+
+    except Exception as e:
+        print(f"Warning: Error looking up sponsor '{sponsor_name}': {e}")
+        return 0
 
 
 def score_sector(is_hot_sector):
@@ -200,12 +261,34 @@ def score_promote_vesting(vesting_type):
         return 0
 
 
-def calculate_phase1_score(spac):
+def score_social_buzz(ticker, db):
+    """
+    Score based on social media buzz from Reddit (0-5 points).
+
+    Fetches buzz_score from social_sentiment table.
+    Returns 0 if no buzz data available.
+    """
+    try:
+        result = db.execute(
+            text("SELECT buzz_score FROM social_sentiment WHERE ticker = :ticker"),
+            {'ticker': ticker}
+        ).fetchone()
+
+        if result:
+            return result.buzz_score or 0
+        else:
+            return 0
+    except Exception as e:
+        # Table doesn't exist yet or other error
+        return 0
+
+
+def calculate_phase1_score(spac, db=None):
     """
     Calculate total Phase 1 score for a SPAC.
 
     Returns:
-        dict with component scores and total (max 75 points)
+        dict with component scores and total (max 80 points)
     """
     # Parse IPO proceeds
     ipo_millions = parse_ipo_proceeds(spac.ipo_proceeds)
@@ -213,13 +296,16 @@ def calculate_phase1_score(spac):
     # Calculate component scores
     market_cap = score_market_cap(ipo_millions)
     banker = score_banker(spac.banker_tier)
-    sponsor = score_sponsor(spac.sponsor)  # TODO: Will be >0 once historical data added
+    sponsor = score_sponsor(spac.sponsor)
     sector = score_sector(spac.is_hot_sector)
     dilution = score_dilution(spac.founder_shares, spac.shares_outstanding_base)
     promote = score_promote_vesting(spac.promote_vesting_type)
 
-    # Total (max 75: 10+15+15+10+15+10)
-    total = market_cap + banker + sponsor + sector + dilution + promote
+    # Social buzz (requires database connection)
+    buzz = score_social_buzz(spac.ticker, db) if db else 0
+
+    # Total (max 80: 10+15+15+10+15+10+5)
+    total = market_cap + banker + sponsor + sector + dilution + promote + buzz
 
     return {
         'market_cap_score': market_cap,
@@ -228,6 +314,7 @@ def calculate_phase1_score(spac):
         'sector_score': sector,
         'dilution_score': dilution,
         'promote_score': promote,
+        'buzz_score': buzz,
         'loaded_gun_score': total,
         'ipo_millions': ipo_millions
     }
@@ -253,9 +340,10 @@ def save_score(db, ticker, scores):
                 sector_score = :sector,
                 dilution_score = :dilution,
                 promote_score = :promote,
+                buzz_score = :buzz,
                 loaded_gun_score = :loaded_gun,
                 last_calculated = :now,
-                calculation_version = '1.1'
+                calculation_version = '1.2'
             WHERE ticker = :ticker
         """), {
             'ticker': ticker,
@@ -265,6 +353,7 @@ def save_score(db, ticker, scores):
             'sector': scores['sector_score'],
             'dilution': scores['dilution_score'],
             'promote': scores['promote_score'],
+            'buzz': scores['buzz_score'],
             'loaded_gun': scores['loaded_gun_score'],
             'now': datetime.now()
         })
@@ -273,12 +362,12 @@ def save_score(db, ticker, scores):
         db.execute(text("""
             INSERT INTO opportunity_scores (
                 ticker, market_cap_score, banker_score, sponsor_score, sector_score,
-                dilution_score, promote_score, loaded_gun_score,
+                dilution_score, promote_score, buzz_score, loaded_gun_score,
                 last_calculated, calculation_version
             ) VALUES (
                 :ticker, :market_cap, :banker, :sponsor, :sector,
-                :dilution, :promote, :loaded_gun,
-                :now, '1.1'
+                :dilution, :promote, :buzz, :loaded_gun,
+                :now, '1.2'
             )
         """), {
             'ticker': ticker,
@@ -288,6 +377,7 @@ def save_score(db, ticker, scores):
             'sector': scores['sector_score'],
             'dilution': scores['dilution_score'],
             'promote': scores['promote_score'],
+            'buzz': scores['buzz_score'],
             'loaded_gun': scores['loaded_gun_score'],
             'now': datetime.now()
         })
@@ -310,7 +400,7 @@ def score_all_predeal():
         total_scores = []
 
         for spac in spacs:
-            scores = calculate_phase1_score(spac)
+            scores = calculate_phase1_score(spac, db)
             save_score(db, spac.ticker, scores)
 
             total_scores.append(scores['loaded_gun_score'])
@@ -323,15 +413,15 @@ def score_all_predeal():
         print(f"\n✅ Scoring complete!")
         print(f"\nResults:")
         print(f"  Total SPACs scored: {scored_count}")
-        print(f"  Average Phase 1 score: {sum(total_scores)/len(total_scores):.1f}/75")
-        print(f"  Highest score: {max(total_scores)}/75")
-        print(f"  Lowest score: {min(total_scores)}/75")
+        print(f"  Average Phase 1 score: {sum(total_scores)/len(total_scores):.1f}/80")
+        print(f"  Highest score: {max(total_scores)}/80")
+        print(f"  Lowest score: {min(total_scores)}/80")
 
         # Show top 10
         top_spacs = db.execute(text("""
             SELECT s.ticker, s.company, o.loaded_gun_score,
                    o.market_cap_score, o.banker_score, o.sponsor_score, o.sector_score,
-                   o.dilution_score, o.promote_score
+                   o.dilution_score, o.promote_score, o.buzz_score
             FROM spacs s
             JOIN opportunity_scores o ON s.ticker = o.ticker
             WHERE s.deal_status = 'SEARCHING'
@@ -341,9 +431,9 @@ def score_all_predeal():
 
         print(f"\n🔫 Top 10 Loaded Guns:\n")
         for i, spac in enumerate(top_spacs, 1):
-            ticker, company, total, mkt, bank, spon, sect, dil, prom = spac
-            print(f"{i:2d}. {ticker:5s} {total:2d}/75  " +
-                  f"[Mkt:{mkt:2d} Bank:{bank:2d} Spon:{spon:2d} Sect:{sect:2d} Dil:{dil:2d} Prom:{prom:2d}]  " +
+            ticker, company, total, mkt, bank, spon, sect, dil, prom, buzz = spac
+            print(f"{i:2d}. {ticker:5s} {total:2d}/80  " +
+                  f"[Mkt:{mkt:2d} Bank:{bank:2d} Spon:{spon:2d} Sect:{sect:2d} Dil:{dil:2d} Prom:{prom:2d} Buzz:{buzz}]  " +
                   f"{company[:40]}")
 
     finally:
@@ -365,7 +455,7 @@ def score_single(ticker):
         if spac.deal_status != 'SEARCHING':
             print(f"⚠️  {ticker} is not pre-deal (status: {spac.deal_status})")
 
-        scores = calculate_phase1_score(spac)
+        scores = calculate_phase1_score(spac, db)
         save_score(db, ticker, scores)
 
         print(f"\n📊 Phase 1 'Loaded Gun' Score for {ticker}\n")
@@ -375,11 +465,12 @@ def score_single(ticker):
         print(f"\nComponent Scores:")
         print(f"  Market Cap:      {scores['market_cap_score']:2d}/10  (IPO: ${scores['ipo_millions']:.0f}M)" if scores['ipo_millions'] else f"  Market Cap:      {scores['market_cap_score']:2d}/10  (IPO: N/A)")
         print(f"  Banker Quality:  {scores['banker_score']:2d}/15  ({spac.banker_tier or 'N/A'})")
-        print(f"  Sponsor Quality: {scores['sponsor_score']:2d}/15  (Track record: TODO)")
+        print(f"  Sponsor Quality: {scores['sponsor_score']:2d}/15  (Historical T+30 performance)")
         print(f"  Sector:          {scores['sector_score']:2d}/10  ({'Hot' if spac.is_hot_sector else 'Not hot'})")
+        print(f"  Social Buzz:     {scores['buzz_score']}/ 5  (Reddit mentions)")
         print(f"  Dilution:        {scores['dilution_score']:2d}/15  ({(spac.founder_shares/spac.shares_outstanding_base*100):.1f}% founder)" if spac.founder_shares and spac.shares_outstanding_base else f"  Dilution:        {scores['dilution_score']:2d}/15  (N/A)")
         print(f"  Promote Vesting: {scores['promote_score']:2d}/10  ({spac.promote_vesting_type or 'N/A'})")
-        print(f"\n🔫 Total Loaded Gun Score: {scores['loaded_gun_score']}/75")
+        print(f"\n🔫 Total Loaded Gun Score: {scores['loaded_gun_score']}/80")
 
     finally:
         db.close()

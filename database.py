@@ -212,6 +212,12 @@ class SPAC(Base):
     premium_alert_last_sent = Column(DateTime)  # Timestamp of last premium alert sent
     created_at = Column(DateTime, default=datetime.now)
     data_source = Column(String)
+
+    # Comprehensive Extraction Tracking (for SEC monitor retry logic)
+    comprehensive_extraction_needed = Column(Boolean, default=False)  # Flag for SPACs needing data extraction
+    comprehensive_extraction_attempts = Column(Integer, default=0)    # Number of extraction attempts
+    last_extraction_attempt = Column(DateTime)                        # Last extraction attempt timestamp
+
     notes = Column(Text)
 
 

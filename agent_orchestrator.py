@@ -249,24 +249,24 @@ class SignalMonitorAgentWrapper(BaseAgent):
         #     )
         #
         #     agent.close()
-
-            result = {
-                'triggers_found': len(triggers),
-                'triggers': triggers
-            }
-
-            # If triggers found, send orchestrator notification
-            if triggers:
-                print(f"\n[SIGNAL MONITOR] 🚨 {len(triggers)} signal trigger(s) detected")
-                for trigger in triggers:
-                    print(f"  • {trigger['ticker']}: {trigger['reason']} ({trigger['priority']})")
-
-            self._complete_task(task, result)
-
-        except Exception as e:
-            self._fail_task(task, str(e))
-
-        return task
+        #
+        #     result = {
+        #         'triggers_found': len(triggers),
+        #         'triggers': triggers
+        #     }
+        #
+        #     # If triggers found, send orchestrator notification
+        #     if triggers:
+        #         print(f"\n[SIGNAL MONITOR] 🚨 {len(triggers)} signal trigger(s) detected")
+        #         for trigger in triggers:
+        #             print(f"  • {trigger['ticker']}: {trigger['reason']} ({trigger['priority']})")
+        #
+        #     self._complete_task(task, result)
+        #
+        # except Exception as e:
+        #     self._fail_task(task, str(e))
+        #
+        # return task
 
 
 class TelegramAgentWrapper(BaseAgent):
