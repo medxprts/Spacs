@@ -65,14 +65,16 @@ class PriceMonitorAgent(OrchestratorAgentBase):
 
                 # Check for volume spike with significance filter
                 # Must pass significance filter first (prevents low-volume noise)
-                if spac.volume and spac.shares_outstanding and spac.shares_outstanding > 0:
-                    volume_pct_float = (spac.volume / spac.shares_outstanding) * 100
-                    volume_pct_of_outstanding = (spac.volume / spac.shares_outstanding) * 100
+                if spac.volume and spac.public_float and spac.public_float > 0:
+                    volume_pct_float = (spac.volume / spac.public_float) * 100
+
+                    # Also calculate as % of total outstanding for significance filter
+                    volume_pct_of_outstanding = (spac.volume / spac.shares_outstanding) * 100 if spac.shares_outstanding else 0
 
                     # Significance filter: Volume must be meaningful
                     is_significant_volume = (
                         spac.volume > 100_000 or  # Absolute minimum
-                        volume_pct_of_outstanding > 2.0  # Or >2% of outstanding
+                        volume_pct_float > 1.0  # Or >1% of public float (tradable shares)
                     )
 
                     if not is_significant_volume:
