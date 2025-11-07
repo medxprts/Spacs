@@ -1910,46 +1910,36 @@ elif page == "⭐ Watchlist":
 
         if len(deal_quality) > 0:
             st.markdown("### 💎 Phase II: Top Deal Quality (Score ≥ 50/100)")
-            st.caption("Market Reception + Financing + Valuation + Timeline + Redemption Risk + Pre-Deal Quality")
+            st.caption("Market Reception (0-20) + Financing (0-20) + Valuation (0-15) + Timeline (0-15) + Redemption Risk (0-15) + Pre-Deal (0-15)")
 
+            # Create table data
+            table_data = []
             for idx, row in deal_quality.iterrows():
-                col1, col2, col3 = st.columns([3, 2, 3])
+                tier_emoji = "🥇" if row['deal_quality_score'] >= 60 else "🥈" if row['deal_quality_score'] >= 50 else "🥉"
+                price_str = f"${row['price']:.2f}" if pd.notna(row['price']) else "N/A"
+                premium_str = f"{row['premium']:.1f}%" if pd.notna(row['premium']) else "N/A"
+                return_str = f"{row['return_since_announcement']:+.1f}%" if pd.notna(row['return_since_announcement']) else "N/A"
+                pipe_str = f"✅ {row['tier1_count']}" if row['tier1_count'] > 0 else ""
 
-                with col1:
-                    tier_emoji = "🥇" if row['deal_quality_score'] >= 60 else "🥈" if row['deal_quality_score'] >= 50 else "🥉"
-                    st.markdown(f"**{tier_emoji} {row['ticker']}** → {row['target'][:35] if pd.notna(row['target']) else 'TBD'}")
-                    st.caption(f"{row['company'][:45] if pd.notna(row['company']) else ''}")
+                table_data.append({
+                    'Rank': f"{tier_emoji} #{idx+1}",
+                    'Ticker': row['ticker'],
+                    'Target': row['target'][:25] if pd.notna(row['target']) else 'TBD',
+                    'Score': f"{row['deal_quality_score']:.0f}/100",
+                    'Mkt': row['market_reception_score'],
+                    'Fin': row['financing_score'],
+                    'Val': row['valuation_score'],
+                    'Time': row['timeline_score'],
+                    'Red': row['redemption_score'],
+                    'Gun': row['loaded_gun_carryover'],
+                    'Price': price_str,
+                    'Premium': premium_str,
+                    'Return': return_str,
+                    'PIPE': pipe_str
+                })
 
-                with col2:
-                    st.metric("Deal Quality", f"{row['deal_quality_score']:.0f}/100")
-
-                    # Show component breakdown
-                    components = []
-                    if pd.notna(row['market_reception_score']):
-                        components.append(f"Mkt:{row['market_reception_score']:.0f}")
-                    if pd.notna(row['financing_score']):
-                        components.append(f"Fin:{row['financing_score']:.0f}")
-                    if pd.notna(row['valuation_score']):
-                        components.append(f"Val:{row['valuation_score']:.0f}")
-                    if pd.notna(row['timeline_score']):
-                        components.append(f"Time:{row['timeline_score']:.0f}")
-                    if pd.notna(row['redemption_score']):
-                        components.append(f"Red:{row['redemption_score']:.0f}")
-                    if pd.notna(row['loaded_gun_carryover']):
-                        components.append(f"Gun:{row['loaded_gun_carryover']:.0f}")
-
-                    st.caption(f"[{' '.join(components)}]")
-
-                with col3:
-                    if pd.notna(row['price']):
-                        st.metric("Price", f"${row['price']:.2f}",
-                                 delta=f"{row['return_since_announcement']:.1f}%" if pd.notna(row['return_since_announcement']) else None)
-                    if pd.notna(row['premium']):
-                        st.caption(f"Premium: {row['premium']:.1f}%")
-                    if row['tier1_count'] > 0:
-                        st.caption(f"✅ {row['tier1_count']} Tier-1 PIPE investor{'s' if row['tier1_count'] > 1 else ''}")
-
-                st.markdown("---")
+            df_display = pd.DataFrame(table_data)
+            st.dataframe(df_display, use_container_width=True, hide_index=True)
 
         db.close()
 
