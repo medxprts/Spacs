@@ -1,8 +1,8 @@
 {
   "Cantor Fitzgerald": {
     "sponsor_normalized": "Cantor Fitzgerald",
-    "total_deals": 9,
-    "tracked_deals": 9,
+    "total_deals": 12,
+    "tracked_deals": 12,
     "deals": [
       {
         "ticker": "CEPO",
@@ -111,17 +111,53 @@
         "pop_1d": 8.5,
         "pop_1w": 53.7,
         "pop_1m": 11.0
+      },
+      {
+        "ticker": "GCMG",
+        "target": "Grosvenor Capital",
+        "announced_date": "2019-08-02",
+        "price_on_announcement": 8.19710922241211,
+        "price_1d": 8.205289840698242,
+        "price_1w": 8.19710922241211,
+        "price_1m": 8.250283241271973,
+        "pop_1d": 0.1,
+        "pop_1w": null,
+        "pop_1m": 0.6
+      },
+      {
+        "ticker": "OPFI",
+        "target": "OppFi",
+        "announced_date": "2021-02-10",
+        "price_on_announcement": 10.503642082214355,
+        "price_1d": 10.45716667175293,
+        "price_1w": 9.843679428100586,
+        "price_1m": 9.48116397857666,
+        "pop_1d": -0.4,
+        "pop_1w": -6.3,
+        "pop_1m": -9.7
+      },
+      {
+        "ticker": "RUM",
+        "target": "Rumble",
+        "announced_date": "2021-12-01",
+        "price_on_announcement": 9.755000114440918,
+        "price_1d": 10.579999923706055,
+        "price_1w": 14.989999771118164,
+        "price_1m": 10.829999923706055,
+        "pop_1d": 8.5,
+        "pop_1w": 53.7,
+        "pop_1m": 11.0
       }
     ],
     "deal_count": 3,
-    "avg_pop_1d": 6.9,
-    "avg_pop_1w": 26.0,
-    "avg_pop_1m": 21.4
+    "avg_pop_1d": 5.8,
+    "avg_pop_1w": 25.6,
+    "avg_pop_1m": 15.7
   },
   "Churchill Capital": {
     "sponsor_normalized": "Churchill Capital",
-    "total_deals": 4,
-    "tracked_deals": 4,
+    "total_deals": 6,
+    "tracked_deals": 6,
     "deals": [
       {
         "ticker": "CCCX",
@@ -170,12 +206,36 @@
         "pop_1d": -38.6,
         "pop_1w": -46.6,
         "pop_1m": -60.7
+      },
+      {
+        "ticker": "SKIL",
+        "target": "Skillsoft",
+        "announced_date": "2020-10-12",
+        "price_on_announcement": 204.0,
+        "price_1d": 200.0,
+        "price_1w": 200.39999389648438,
+        "price_1m": 200.8000030517578,
+        "pop_1d": -2.0,
+        "pop_1w": -1.8,
+        "pop_1m": -1.6
+      },
+      {
+        "ticker": "LCID",
+        "target": "Lucid Group",
+        "announced_date": "2021-02-22",
+        "price_on_announcement": 573.7000122070312,
+        "price_1d": 352.1000061035156,
+        "price_1w": 306.29998779296875,
+        "price_1m": 225.60000610351562,
+        "pop_1d": -38.6,
+        "pop_1w": -46.6,
+        "pop_1m": -60.7
       }
     ],
     "deal_count": 2,
-    "avg_pop_1d": -10.1,
-    "avg_pop_1w": -11.6,
-    "avg_pop_1m": 6.4
+    "avg_pop_1d": -13.5,
+    "avg_pop_1w": -15.8,
+    "avg_pop_1m": -6.1
   },
   "SLG SPAC": {
     "sponsor_normalized": "SLG SPAC",
@@ -636,8 +696,8 @@
   },
   "dMY Technology Group": {
     "sponsor_normalized": "dMY Technology Group",
-    "total_deals": 9,
-    "tracked_deals": 9,
+    "total_deals": 13,
+    "tracked_deals": 13,
     "deals": [
       {
         "ticker": "DMYY",
@@ -746,12 +806,60 @@
         "pop_1d": -0.2,
         "pop_1w": -0.7,
         "pop_1m": -0.5
+      },
+      {
+        "ticker": "RSI",
+        "target": "Rush Street Interactive",
+        "announced_date": "2020-07-27",
+        "price_on_announcement": 11.850000381469727,
+        "price_1d": 11.75,
+        "price_1w": 10.460000038146973,
+        "price_1m": 11.359999656677246,
+        "pop_1d": -0.8,
+        "pop_1w": -11.7,
+        "pop_1m": -4.1
+      },
+      {
+        "ticker": "GENI",
+        "target": "Genius Sports",
+        "announced_date": "2020-10-27",
+        "price_on_announcement": 10.260000228881836,
+        "price_1d": 10.270000457763672,
+        "price_1w": 10.100000381469727,
+        "price_1m": 11.010000228881836,
+        "pop_1d": 0.1,
+        "pop_1w": -1.6,
+        "pop_1m": 7.3
+      },
+      {
+        "ticker": "IONQ",
+        "target": "IONQ",
+        "announced_date": "2021-03-08",
+        "price_on_announcement": 10.899999618530273,
+        "price_1d": 11.3100004196167,
+        "price_1w": 11.529999732971191,
+        "price_1m": 10.6899995803833,
+        "pop_1d": 3.8,
+        "pop_1w": 5.8,
+        "pop_1m": -1.9
+      },
+      {
+        "ticker": "PL",
+        "target": "Planet Labs",
+        "announced_date": "2021-07-07",
+        "price_on_announcement": 9.970000267028809,
+        "price_1d": 9.949999809265137,
+        "price_1w": 9.899999618530273,
+        "price_1m": 9.920000076293945,
+        "pop_1d": -0.2,
+        "pop_1w": -0.7,
+        "pop_1m": -0.5
       }
     ],
     "deal_count": 1,
     "avg_pop_1d": 0.7,
-    "avg_pop_1w": -0.3,
-    "avg_pop_1m": 0.0
+    "avg_pop_1w": -0.8,
+    "avg_pop_1m": 0.1
   },
   "Alphamade": {
     "sponsor_normalized": "Alphamade",
@@ -1590,9 +1698,57 @@
   },
   "Social Capital Hedosophia": {
     "sponsor_normalized": "Social Capital Hedosophia",
-    "total_deals": 8,
-    "tracked_deals": 8,
+    "total_deals": 12,
+    "tracked_deals": 12,
     "deals": [
+      {
+        "ticker": "SPCE",
+        "target": "Virgin Galactic",
+        "announced_date": "2019-07-09",
+        "price_on_announcement": 213.8000030517578,
+        "price_1d": 215.60000610351562,
+        "price_1w": 210.1999969482422,
+        "price_1m": 208.39999389648438,
+        "pop_1d": 0.8,
+        "pop_1w": -1.7,
+        "pop_1m": -2.5
+      },
+      {
+        "ticker": "OPEN",
+        "target": "Opendoor",
+        "announced_date": "2020-09-15",
+        "price_on_announcement": 17.559999465942383,
+        "price_1d": 15.899999618530273,
+        "price_1w": 16.780000686645508,
+        "price_1m": 23.93000030517578,
+        "pop_1d": -9.5,
+        "pop_1w": -4.4,
+        "pop_1m": 36.3
+      },
+      {
+        "ticker": "CLOV",
+        "target": "Clover Health",
+        "announced_date": "2020-10-06",
+        "price_on_announcement": 10.970000267028809,
+        "price_1d": 10.699999809265137,
+        "price_1w": 10.59000015258789,
+        "price_1m": 10.079999923706055,
+        "pop_1d": -2.5,
+        "pop_1w": -3.5,
+        "pop_1m": -8.1
+      },
+      {
+        "ticker": "SOFI",
+        "target": "SoFi",
+        "announced_date": "2021-01-07",
+        "price_on_announcement": 19.139999389648438,
+        "price_1d": 18.739999771118164,
+        "price_1w": 19.15999984741211,
+        "price_1m": 23.0,
+        "pop_1d": -2.1,
+        "pop_1w": 0.1,
+        "pop_1m": 20.2
+      },
       {
         "ticker": "SPCE",
         "target": "Virgin Galactic",
@@ -1696,9 +1852,21 @@
   },
   "CC Neuberger / CC Capital": {
     "sponsor_normalized": "CC Neuberger / CC Capital",
-    "total_deals": 2,
-    "tracked_deals": 2,
+    "total_deals": 3,
+    "tracked_deals": 3,
     "deals": [
+      {
+        "ticker": "GETY",
+        "target": "Getty Images",
+        "announced_date": "2021-12-10",
+        "price_on_announcement": 9.880000114440918,
+        "price_1d": 9.890000343322754,
+        "price_1w": 9.859999656677246,
+        "price_1m": 9.899999618530273,
+        "pop_1d": 0.1,
+        "pop_1w": -0.2,
+        "pop_1m": 0.2
+      },
       {
         "ticker": "GETY",
         "target": "Getty Images",
@@ -1812,9 +1980,21 @@
   },
   "Hennessy Capital": {
     "sponsor_normalized": "Hennessy Capital",
-    "total_deals": 2,
-    "tracked_deals": 2,
+    "total_deals": 3,
+    "tracked_deals": 3,
     "deals": [
+      {
+        "ticker": "BLBD",
+        "target": "Blue Bird Corp",
+        "announced_date": "2014-09-22",
+        "price_on_announcement": 9.89900016784668,
+        "price_1d": 9.899999618530273,
+        "price_1w": 9.880000114440918,
+        "price_1m": 9.779999732971191,
+        "pop_1d": 0.0,
+        "pop_1w": -0.2,
+        "pop_1m": -1.2
+      },
       {
         "ticker": "BLBD",
         "target": "Blue Bird Corp",
@@ -1846,9 +2026,21 @@
   },
   "Altimeter Capital": {
     "sponsor_normalized": "Altimeter Capital",
-    "total_deals": 2,
-    "tracked_deals": 2,
+    "total_deals": 3,
+    "tracked_deals": 3,
     "deals": [
+      {
+        "ticker": "GRAB",
+        "target": "Grab Holdings",
+        "announced_date": "2021-04-13",
+        "price_on_announcement": 15.329999923706055,
+        "price_1d": 14.399999618530273,
+        "price_1w": 12.720000267028809,
+        "price_1m": 11.0600004196167,
+        "pop_1d": -6.1,
+        "pop_1w": -17.0,
+        "pop_1m": -27.9
+      },
       {
         "ticker": "GRAB",
         "target": "Grab Holdings",
@@ -1914,9 +2106,33 @@
   },
   "Reinvent Technology Partners": {
     "sponsor_normalized": "Reinvent Technology Partners",
-    "total_deals": 4,
-    "tracked_deals": 4,
+    "total_deals": 6,
+    "tracked_deals": 6,
     "deals": [
+      {
+        "ticker": "JOBY",
+        "target": "Joby Aviation",
+        "announced_date": "2020-12-01",
+        "price_on_announcement": 11.0,
+        "price_1d": 11.020000457763672,
+        "price_1w": 11.109999656677246,
+        "price_1m": 11.5600004196167,
+        "pop_1d": 0.2,
+        "pop_1w": 1.0,
+        "pop_1m": 5.1
+      },
+      {
+        "ticker": "HIPO",
+        "target": "Hippo Insurance",
+        "announced_date": "2021-03-04",
+        "price_on_announcement": 261.25,
+        "price_1d": 267.5,
+        "price_1w": 266.25,
+        "price_1m": 253.0,
+        "pop_1d": 2.4,
+        "pop_1w": 1.9,
+        "pop_1m": -3.2
+      },
       {
         "ticker": "JOBY",
         "target": "Joby Aviation",
@@ -1972,9 +2188,21 @@
   },
   "Oaktree Capital": {
     "sponsor_normalized": "Oaktree Capital",
-    "total_deals": 2,
-    "tracked_deals": 2,
+    "total_deals": 3,
+    "tracked_deals": 3,
     "deals": [
+      {
+        "ticker": "HIMS",
+        "target": "Hims & Hers Health",
+        "announced_date": "2020-09-30",
+        "price_on_announcement": 11.75,
+        "price_1d": 10.800000190734863,
+        "price_1w": 10.239999771118164,
+        "price_1m": 10.199999809265137,
+        "pop_1d": -8.1,
+        "pop_1w": -12.9,
+        "pop_1m": -13.2
+      },
       {
         "ticker": "HIMS",
         "target": "Hims & Hers Health",
@@ -2006,9 +2234,21 @@
   },
   "TortoiseEcofin": {
     "sponsor_normalized": "TortoiseEcofin",
-    "total_deals": 2,
-    "tracked_deals": 2,
+    "total_deals": 3,
+    "tracked_deals": 3,
     "deals": [
+      {
+        "ticker": "HYLN",
+        "target": "Hyliion Holdings",
+        "announced_date": "2020-06-19",
+        "price_on_announcement": 14.039999961853027,
+        "price_1d": 18.290000915527344,
+        "price_1w": 24.56999969482422,
+        "price_1m": 21.850000381469727,
+        "pop_1d": 30.3,
+        "pop_1w": 75.0,
+        "pop_1m": 55.6
+      },
       {
         "ticker": "HYLN",
         "target": "Hyliion Holdings",
@@ -2040,9 +2280,21 @@
   },
   "NGP Energy Capital": {
     "sponsor_normalized": "NGP Energy Capital",
-    "total_deals": 2,
-    "tracked_deals": 2,
+    "total_deals": 3,
+    "tracked_deals": 3,
     "deals": [
+      {
+        "ticker": "CHPT",
+        "target": "ChargePoint",
+        "announced_date": "2020-09-24",
+        "price_on_announcement": 249.1999969482422,
+        "price_1d": 276.79998779296875,
+        "price_1w": 307.6000061035156,
+        "price_1m": 283.20001220703125,
+        "pop_1d": 11.1,
+        "pop_1w": 23.4,
+        "pop_1m": 13.6
+      },
       {
         "ticker": "CHPT",
         "target": "ChargePoint",
@@ -2074,8 +2326,8 @@
   },
   "Haymaker Acquisition": {
     "sponsor_normalized": "Haymaker Acquisition",
-    "total_deals": 4,
-    "tracked_deals": 2,
+    "total_deals": 6,
+    "tracked_deals": 3,
     "deals": [
       {
         "ticker": "OSW",
@@ -2124,6 +2376,30 @@
         "pop_1d": null,
         "pop_1w": -1.9,
         "pop_1m": -2.5
+      },
+      {
+        "ticker": "OSW",
+        "target": "OneSpaWorld",
+        "announced_date": "2019-07-01",
+        "price_on_announcement": 14.701595306396484,
+        "price_1d": 14.889065742492676,
+        "price_1w": 14.622660636901855,
+        "price_1m": 15.451475143432617,
+        "pop_1d": 1.3,
+        "pop_1w": -0.5,
+        "pop_1m": 5.1
+      },
+      {
+        "ticker": "BTMD",
+        "target": "BioTe",
+        "announced_date": "2021-05-01",
+        "price_on_announcement": 10.050000190734863,
+        "price_1d": 10.050000190734863,
+        "price_1w": 9.859999656677246,
+        "price_1m": 9.800000190734863,
+        "pop_1d": null,
+        "pop_1w": -1.9,
+        "pop_1m": -2.5
       }
     ],
     "avg_pop_1d": 1.3,
@@ -2132,9 +2408,21 @@
   },
   "Rice Acquisition": {
     "sponsor_normalized": "Rice Acquisition",
-    "total_deals": 2,
-    "tracked_deals": 2,
+    "total_deals": 3,
+    "tracked_deals": 3,
     "deals": [
+      {
+        "ticker": "NPWR",
+        "target": "NET Power",
+        "announced_date": "2022-12-14",
+        "price_on_announcement": 10.15999984741211,
+        "price_1d": 10.1899995803833,
+        "price_1w": 10.28499984741211,
+        "price_1m": 10.175000190734863,
+        "pop_1d": 0.3,
+        "pop_1w": 1.2,
+        "pop_1m": 0.1
+      },
       {
         "ticker": "NPWR",
         "target": "NET Power",
@@ -2166,8 +2454,8 @@
   },
   "Gores": {
     "sponsor_normalized": "Gores",
-    "total_deals": 4,
-    "tracked_deals": 4,
+    "total_deals": 8,
+    "tracked_deals": 8,
     "deals": [
       {
         "ticker": "UWMC",
@@ -2216,6 +2504,54 @@
         "pop_1d": -1.3,
         "pop_1w": -2.7,
         "pop_1m": -1.0
+      },
+      {
+        "ticker": "UWMC",
+        "target": "United Wholesale Mortgage",
+        "announced_date": "2021-01-21",
+        "price_on_announcement": 8.202746391296387,
+        "price_1d": 8.067692756652832,
+        "price_1w": 7.0796685218811035,
+        "price_1m": 5.6935882568359375,
+        "pop_1d": -1.6,
+        "pop_1w": -13.7,
+        "pop_1m": -30.6
+      },
+      {
+        "ticker": "LAZR",
+        "target": "Luminar",
+        "announced_date": "2020-08-24",
+        "price_on_announcement": 171.0,
+        "price_1d": 170.85000610351562,
+        "price_1w": 165.14999389648438,
+        "price_1m": 175.5,
+        "pop_1d": -0.1,
+        "pop_1w": -3.4,
+        "pop_1m": 2.6
+      },
+      {
+        "ticker": "SOND",
+        "target": "Sonder",
+        "announced_date": "2021-04-30",
+        "price_on_announcement": 199.60000610351562,
+        "price_1d": 199.39999389648438,
+        "price_1w": 199.0,
+        "price_1m": 197.60000610351562,
+        "pop_1d": -0.1,
+        "pop_1w": -0.3,
+        "pop_1m": -1.0
+      },
+      {
+        "ticker": "PSNY",
+        "target": "Polestar",
+        "announced_date": "2021-09-27",
+        "price_on_announcement": 10.449999809265137,
+        "price_1d": 10.3100004196167,
+        "price_1w": 10.170000076293945,
+        "price_1m": 10.350000381469727,
+        "pop_1d": -1.3,
+        "pop_1w": -2.7,
+        "pop_1m": -1.0
       }
     ],
     "avg_pop_1d": -0.8,
@@ -2224,8 +2560,8 @@
   },
   "Eagle (Jeff Sagansky)": {
     "sponsor_normalized": "Eagle (Jeff Sagansky)",
-    "total_deals": 6,
-    "tracked_deals": 3,
+    "total_deals": 12,
+    "tracked_deals": 7,
     "deals": [
       {
         "ticker": "WSC",
@@ -2298,17 +2634,113 @@
         "pop_1d": null,
         "pop_1w": -0.2,
         "pop_1m": -0.2
+      },
+      {
+        "ticker": "WSC",
+        "target": "WillScot",
+        "announced_date": "2017-06-01",
+        "price_on_announcement": 9.922318458557129,
+        "price_1d": 9.922319412231445,
+        "price_1w": 9.947124481201172,
+        "price_1m": 9.922319412231445,
+        "pop_1d": 0.0,
+        "pop_1w": 0.3,
+        "pop_1m": 0.0
+      },
+      {
+        "ticker": "TH",
+        "target": "Target Hospitality",
+        "announced_date": "2018-11-13",
+        "price_on_announcement": 9.90999984741211,
+        "price_1d": 10.100000381469727,
+        "price_1w": 10.119999885559082,
+        "price_1m": 10.050000190734863,
+        "pop_1d": 1.9,
+        "pop_1w": 2.1,
+        "pop_1m": 1.4
+      },
+      {
+        "ticker": "DKNG",
+        "target": "DraftKings",
+        "announced_date": "2019-12-23",
+        "price_on_announcement": 10.84000015258789,
+        "price_1d": 10.84000015258789,
+        "price_1w": 10.640000343322754,
+        "price_1m": 14.270000457763672,
+        "pop_1d": null,
+        "pop_1w": -1.8,
+        "pop_1m": 31.6
+      },
+      {
+        "ticker": "SKLZ",
+        "target": "Skillz",
+        "announced_date": "2020-09-02",
+        "price_on_announcement": 280.3999938964844,
+        "price_1d": 262.79998779296875,
+        "price_1w": 257.6000061035156,
+        "price_1m": 247.8000030517578,
+        "pop_1d": -6.3,
+        "pop_1w": -8.1,
+        "pop_1m": -11.6
+      },
+      {
+        "ticker": "DNA",
+        "target": "Ginkgo Bioworks",
+        "announced_date": "2021-05-11",
+        "price_on_announcement": 394.79998779296875,
+        "price_1d": 395.6000061035156,
+        "price_1w": 394.79998779296875,
+        "price_1m": 400.0,
+        "pop_1d": 0.2,
+        "pop_1w": null,
+        "pop_1m": 1.3
+      },
+      {
+        "ticker": "LION",
+        "target": "Lionsgate Studios Corp",
+        "announced_date": "2023-12-22",
+        "price_on_announcement": 10.619999885559082,
+        "price_1d": 10.619999885559082,
+        "price_1w": 10.600000381469727,
+        "price_1m": 10.600000381469727,
+        "pop_1d": null,
+        "pop_1w": -0.2,
+        "pop_1m": -0.2
       }
     ],
-    "avg_pop_1d": -1.4,
+    "avg_pop_1d": -1.2,
     "avg_pop_1w": -1.6,
-    "avg_pop_1m": 4.5
+    "avg_pop_1m": 4.1
   },
   "Foley Trasimene / Cannae": {
     "sponsor_normalized": "Foley Trasimene / Cannae",
-    "total_deals": 2,
-    "tracked_deals": 2,
+    "total_deals": 4,
+    "tracked_deals": 4,
     "deals": [
+      {
+        "ticker": "PSFE",
+        "target": "Paysafe",
+        "announced_date": "2020-12-07",
+        "price_on_announcement": 143.39999389648438,
+        "price_1d": 153.36000061035156,
+        "price_1w": 175.32000732421875,
+        "price_1m": 173.8800048828125,
+        "pop_1d": 6.9,
+        "pop_1w": 22.3,
+        "pop_1m": 21.3
+      },
+      {
+        "ticker": "ALIT",
+        "target": "Alight Solutions",
+        "announced_date": "2020-12-22",
+        "price_on_announcement": 10.884196281433105,
+        "price_1d": 10.991093635559082,
+        "price_1w": 10.932785034179688,
+        "price_1m": 11.603328704833984,
+        "pop_1d": 1.0,
+        "pop_1w": 0.4,
+        "pop_1m": 6.6
+      },
       {
         "ticker": "PSFE",
         "target": "Paysafe",
@@ -2336,6 +2768,6 @@
     ],
     "avg_pop_1d": 4.0,
     "avg_pop_1w": 11.3,
-    "avg_pop_1m": 13.9
+    "avg_pop_1m": 14.0
   }
 }
