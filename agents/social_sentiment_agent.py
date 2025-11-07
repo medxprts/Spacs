@@ -35,6 +35,7 @@ from database import SessionLocal, SPAC
 from agents.orchestrator_agent_base import OrchestratorAgentBase
 from agents.agent_task import AgentTask
 from openai import OpenAI
+from sqlalchemy import text
 
 # Reddit scraping (using PRAW)
 try:
@@ -57,7 +58,7 @@ class SocialSentimentAgent(OrchestratorAgentBase):
     """
 
     def __init__(self):
-        super().__init__()
+        super().__init__(name='social_sentiment')
         self.db = SessionLocal()
 
         # Initialize AI client for sentiment analysis
@@ -264,7 +265,7 @@ class SocialSentimentAgent(OrchestratorAgentBase):
 
         # Upsert into social_sentiment table
         try:
-            self.db.execute("""
+            self.db.execute(text("""
                 INSERT INTO social_sentiment (
                     ticker, mention_count_7d, mention_count_24h, mention_count_1h,
                     rumored_targets, top_rumored_target, sentiment_score, sentiment_category,
@@ -272,7 +273,7 @@ class SocialSentimentAgent(OrchestratorAgentBase):
                 ) VALUES (
                     :ticker, :mention_7d, :mention_24h, :mention_1h,
                     :rumored_targets, :top_rumored, :sentiment_score, :sentiment_category,
-                    :buzz_score, :buzz_level, :top_posts::jsonb, NOW(), 1
+                    :buzz_score, :buzz_level, CAST(:top_posts AS jsonb), NOW(), 1
                 )
                 ON CONFLICT (ticker) DO UPDATE SET
                     mention_count_7d = EXCLUDED.mention_count_7d,
@@ -287,7 +288,7 @@ class SocialSentimentAgent(OrchestratorAgentBase):
                     top_posts = EXCLUDED.top_posts,
                     last_updated = NOW(),
                     update_count = social_sentiment.update_count + 1
-            """, {
+            """), {
                 'ticker': ticker,
                 'mention_7d': mention_data['mention_count_7d'],
                 'mention_24h': mention_data['mention_count_24h'],

@@ -24,6 +24,7 @@ sys.path.append('/home/ubuntu/spac-research')
 from database import SessionLocal, SPAC
 from openai import OpenAI
 from dotenv import load_dotenv
+from agents.agent_task import AgentTask
 
 load_dotenv()
 
@@ -1910,50 +1911,54 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
         # ========================================================================
         # Reddit Monitoring (Every 30 minutes)
         # ========================================================================
-        # Reddit Monitoring (DISABLED - deprecated signal_monitor_agent)
-        # TODO: Re-enable as part of opportunity identification agent
-        # ========================================================================
-        # reddit_interval_minutes = 30
-        # last_reddit_run = self.state_manager.state['last_run'].get('reddit_monitor')
-        #
-        # should_run_reddit = False
-        # if last_reddit_run is None:
-        #     should_run_reddit = True
-        # else:
-        #     last_run_dt = datetime.fromisoformat(last_reddit_run)
-        #     minutes_since_last = (current_time - last_run_dt).total_seconds() / 60
-        #
-        #     if minutes_since_last >= reddit_interval_minutes:
-        #         should_run_reddit = True
-        #
-        # if should_run_reddit:
-        #     print(f"[ORCHESTRATOR] 🔍 Running scheduled Reddit monitoring...")
-        #     try:
-        #         from signal_monitor_agent import SignalMonitorAgent
-        #
-        #         agent = SignalMonitorAgent()
-        #         result = agent.monitor_reddit(interval_name="30min")
-        #         agent.close()
-        #
-        #         # Update last run time
-        #         self.state_manager.state['last_run']['reddit_monitor'] = current_time.isoformat()
-        #         self.state_manager.save_state()
-        #
-        #         if result['success']:
-        #             print(f"[ORCHESTRATOR] ✓ Reddit monitoring complete: "
-        #                   f"{result['spacs_scanned']} scanned, {result['leaks_detected']} leaks")
-        #         else:
-        #             print(f"[ORCHESTRATOR] ✗ Reddit monitoring failed: {result.get('error')}")
-        #
-        #     except Exception as e:
-        #         print(f"[ORCHESTRATOR] ✗ Reddit monitoring error: {e}")
-        # else:
-        #     last_run_dt = datetime.fromisoformat(last_reddit_run)
-        #     minutes_since_last = (current_time - last_run_dt).total_seconds() / 60
-        #     minutes_until_next = reddit_interval_minutes - minutes_since_last
-        #
-        #     print(f"[ORCHESTRATOR] ⏭️  Reddit monitoring: Last run {minutes_since_last:.0f} min ago, "
-        #           f"next in {minutes_until_next:.0f} min")
+        reddit_interval_minutes = 30
+        last_reddit_run = self.state_manager.state['last_run'].get('reddit_monitor')
+
+        should_run_reddit = False
+        if last_reddit_run is None:
+            should_run_reddit = True
+        else:
+            last_run_dt = datetime.fromisoformat(last_reddit_run)
+            minutes_since_last = (current_time - last_run_dt).total_seconds() / 60
+
+            if minutes_since_last >= reddit_interval_minutes:
+                should_run_reddit = True
+
+        if should_run_reddit:
+            print(f"[ORCHESTRATOR] 🔍 Running scheduled Reddit monitoring...")
+            try:
+                from agents.social_sentiment_agent import SocialSentimentAgent
+
+                agent = SocialSentimentAgent()
+                task = AgentTask(
+                    agent_name='social_sentiment',
+                    task_type='reddit_scan',
+                    priority=5
+                )
+                result_task = agent.execute(task)
+                agent.close()
+
+                # Update last run time
+                self.state_manager.state['last_run']['reddit_monitor'] = current_time.isoformat()
+                self.state_manager.save_state()
+
+                if result_task.status == 'COMPLETED':
+                    result = result_task.result
+                    print(f"[ORCHESTRATOR] ✓ Reddit monitoring complete: "
+                          f"{result['spacs_scanned']} scanned, {result['spacs_with_mentions']} with mentions, "
+                          f"{result['total_mentions']} total mentions")
+                else:
+                    print(f"[ORCHESTRATOR] ✗ Reddit monitoring failed: {result_task.error}")
+
+            except Exception as e:
+                print(f"[ORCHESTRATOR] ✗ Reddit monitoring error: {e}")
+        else:
+            last_run_dt = datetime.fromisoformat(last_reddit_run)
+            minutes_since_last = (current_time - last_run_dt).total_seconds() / 60
+            minutes_until_next = reddit_interval_minutes - minutes_since_last
+
+            print(f"[ORCHESTRATOR] ⏭️  Reddit monitoring: Last run {minutes_since_last:.0f} min ago, "
+                  f"next in {minutes_until_next:.0f} min")
 
         # ========================================================================
         # News Monitoring (Every 3 hours)

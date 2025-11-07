@@ -5,15 +5,7 @@ Base class for task-based agents that are scheduled and executed by the orchestr
 
 from datetime import datetime
 from typing import Dict
-from enum import Enum
-
-
-class TaskStatus(Enum):
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    SKIPPED = "skipped"
+from agents.agent_task import TaskStatus
 
 
 class OrchestratorAgentBase:
