@@ -735,10 +735,14 @@ TRUST ACCOUNT NOTE:
    - IMPORTANT: Check if balance sheet date is BEFORE IPO date
      * If pre-IPO (no trust account established yet), return null
 
-2. **Shares Subject to Redemption**:
+2. **Shares Subject to Redemption** (CRITICAL: Use Current Period):
    - Look for in equity section or balance sheet temporary equity:
      * "Ordinary shares subject to possible redemption"
      * "Class A shares subject to redemption"
+   - **MUST extract from MOST RECENT COLUMN (current period)**, NOT prior period
+   - If balance sheet has multiple columns (e.g., June 30, 2025 vs Dec 31, 2024):
+     * Use the LATEST date (June 30, 2025)
+     * Ignore prior period columns (Dec 31, 2024)
    - Extract NUMBER OF SHARES (not dollar value)
    - Usually 7-8 digit numbers (e.g., 11,500,000)
 
@@ -754,6 +758,8 @@ TRUST ACCOUNT NOTE:
 - Shares should be in millions (7-8 digits)
 - NAV should be around $10.00-$10.50
 - If balance sheet date is before IPO, return all nulls
+- CRITICAL: If multiple columns exist, ONLY use the MOST RECENT column (current period)
+- Ignore "prior period" or "prior year" columns entirely
 
 **FILING TEXT:**
 {combined_text}
