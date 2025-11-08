@@ -2,7 +2,7 @@
 """
 Phase 2 "Deal Quality" Scoring Agent
 ====================================
-Evaluates announced SPAC deals across 6 components:
+Evaluates announced SPAC deals across 8 components:
 
 1. Market Reception (0-20): Premium and price performance since announcement
 2. Financing Structure (0-20): PIPE quality, min cash conditions
@@ -10,8 +10,10 @@ Evaluates announced SPAC deals across 6 components:
 4. Timeline (0-15): Days to close (faster = better execution)
 5. Redemption Risk (0-15): Estimated redemption exposure
 6. Loaded Gun Carryover (0-15): Phase 1 quality score (scaled down)
+7. Sector Score (0-10): Hot sector bonus (AI, Healthcare Tech, EV, etc.)
+8. Volume/Liquidity (0-10): Trading volume as % of float (institutional interest)
 
-Total: 0-100 points (Deal Quality Score)
+Total: 0-120 points (Deal Quality Score)
 
 Usage:
     python3 phase2_scorer.py --all           # Score all announced deals
@@ -282,12 +284,80 @@ def score_loaded_gun_carryover(loaded_gun_score):
         return 3
 
 
+def score_sector(sector_classified):
+    """
+    Score based on sector attractiveness (0-10 points).
+
+    Hot sectors with strong market appetite:
+        AI & Machine Learning: 10 points
+        Healthcare Technology: 10 points
+        Electric Vehicles: 10 points
+        FinTech: 10 points
+        Cybersecurity: 10 points
+        Space Technology: 10 points
+        Clean Energy: 10 points
+        Other sectors: 0 points
+    """
+    if not sector_classified:
+        return 0
+
+    hot_sectors = [
+        'AI & Machine Learning',
+        'Healthcare Technology',
+        'Electric Vehicles',
+        'FinTech',
+        'Cybersecurity',
+        'Space Technology',
+        'Clean Energy',
+        'Blockchain & Crypto'
+    ]
+
+    return 10 if sector_classified in hot_sectors else 0
+
+
+def score_volume_liquidity(volume, public_float, announced_date):
+    """
+    Score based on trading volume/liquidity since announcement (0-10 points).
+
+    Measures cumulative float turnover since deal announcement.
+    Higher turnover = more institutional interest and liquidity.
+
+    Scoring (based on average daily volume as % of float):
+        >5% daily: 10 points (very high liquidity)
+        3-5% daily: 8 points (high liquidity)
+        2-3% daily: 6 points (good liquidity)
+        1-2% daily: 4 points (moderate liquidity)
+        0.5-1% daily: 2 points (low liquidity)
+        <0.5% daily: 0 points (very low liquidity)
+
+    Note: Uses current daily volume as proxy for average since announcement.
+    """
+    if not volume or not public_float or public_float <= 0:
+        return 0
+
+    # Calculate daily volume as % of public float
+    daily_volume_pct = (volume / public_float) * 100
+
+    if daily_volume_pct >= 5.0:
+        return 10
+    elif daily_volume_pct >= 3.0:
+        return 8
+    elif daily_volume_pct >= 2.0:
+        return 6
+    elif daily_volume_pct >= 1.0:
+        return 4
+    elif daily_volume_pct >= 0.5:
+        return 2
+    else:
+        return 0
+
+
 def calculate_phase2_score(spac, db=None):
     """
     Calculate total Phase 2 score for an announced SPAC deal.
 
     Returns:
-        dict with component scores and total (max 100 points)
+        dict with component scores and total (max 120 points)
     """
     # Get Phase 1 score if available
     loaded_gun_score = None
@@ -312,9 +382,11 @@ def calculate_phase2_score(spac, db=None):
     timeline = score_timeline(spac.expected_close)
     redemption = score_redemption_risk(spac.estimated_redemptions, spac.trust_cash, spac.min_cash)
     loaded_gun = score_loaded_gun_carryover(loaded_gun_score)
+    sector = score_sector(spac.sector_classified)
+    volume_liquidity = score_volume_liquidity(spac.volume, spac.public_float, spac.announced_date)
 
-    # Total (max 100: 20+20+15+15+15+15)
-    total = market_reception + financing + valuation + timeline + redemption + loaded_gun
+    # Total (max 120: 20+20+15+15+15+15+10+10)
+    total = market_reception + financing + valuation + timeline + redemption + loaded_gun + sector + volume_liquidity
 
     return {
         'market_reception_score': market_reception,
@@ -323,6 +395,8 @@ def calculate_phase2_score(spac, db=None):
         'timeline_score': timeline,
         'redemption_score': redemption,
         'loaded_gun_carryover': loaded_gun,
+        'sector_score': sector,
+        'volume_liquidity_score': volume_liquidity,
         'deal_quality_score': total,
         'deal_value_millions': deal_value_millions
     }
@@ -348,6 +422,8 @@ def save_phase2_score(db, ticker, scores):
                 timeline_score = :timeline,
                 redemption_score = :redemption,
                 loaded_gun_carryover = :carryover,
+                sector_score = :sector,
+                volume_score = :volume_liquidity,
                 deal_quality_score = :deal_quality,
                 last_calculated = :now
             WHERE ticker = :ticker
@@ -359,6 +435,8 @@ def save_phase2_score(db, ticker, scores):
             'timeline': scores['timeline_score'],
             'redemption': scores['redemption_score'],
             'carryover': scores['loaded_gun_carryover'],
+            'sector': scores['sector_score'],
+            'volume_liquidity': scores['volume_liquidity_score'],
             'deal_quality': scores['deal_quality_score'],
             'now': datetime.now()
         })
@@ -367,12 +445,12 @@ def save_phase2_score(db, ticker, scores):
         db.execute(text("""
             INSERT INTO opportunity_scores (
                 ticker, market_reception_score, financing_score, valuation_score,
-                timeline_score, redemption_score, loaded_gun_carryover, deal_quality_score,
-                last_calculated
+                timeline_score, redemption_score, loaded_gun_carryover, sector_score,
+                volume_score, deal_quality_score, last_calculated
             ) VALUES (
                 :ticker, :market, :financing, :valuation,
-                :timeline, :redemption, :carryover, :deal_quality,
-                :now
+                :timeline, :redemption, :carryover, :sector,
+                :volume_liquidity, :deal_quality, :now
             )
         """), {
             'ticker': ticker,
@@ -382,6 +460,8 @@ def save_phase2_score(db, ticker, scores):
             'timeline': scores['timeline_score'],
             'redemption': scores['redemption_score'],
             'carryover': scores['loaded_gun_carryover'],
+            'sector': scores['sector_score'],
+            'volume_liquidity': scores['volume_liquidity_score'],
             'deal_quality': scores['deal_quality_score'],
             'now': datetime.now()
         })

@@ -109,7 +109,10 @@ class StateManager:
         """Record task execution"""
         self.state['task_history'].append(task.to_dict())
 
-        # Update agent stats
+        # Update agent stats (defensive: ensure key exists)
+        if 'agent_stats' not in self.state:
+            self.state['agent_stats'] = {}
+
         if task.agent_name not in self.state['agent_stats']:
             self.state['agent_stats'][task.agent_name] = {
                 'total_runs': 0,
