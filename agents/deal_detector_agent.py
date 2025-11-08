@@ -202,7 +202,7 @@ Extract:
 1. **target** - Target company name
 2. **deal_value** - Enterprise or equity value as numeric dollars (e.g., 500000000 for "$500M")
 3. **expected_close** - Expected closing date or quarter (e.g., "Q4 2025", "2026-06-30")
-4. **target_sector** - Industry/sector of target
+4. **target_sector** - Target company's industry/sector. Classify as: "AI & Machine Learning", "Healthcare Technology", "Electric Vehicles", "FinTech", "Cybersecurity", "Space Technology", "Clean Energy", "Blockchain & Crypto", "Technology", "Healthcare", "Financial Services", "Consumer", "Industrial", "Media & Entertainment", "Real Estate", or "Other"
 
 Deal Structure (if mentioned):
 5. **min_cash** - Minimum cash condition as numeric dollars (e.g., 200000000 for "$200M")
@@ -318,10 +318,21 @@ Text:
 
             # Use date-based precedence for deal_value
             if deal_data.get('deal_value'):
+                # Convert numeric value to formatted string
+                deal_value_num = deal_data.get('deal_value')
+                if isinstance(deal_value_num, (int, float)):
+                    # Format as $XXM or $X.XB
+                    if deal_value_num >= 1_000_000_000:
+                        deal_value_str = f"${deal_value_num / 1_000_000_000:.2f}B"
+                    else:
+                        deal_value_str = f"${deal_value_num / 1_000_000:.0f}M"
+                else:
+                    deal_value_str = str(deal_value_num)
+
                 update_deal_value(
                     db_session=db,
                     ticker=spac.ticker,
-                    new_value=deal_data.get('deal_value'),
+                    new_value=deal_value_str,
                     source='8-K',
                     filing_date=filing['date'].date(),
                     reason='Deal detected by orchestrator'
@@ -354,9 +365,20 @@ Text:
             if spac.price:
                 spac.price_at_announcement = spac.price
 
-            # Store target sector if provided
-            if deal_data.get('target_sector') and not spac.sector:
-                spac.sector = deal_data['target_sector']
+            # Store target sector if provided by AI extraction
+            if deal_data.get('target_sector'):
+                spac.sector_classified = deal_data['target_sector']
+
+            # If no sector from filing, classify based on target name
+            elif target_name and not spac.sector_classified:
+                try:
+                    from utils.target_sector_classifier import classify_target_sector
+                    sector = classify_target_sector(target_name)
+                    if sector:
+                        spac.sector_classified = sector
+                        print(f"      ✓ Classified target sector: {sector}")
+                except Exception as e:
+                    print(f"      ⚠️  Could not classify target sector: {e}")
 
             db.commit()
 

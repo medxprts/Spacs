@@ -1928,12 +1928,16 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
             print(f"[ORCHESTRATOR] 🔍 Running scheduled Reddit monitoring...")
             try:
                 from agents.social_sentiment_agent import SocialSentimentAgent
+                import uuid
 
                 agent = SocialSentimentAgent()
                 task = AgentTask(
+                    task_id=str(uuid.uuid4()),
                     agent_name='social_sentiment',
                     task_type='reddit_scan',
-                    priority=5
+                    priority=TaskPriority.NORMAL,
+                    status=TaskStatus.PENDING,
+                    created_at=current_time
                 )
                 result_task = agent.execute(task)
                 agent.close()
