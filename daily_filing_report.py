@@ -29,6 +29,13 @@ try:
 except:
     TELEGRAM_AVAILABLE = False
 
+# Change tracker integration
+try:
+    from utils.change_tracker import ChangeTracker
+    CHANGE_TRACKER_AVAILABLE = True
+except:
+    CHANGE_TRACKER_AVAILABLE = False
+
 
 class DailyFilingReport:
     """Generate end-of-day filing processing report"""
@@ -420,6 +427,28 @@ class DailyFilingReport:
             message += f"\n<b>🔥 TOP ACTIVE</b>\n"
             for spac in report['top_active_spacs'][:3]:
                 message += f"• {spac['ticker']} ({spac['filing_count']} filings)\n"
+
+        # Database change tracking
+        if CHANGE_TRACKER_AVAILABLE:
+            try:
+                change_summary = ChangeTracker.get_daily_summary(self.report_date)
+                if change_summary['total_changes'] > 0:
+                    message += f"\n<b>📝 AUTOMATED DATABASE CHANGES</b>\n"
+                    message += f"• Total Changes: {change_summary['total_changes']}\n"
+
+                    # Top agents making changes
+                    if change_summary['by_source']:
+                        top_agents = change_summary['by_source'][:3]
+                        agents_str = ", ".join([f"{a['source']} ({a['count']})" for a in top_agents])
+                        message += f"• Top Agents: {agents_str}\n"
+
+                    # Most updated SPACs
+                    if change_summary['by_ticker']:
+                        top_spacs = change_summary['by_ticker'][:3]
+                        spacs_str = ", ".join([f"{s['ticker']} ({s['count']})" for s in top_spacs])
+                        message += f"• Most Updated: {spacs_str}\n"
+            except Exception as e:
+                print(f"   ⚠️  Failed to get change tracking data: {e}")
 
         message += f"\n✅ Report generated at {datetime.now().strftime('%I:%M %p EDT')}"
 
