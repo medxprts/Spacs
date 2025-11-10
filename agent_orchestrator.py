@@ -2472,9 +2472,9 @@ Return JSON with tasks to run NOW (be selective - don't run everything):
             print(f"[ORCHESTRATOR] 💤 Weekly enrichment: Next run in {next_sunday} day(s) (Sunday 9 AM ET)")
 
         # ========================================================================
-        # Daily Filing Report (11:59 PM ET every day)
+        # Daily Filing Report (7:00 AM ET every day - gives overnight processing time)
         # ========================================================================
-        is_end_of_day = (current_hour_et == 23 and current_time.minute >= 55)
+        is_end_of_day = (current_hour_et == 7 and current_time.minute >= 0 and current_time.minute < 5)
         last_report_run = self.state_manager.state['last_run'].get('daily_filing_report')
 
         should_run_report = False
